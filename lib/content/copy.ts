@@ -353,7 +353,7 @@ export const uwVaultsCopy = {
     `last 6 cycles · ${cumulativePercent >= 0 ? "+" : ""}${cumulativePercent}% cumulative, ${
       lossCount === 1 ? "1 loss" : `${lossCount} losses`
     }`,
-  noVaultMeta: "correlated pair, historically low variance and low premium",
+  correlatedPairMeta: "correlated pair, historically low variance and low premium",
   statLabels: {
     capital: "CAPITAL",
     utilization: "UTILIZATION",
@@ -433,7 +433,7 @@ export const uwDashboardCopy = {
   scenarioFootnote:
     "The bottom row is the hard floor. It is bounded only because every policy was sold with a cap reserved against real capital.",
   bookLabel: "BOOK YOU ARE BACKING",
-  bookUnit: "policies · {amount} capacity written",
+  bookUnit: (amount: string) => `policies · ${amount} capacity written`,
   strikeRowLabel: (strikePercent: number) => `Strike ${strikePercent}%`,
   policiesCapacity: (count: number, amount: string) => `${count} policies · ${amount}`,
   historyLabel: "CYCLE HISTORY, THIS VAULT",
