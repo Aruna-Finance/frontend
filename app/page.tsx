@@ -5,24 +5,15 @@ import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { StatCard } from "@/components/aruna/StatCard";
 import { LineChart } from "@/components/aruna/charts/LineChart";
-import { brandCopy, landingCopy, lpQuoteCopy, sharedNavCopy } from "@/lib/content/copy";
+import { brandCopy, landingCopy, lpQuoteCopy } from "@/lib/content/copy";
+import { primaryNavLinks } from "@/lib/nav";
+import { formatUsdc } from "@/lib/format";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { mockActiveCoverDetail } from "@/lib/mock/positions";
 import { mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 
 const FEATURED_VAULT_ID = "weth-usdc-005";
-
-const footerNavLinks = [
-  { label: sharedNavCopy.markets, href: "/markets" },
-  { label: sharedNavCopy.protect, href: "/protect" },
-  { label: sharedNavCopy.underwrite, href: "/underwrite" },
-  { label: sharedNavCopy.proof, href: "/proof" },
-];
-
-function formatUsdc(value: number) {
-  return value.toLocaleString("en-US");
-}
 
 export default function LandingPage() {
   const vault = useVault(FEATURED_VAULT_ID).data;
@@ -218,7 +209,7 @@ export default function LandingPage() {
             </span>
           </div>
           <nav className="flex flex-wrap gap-x-[32px] gap-y-[10px] text-[14px]">
-            {footerNavLinks.map((link) => (
+            {primaryNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

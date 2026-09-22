@@ -31,6 +31,7 @@ export interface Vault {
   poolFeeTier: string;
   chainLabel: string;
   poolAddress: string | null;
+  currentSpotPrice: number | null;
   hasVault: boolean;
   currentCohortId: number | null;
   totalCapitalUsdc: number;

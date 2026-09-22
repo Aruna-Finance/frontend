@@ -6,16 +6,18 @@ function gridTemplate(columns: TableColumn[]) {
 
 export function Table({ columns, children }: TableProps) {
   return (
-    <div className="rounded-card border border-border bg-surface overflow-hidden">
-      <div
-        className="grid px-[20px] py-[14px] border-b border-border text-[11px] tracking-[0.07em] uppercase text-foreground-muted"
-        style={{ gridTemplateColumns: gridTemplate(columns) }}
-      >
-        {columns.map((column) => (
-          <div key={column.key}>{column.header}</div>
-        ))}
+    <div className="overflow-x-auto">
+      <div className="min-w-max rounded-card border border-border bg-surface overflow-hidden">
+        <div
+          className="grid px-[20px] py-[14px] border-b border-border text-[11px] tracking-[0.07em] uppercase text-foreground-muted"
+          style={{ gridTemplateColumns: gridTemplate(columns) }}
+        >
+          {columns.map((column) => (
+            <div key={column.key}>{column.header}</div>
+          ))}
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }
