@@ -29,7 +29,7 @@ export default function UnderwritePage() {
           <h1 className="font-display text-[36px] font-normal">{uwVaultsCopy.heading}</h1>
           <p className="text-[15px] text-foreground-secondary pt-[8px] max-w-[700px]">{uwVaultsCopy.subtitle}</p>
         </div>
-        <Button variant="ghost" href={`/underwrite/${FEATURED_VAULT_ID}/dashboard`}>
+        <Button variant="ghost" href="/underwrite/positions">
           {uwVaultsCopy.myUnderwritingCta}
         </Button>
       </div>

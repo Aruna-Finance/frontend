@@ -13,12 +13,10 @@ import { useWallet } from "@/hooks/useWallet";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { lpActiveCopy } from "@/lib/content/copy";
-import { mockActiveCoverDetail } from "@/lib/mock/positions";
+import { getActiveCoverForPosition, mockActiveCoverDetail } from "@/lib/mock/positions";
 import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 
-const cover = mockActiveCoverDetail;
-
-function scenarioLabel(entry: (typeof cover.scenarioTable)[number]) {
+function scenarioLabel(entry: (typeof mockActiveCoverDetail.scenarioTable)[number]) {
   if (entry.isCapFinish) return `${entry.finishVolPercent}%+`;
   if (entry.isNow) return `${entry.finishVolPercent}% now`;
   return `${entry.finishVolPercent}%`;
@@ -33,8 +31,8 @@ function scenarioTone(netUsdc: number) {
 export default async function LPActivePage(props: PageProps<"/protect/[positionId]/active">) {
   const { positionId } = await props.params;
 
-  // Only one cover is modeled in this demo (position #482911's).
-  if (positionId !== cover.positionId) {
+  const cover = getActiveCoverForPosition(positionId);
+  if (!cover) {
     notFound();
   }
 

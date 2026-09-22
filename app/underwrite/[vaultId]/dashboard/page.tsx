@@ -11,7 +11,7 @@ import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { useWallet } from "@/hooks/useWallet";
 import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
-import { mockUnderwriterPosition, mockVaultScenarioTable, mockVaultStrikeBreakdown } from "@/lib/mock/vaults";
+import { getUnderwriterPositionForVault, mockVaultScenarioTable, mockVaultStrikeBreakdown } from "@/lib/mock/vaults";
 import type { BarHistoryBar } from "@/types/aruna";
 
 function scenarioLabel(entry: (typeof mockVaultScenarioTable)[number]) {
@@ -25,17 +25,23 @@ function netTone(value: number) {
   return value >= 0 ? "text-positive" : "text-negative";
 }
 
+// The scenario table and strike breakdown below are fitted to
+// weth-usdc-005's own numbers (its capacity, premiums, cohort) — until
+// another vault gets its own fitted tables, its dashboard only renders here.
+const DASHBOARD_MODELED_VAULT_ID = "weth-usdc-005";
+
 export default async function UWDashboardPage(props: PageProps<"/underwrite/[vaultId]/dashboard">) {
   const { vaultId } = await props.params;
 
-  if (vaultId !== mockUnderwriterPosition.vaultId) {
+  const position = getUnderwriterPositionForVault(vaultId);
+  if (!position || vaultId !== DASHBOARD_MODELED_VAULT_ID) {
     notFound();
   }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const vault = useVault(vaultId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const cohort = useCohort(vaultId, mockUnderwriterPosition.cohortId).data;
+  const cohort = useCohort(vaultId, position.cohortId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const wallet = useWallet();
 
@@ -71,7 +77,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
         <div>
           <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{uwDashboardCopy.heading(poolLabel)}</h1>
           <div className="font-mono text-[13px] text-foreground-muted pt-[8px]">
-            {uwDashboardCopy.meta(cohort.id, day, mockUnderwriterPosition.sharePercent, formatUsdc(vault.totalCapitalUsdc))}
+            {uwDashboardCopy.meta(cohort.id, day, position.sharePercent, formatUsdc(vault.totalCapitalUsdc))}
           </div>
         </div>
         <div className="text-left md:text-right">
@@ -84,12 +90,12 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
 
       <div className="px-[24px] lg:px-[32px] pt-[22px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
         <Card>
-          <StatCard label={uwDashboardCopy.statLabels.capitalCommitted} value={formatUsdcDecimal(mockUnderwriterPosition.capitalCommittedUsdc)} size="lg" />
+          <StatCard label={uwDashboardCopy.statLabels.capitalCommitted} value={formatUsdcDecimal(position.capitalCommittedUsdc)} size="lg" />
         </Card>
         <Card>
           <StatCard
             label={uwDashboardCopy.statLabels.premiumsEarned}
-            value={`+${formatUsdcDecimal(mockUnderwriterPosition.premiumsEarnedUsdc)}`}
+            value={`+${formatUsdcDecimal(position.premiumsEarnedUsdc)}`}
             valueTone="positive"
             size="lg"
           />
@@ -97,7 +103,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
         <Card>
           <StatCard
             label={uwDashboardCopy.statLabels.claimsAtCurrentPace}
-            value={formatUsdcDecimal(mockUnderwriterPosition.claimsAtCurrentPaceUsdc)}
+            value={formatUsdcDecimal(position.claimsAtCurrentPaceUsdc)}
             valueTone="negative"
             size="lg"
           />
@@ -105,7 +111,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
         <Card variant="raised">
           <StatCard
             label={uwDashboardCopy.statLabels.markIfEndsHere}
-            value={`+${formatUsdcDecimal(mockUnderwriterPosition.markIfEndsHereUsdc)}`}
+            value={`+${formatUsdcDecimal(position.markIfEndsHereUsdc)}`}
             valueTone="positive"
             size="lg"
           />
@@ -117,7 +123,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
           <div className="flex justify-between items-baseline flex-wrap gap-[8px]">
             <span className="text-[16px] font-semibold">{uwDashboardCopy.scenarioTitle}</span>
             <span className="font-mono text-[12px] text-foreground-muted">
-              {uwDashboardCopy.scenarioShare(mockUnderwriterPosition.sharePercent)}
+              {uwDashboardCopy.scenarioShare(position.sharePercent)}
             </span>
           </div>
 

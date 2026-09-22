@@ -117,24 +117,59 @@ export const mockVaultRealizedVolPercent: Record<string, number> = {
   "arb-usdc-030": 68.3,
 };
 
-export const mockUnderwriterPosition = {
-  vaultId: "weth-usdc-005",
-  cohortId: 12,
-  capitalCommittedUsdc: 200_000,
-  sharePercent: 16.13,
-  premiumsEarnedUsdc: 2_970.97,
-  claimsAtCurrentPaceUsdc: -1_554.84,
-  markIfEndsHereUsdc: 1_416.13,
+// Wallet-level facts for the deposit flow — the same wallet regardless of
+// which vault you're depositing into, so these don't belong on any one
+// vault's position.
+export const mockUnderwriterWallet = {
   walletBalanceUsdc: 512_400,
   minimumDepositUsdc: 1_000,
+  // Worst case at the 200,000 USDC baseline deposit, weth-usdc-005's pace —
+  // the deposit page scales this by (amount / baseline) for any vault, so
+  // it's illustrative rather than a per-vault-fitted figure.
   worstCaseUsdc: -131_048,
-  // UWDeposit.dc.html shows "vault after deposit" = 1,240,000 for a
-  // 200,000 deposit — implying cohort 13 already had 1,040,000 committed
-  // before this deposit. Kept as its own figure so the deposit page can
-  // recompute vault-after-deposit / share / worst-case reactively as the
-  // amount input changes, instead of only being correct at exactly 200,000.
-  existingCommittedCapitalUsdc: 1_040_000,
 };
+
+export interface UnderwriterPosition {
+  vaultId: string;
+  cohortId: number;
+  capitalCommittedUsdc: number;
+  sharePercent: number;
+  premiumsEarnedUsdc: number;
+  claimsAtCurrentPaceUsdc: number;
+  markIfEndsHereUsdc: number;
+}
+
+// One entry per vault the demo wallet has committed capital to — the "My
+// underwriting" list and each vault's dashboard both resolve against this
+// array instead of a single hardcoded position, so having capital in more
+// than one vault at once is a normal, supported state.
+export const mockUnderwriterPositions: UnderwriterPosition[] = [
+  {
+    vaultId: "weth-usdc-005",
+    cohortId: 12,
+    capitalCommittedUsdc: 200_000,
+    sharePercent: 16.13,
+    premiumsEarnedUsdc: 2_970.97,
+    claimsAtCurrentPaceUsdc: -1_554.84,
+    markIfEndsHereUsdc: 1_416.13,
+  },
+  {
+    // 60,000 of wsteth-weth-001's 480,000 total capital (12.5% share) —
+    // premiums/mark derived from that vault's own premiumsCurrentCycleUsdc
+    // (940) rather than reused from weth-usdc-005's numbers.
+    vaultId: "wsteth-weth-001",
+    cohortId: 12,
+    capitalCommittedUsdc: 60_000,
+    sharePercent: 12.5,
+    premiumsEarnedUsdc: 117.5,
+    claimsAtCurrentPaceUsdc: 0,
+    markIfEndsHereUsdc: 117.5,
+  },
+];
+
+export function getUnderwriterPositionForVault(vaultId: string) {
+  return mockUnderwriterPositions.find((item) => item.vaultId === vaultId);
+}
 
 export const mockVaultScenarioTable = [
   { volFinishPercent: 35.0, isAtOrBelow: true, vaultClaimsUsdc: 0, vaultNetUsdc: 18_420, yourNetUsdc: 2_970.97 },

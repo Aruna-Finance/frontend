@@ -34,22 +34,39 @@ export const mockPositions: Position[] = [
     valueUsdc: 9_320,
     hasVaultForPool: false,
   },
+  {
+    // Added so the "active, still running" cover (#7743 below) has a
+    // position of its own — #482911 and #479204 are both already settled.
+    tokenId: "485550",
+    poolLabel: "WETH / USDC",
+    poolFeeTier: "0.05%",
+    inRange: true,
+    rangeLowerUsdc: 3_100.0,
+    rangeUpperUsdc: 3_500.0,
+    feesEarnedUsdc: 96.4,
+    valueUsdc: 22_950,
+    hasVaultForPool: true,
+  },
 ];
 
+// Single source of truth for every cover in the demo — the "My covers" list
+// and the active/settlement detail pages all resolve against this array
+// instead of each keeping their own copy, so a cover's status can't disagree
+// with itself depending on which page you're looking at.
 export const mockPositionCovers: PositionCover[] = [
   {
     id: "7741",
     positionId: "482911",
     vaultId: "weth-usdc-005",
-    status: "active",
+    status: "paid_out",
     strikePercent: 35,
     breakevenPercent: 37.1,
     capUsdc: 4_000.0,
     premiumUsdc: 380.0,
     payoutRateUsdc: 25_000,
-    netResultUsdc: null,
-    finalRealizedVolPercent: null,
-    settledAt: null,
+    netResultUsdc: 2_032.5,
+    finalRealizedVolPercent: 46.8,
+    settledAt: "2026-09-28T08:00:00Z",
   },
   {
     id: "7742",
@@ -69,26 +86,25 @@ export const mockPositionCovers: PositionCover[] = [
     finalRealizedVolPercent: 31.4,
     settledAt: "2026-09-28T08:00:00Z",
   },
+  {
+    id: "7743",
+    positionId: "485550",
+    vaultId: "weth-usdc-005",
+    status: "active",
+    strikePercent: 35,
+    breakevenPercent: 37.1,
+    capUsdc: 4_000.0,
+    premiumUsdc: 380.0,
+    payoutRateUsdc: 25_000,
+    netResultUsdc: null,
+    finalRealizedVolPercent: null,
+    settledAt: null,
+  },
 ];
 
-export const mockCoverPaidOutExample: PositionCover = {
-  id: "7741",
-  positionId: "482911",
-  vaultId: "weth-usdc-005",
-  status: "paid_out",
-  strikePercent: 35,
-  breakevenPercent: 37.1,
-  capUsdc: 4_000.0,
-  premiumUsdc: 380.0,
-  payoutRateUsdc: 25_000,
-  netResultUsdc: 2_032.5,
-  finalRealizedVolPercent: 46.8,
-  settledAt: "2026-09-28T08:00:00Z",
-};
-
 export const mockActiveCoverDetail = {
-  coverId: "7741",
-  positionId: "482911",
+  coverId: "7743",
+  positionId: "485550",
   vaultId: "weth-usdc-005",
   strikePercent: 35,
   breakevenPercent: 37.1,
@@ -136,18 +152,23 @@ export const mockCoverNoPayoutBreakdown = {
 };
 
 export function getSettledCoverForPosition(positionId: string) {
-  if (positionId === mockCoverPaidOutExample.positionId) {
-    return { kind: "paid_out", cover: mockCoverPaidOutExample, breakdown: mockCoverPaidOutBreakdown } as const;
+  const cover = mockPositionCovers.find((item) => item.positionId === positionId && item.settledAt !== null);
+  if (!cover) {
+    return undefined;
   }
 
-  const noPayoutCover = mockPositionCovers.find(
-    (item) => item.positionId === positionId && item.status === "no_payout",
-  );
-  if (noPayoutCover) {
-    return { kind: "no_payout", cover: noPayoutCover, breakdown: mockCoverNoPayoutBreakdown } as const;
+  if (cover.status === "paid_out") {
+    return { kind: "paid_out", cover, breakdown: mockCoverPaidOutBreakdown } as const;
+  }
+  if (cover.status === "no_payout") {
+    return { kind: "no_payout", cover, breakdown: mockCoverNoPayoutBreakdown } as const;
   }
 
   return undefined;
+}
+
+export function getActiveCoverForPosition(positionId: string) {
+  return positionId === mockActiveCoverDetail.positionId ? mockActiveCoverDetail : undefined;
 }
 
 export const mockQuoteStrikeTable = [
