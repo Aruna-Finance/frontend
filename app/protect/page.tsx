@@ -31,10 +31,17 @@ export default function ProtectSelectPositionPage() {
           steps={[stepIndicatorCopy.position, stepIndicatorCopy.cover, stepIndicatorCopy.confirm]}
           currentIndex={0}
         />
-        <h1 className="font-display text-[32px] lg:text-[36px] font-normal pt-[14px]">
-          {lpSelectPositionCopy.heading}
-        </h1>
-        <p className="text-[15px] text-foreground-secondary pt-[8px]">{lpSelectPositionCopy.subtitle}</p>
+        <div className="flex flex-col md:flex-row justify-between md:items-end gap-[12px]">
+          <div>
+            <h1 className="font-display text-[32px] lg:text-[36px] font-normal pt-[14px]">
+              {lpSelectPositionCopy.heading}
+            </h1>
+            <p className="text-[15px] text-foreground-secondary pt-[8px]">{lpSelectPositionCopy.subtitle}</p>
+          </div>
+          <Button variant="ghost" href="/protect/covers" className="shrink-0">
+            {lpSelectPositionCopy.myCoversCta}
+          </Button>
+        </div>
       </div>
 
       <div className="px-[24px] lg:px-[32px] py-[26px] flex flex-col lg:flex-row gap-[20px] flex-grow">

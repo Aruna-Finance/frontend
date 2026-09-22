@@ -19,7 +19,7 @@ export const mockProofSampleRows = [
   { timeUtc: "21 Sep 09:30", meanTick: 200_504, deltaTick: 116, squaredLogReturn: "1.345e-4" },
 ];
 
-export const mockProofHiddenRowsLabel = "331 rows hidden";
+export const mockProofHiddenRowsCount = 331;
 
 export const mockProofLastRow = {
   timeUtc: "28 Sep 08:00",

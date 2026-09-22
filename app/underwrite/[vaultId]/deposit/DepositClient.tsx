@@ -12,7 +12,6 @@ import { uwDepositCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDateInline, formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import type { Vault } from "@/types/domain";
-import type { mockUnderwriterPosition } from "@/lib/mock/vaults";
 
 interface DepositClientProps {
   vault: Vault;
@@ -21,7 +20,10 @@ interface DepositClientProps {
   fundingStartsAt: string;
   fundingEndsAt: string;
   walletAddress?: string;
-  position: typeof mockUnderwriterPosition;
+  existingCommittedCapitalUsdc: number;
+  walletBalanceUsdc: number;
+  minimumDepositUsdc: number;
+  worstCaseUsdc: number;
 }
 
 const BASELINE_DEPOSIT = 200_000;
@@ -33,17 +35,20 @@ export function DepositClient({
   fundingStartsAt,
   fundingEndsAt,
   walletAddress,
-  position,
+  existingCommittedCapitalUsdc,
+  walletBalanceUsdc,
+  minimumDepositUsdc,
+  worstCaseUsdc,
 }: DepositClientProps) {
   const [amountInput, setAmountInput] = useState(String(BASELINE_DEPOSIT));
   const [acknowledged, setAcknowledged] = useState(false);
 
   const amount = Number(amountInput) || 0;
   const scale = amount / BASELINE_DEPOSIT;
-  const vaultAfterDeposit = position.existingCommittedCapitalUsdc + amount;
+  const vaultAfterDeposit = existingCommittedCapitalUsdc + amount;
   const sharePercent = vaultAfterDeposit > 0 ? (amount / vaultAfterDeposit) * 100 : 0;
   const estPremiums = (vault.premiumsCurrentCycleUsdc ?? 0) * (sharePercent / 100);
-  const worstCase = position.worstCaseUsdc * scale;
+  const worstCase = worstCaseUsdc * scale;
 
   const poolLabel = `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`;
   const lockedUntil = formatCohortDateInline(fundingEndsAt);
@@ -81,22 +86,22 @@ export function DepositClient({
               <span className="font-mono text-[16px] text-foreground-muted">{uwDepositCopy.unit}</span>
               <button
                 type="button"
-                onClick={() => setAmountInput(String(Math.round(position.walletBalanceUsdc / 2)))}
+                onClick={() => setAmountInput(String(Math.round(walletBalanceUsdc / 2)))}
                 className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px]"
               >
                 {uwDepositCopy.quickHalf}
               </button>
               <button
                 type="button"
-                onClick={() => setAmountInput(String(position.walletBalanceUsdc))}
+                onClick={() => setAmountInput(String(walletBalanceUsdc))}
                 className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px]"
               >
                 {uwDepositCopy.quickMax}
               </button>
             </div>
             <div className="flex justify-between flex-wrap gap-[8px] pt-[10px] font-mono text-[12px] text-foreground-muted">
-              <span>{uwDepositCopy.walletBalance(formatUsdcDecimal(position.walletBalanceUsdc))}</span>
-              <span>{uwDepositCopy.minimumDeposit(formatUsdcDecimal(position.minimumDepositUsdc))}</span>
+              <span>{uwDepositCopy.walletBalance(formatUsdcDecimal(walletBalanceUsdc))}</span>
+              <span>{uwDepositCopy.minimumDeposit(formatUsdcDecimal(minimumDepositUsdc))}</span>
             </div>
           </Card>
 

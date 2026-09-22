@@ -229,12 +229,20 @@ export default function LandingPage() {
               {landingCopy.footer.disclaimer}
             </span>
           </div>
-          <Link
-            href="/proof"
-            className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
-          >
-            {landingCopy.footer.proofLink}
-          </Link>
+          <div className="flex gap-[16px]">
+            <Link
+              href="/proof"
+              className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
+            >
+              {landingCopy.footer.proofLink}
+            </Link>
+            <Link
+              href="/states"
+              className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
+            >
+              {landingCopy.footer.statesReferenceLink}
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

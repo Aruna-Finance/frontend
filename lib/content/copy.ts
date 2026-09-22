@@ -89,6 +89,7 @@ export const landingCopy = {
   footer: {
     disclaimer: "Cover is capped by vault capacity. Read the settlement method before buying.",
     proofLink: "Settlement proof →",
+    statesReferenceLink: "UI states reference →",
     copyright: (year: number) => `© ${year} ${brandCopy.name}`,
   },
 } as const;
@@ -166,6 +167,25 @@ export const lpSelectPositionCopy = {
       `Cover runs to the end of the current cohort — ${timeLeft} from now — not for a fixed seven days from purchase.`,
     seeMarketLink: "See the market state first →",
   },
+  myCoversCta: "My covers",
+} as const;
+
+export const lpMyCoversCopy = {
+  heading: "My covers",
+  subtitle: "Every cover you've bought, whether it's still running or already settled.",
+  coverTitle: (coverId: string) => `Cover #${coverId}`,
+  badgeActive: "ACTIVE",
+  cardMeta: (pool: string, strikePercent: number, cap: string) =>
+    `${pool} · strike ${strikePercent}% · cap ${cap} USDC`,
+  premiumPaidLabel: "PREMIUM PAID",
+  netResultLabel: "NET RESULT",
+  pendingSettlement: "pending settlement",
+  settledCaption: (date: string) => `settled ${date}`,
+  viewCoverCta: "View cover",
+  viewSettlementCta: "View settlement",
+  emptyState: "You haven't bought any cover yet.",
+  emptyStateCta: "Protect a position",
+  backLink: "← Back to select a position",
 } as const;
 
 export const lpQuoteCopy = {
@@ -374,6 +394,19 @@ export const uwVaultsCopy = {
       body: "In a violent week claims can exceed premiums by a wide margin. The bound is the written capacity, not zero.",
     },
   ],
+} as const;
+
+export const uwMyPositionsCopy = {
+  heading: "My underwriting",
+  subtitle: "Every vault you've committed capital to, across every cohort.",
+  cardMeta: (cohortId: number, sharePercent: number) => `cohort ${cohortId} · ${sharePercent.toFixed(2)}% share`,
+  capitalLabel: "CAPITAL COMMITTED",
+  markLabel: "MARK IF ENDS HERE",
+  viewDashboardCta: "View dashboard",
+  dashboardUnavailable: "Dashboard not modeled for this vault yet",
+  emptyState: "You haven't underwritten any vault yet.",
+  emptyStateCta: "Underwrite a vault",
+  backLink: "← Back to vaults",
 } as const;
 
 export const uwDepositCopy = {
