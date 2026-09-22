@@ -61,6 +61,7 @@ export interface StepIndicatorProps {
 export interface NumberedStepProps {
   index: number;
   status?: "default" | "done" | "pending";
+  statusLabel?: string;
   children: ReactNode;
 }
 

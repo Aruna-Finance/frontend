@@ -25,7 +25,12 @@ export function LineChart({
   className,
 }: LineChartProps) {
   return (
-    <svg viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} className={className} aria-label={ariaLabel}>
+    <svg
+      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+      preserveAspectRatio="none"
+      className={className}
+      aria-label={ariaLabel}
+    >
       {thresholds.map((threshold, index) => {
         const y = threshold.y * viewBoxHeight;
         return (

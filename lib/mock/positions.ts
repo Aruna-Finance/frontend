@@ -53,7 +53,11 @@ export const mockPositionCovers: PositionCover[] = [
   },
   {
     id: "7742",
-    positionId: null,
+    // The mockup never ties #7742 to a specific position number — attached
+    // here to #479204 (our other WETH/USDC 0.05% demo position) so the
+    // no-payout outcome has a real route to render at, instead of being
+    // dead code only the paid-out branch could ever reach.
+    positionId: "479204",
     vaultId: "weth-usdc-005",
     status: "no_payout",
     strikePercent: 35,
@@ -131,6 +135,21 @@ export const mockCoverNoPayoutBreakdown = {
   poolFeesEarnedUsdc: 214.6,
 };
 
+export function getSettledCoverForPosition(positionId: string) {
+  if (positionId === mockCoverPaidOutExample.positionId) {
+    return { kind: "paid_out", cover: mockCoverPaidOutExample, breakdown: mockCoverPaidOutBreakdown } as const;
+  }
+
+  const noPayoutCover = mockPositionCovers.find(
+    (item) => item.positionId === positionId && item.status === "no_payout",
+  );
+  if (noPayoutCover) {
+    return { kind: "no_payout", cover: noPayoutCover, breakdown: mockCoverNoPayoutBreakdown } as const;
+  }
+
+  return undefined;
+}
+
 export const mockQuoteStrikeTable = [
   { strikePercent: 30, premiumUsdc: 520, fullCyclePremiumUsdc: 910, breakevenPercent: 33.3, capReachedAtPercent: 50.0, estPayoutIfVolHoldsUsdc: 1_472.5 },
   { strikePercent: 35, premiumUsdc: 380, fullCyclePremiumUsdc: 665, breakevenPercent: 37.1, capReachedAtPercent: 53.2, estPayoutIfVolHoldsUsdc: 800.0 },
@@ -148,4 +167,10 @@ export const mockQuoteDefaults = {
   capacityFreeUsdc: 427_500,
   // "3d 21h" sisa cohort 12 saat quote ini diambil di LPQuote.dc.html, dalam detik.
   coveredSecondsAtQuote: 334_800,
+};
+
+export const mockConfirmDefaults = {
+  approveTxHash: "0x91be…2d07",
+  repriceCountdown: "00:41",
+  estNetworkFeeUsdc: 0.12,
 };

@@ -233,6 +233,7 @@ export const lpConfirmCopy = {
     settles: "Settles",
     oracle: "Oracle",
   },
+  oracleValue: "Pool TWAP, 30 min",
   warning: {
     title: "Read this before signing",
     body: (strikePercent: number, premium: string) =>
@@ -244,6 +245,8 @@ export const lpConfirmCopy = {
     label: "TWO TRANSACTIONS",
     approve: (amount: string) => `Approve ${amount} USDC`,
     confirmed: (hash: string) => `Confirmed · ${hash}`,
+    statusConfirmed: "Confirmed",
+    statusPending: "Pending",
     buyCoverTitle: "Buy cover",
     buyCoverBody: (cap: string) => `Pays the premium, reserves ${cap} USDC of vault capacity and mints your policy.`,
     rows: {

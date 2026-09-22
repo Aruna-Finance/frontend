@@ -1,23 +1,25 @@
 import type { NumberedStepProps } from "@/types/aruna";
 
-const statusClasses = {
-  default: "bg-accent-soft text-accent",
-  done: "bg-positive-soft text-positive",
-  pending: "border border-accent text-accent",
+const statusToneClasses = {
+  default: "text-foreground-muted",
+  done: "text-positive",
+  pending: "text-accent",
 };
 
-export function NumberedStep({ index, status = "default", children }: NumberedStepProps) {
+export function NumberedStep({ index, status = "default", statusLabel, children }: NumberedStepProps) {
   return (
     <div className="flex gap-[14px] items-start">
-      <span
-        className={[
-          "w-[26px] h-[26px] rounded-full inline-flex items-center justify-center font-mono text-[13px] flex-shrink-0",
-          statusClasses[status],
-        ].join(" ")}
-      >
-        {status === "done" ? "✓" : index}
+      <span className="font-mono text-[12px] text-foreground-muted tabular-nums pt-[2px] flex-shrink-0">
+        {String(index).padStart(2, "0")}
       </span>
       <div className="flex-grow">{children}</div>
+      {statusLabel ? (
+        <span
+          className={`font-mono text-[10px] tracking-[0.08em] uppercase pt-[3px] flex-shrink-0 ${statusToneClasses[status]}`}
+        >
+          {statusLabel}
+        </span>
+      ) : null}
     </div>
   );
 }

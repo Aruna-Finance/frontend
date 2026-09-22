@@ -149,7 +149,7 @@ export default function MarketsPage() {
         </Table>
 
         <div className="flex flex-col lg:flex-row gap-[20px] pt-[24px]">
-          <Card className="flex-grow">
+          <Card className="flex-grow lg:min-w-0">
             <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
               {marketsCopy.howCohortWorks.label}
             </div>
@@ -158,7 +158,7 @@ export default function MarketsPage() {
             </div>
           </Card>
           {nextCohort ? (
-            <Card className="w-full lg:w-[380px]">
+            <Card className="w-full lg:w-[380px] lg:shrink-0">
               <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
                 {marketsCopy.nextCohortOpens.label}
               </div>

@@ -101,7 +101,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
       ) : null}
 
       <div className="px-[24px] lg:px-[32px] py-[20px] flex flex-col lg:flex-row gap-[20px] flex-grow">
-        <div className="flex-grow flex flex-col gap-[20px]">
+        <div className="flex-grow lg:min-w-0 flex flex-col gap-[20px]">
           {vault.premiumIndication && cohort?.realizedVolPercent !== null && cohort?.realizedVolPercent !== undefined ? (
             <Card className="flex flex-col flex-grow">
               <div className="flex justify-between items-baseline">
@@ -114,7 +114,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
               <LineChart
                 viewBoxWidth={700}
                 viewBoxHeight={300}
-                className="w-full h-[300px] pt-[16px]"
+                className="w-full h-[350px] pt-[16px]"
                 ariaLabel={`Realized volatility rising to ${cohort.realizedVolPercent} percent against strike levels`}
                 series={[
                   {
@@ -154,7 +154,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
           )}
         </div>
 
-        <div className="w-full lg:w-[380px] flex flex-col gap-[20px]">
+        <div className="w-full lg:w-[380px] lg:shrink-0 flex flex-col gap-[20px]">
           <Card>
             <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
               {marketDetailCopy.vaultCapacity.label}
