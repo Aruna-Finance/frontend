@@ -120,6 +120,7 @@ export const marketDetailCopy = {
     `COHORT ${cohortId} · ${startLabel} → ${endLabel}`,
   timeLeftLabel: (timeLeft: string, taken: number, total: number) =>
     `${timeLeft} left · ${taken} of ${total} samples taken`,
+  chartTitle: "Realized volatility, cohort to date",
   chartLegendRealized: (volPercent: number) => `— realized ${volPercent}%`,
   chartLegendStrikesOnOffer: "-- strikes on offer",
   axisNowLabel: "now",

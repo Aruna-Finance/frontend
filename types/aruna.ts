@@ -140,6 +140,7 @@ export interface HeaderProps {
   navLinks?: HeaderNavLink[];
   walletAddress?: string;
   secondaryAction?: HeaderSecondaryAction;
+  extra?: ReactNode;
 }
 
 export interface LineChartThreshold {
@@ -153,6 +154,12 @@ export interface LineChartSeries {
   points: string;
   tone?: Tone;
   strokeWidth?: number;
+  markerAtEnd?: boolean;
+}
+
+export interface LineChartVerticalMarker {
+  x: number;
+  label?: string;
 }
 
 export interface LineChartProps {
@@ -160,6 +167,7 @@ export interface LineChartProps {
   viewBoxHeight: number;
   series: LineChartSeries[];
   thresholds?: LineChartThreshold[];
+  verticalMarkers?: LineChartVerticalMarker[];
   ariaLabel: string;
   className?: string;
 }

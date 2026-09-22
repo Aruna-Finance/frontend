@@ -1,21 +1,16 @@
 import Link from "next/link";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
-import { brandCopy, landingCopy, sharedNavCopy } from "@/lib/content/copy";
+import { brandCopy, landingCopy } from "@/lib/content/copy";
+import { primaryNavLinks } from "@/lib/nav";
 import type { HeaderProps } from "@/types/aruna";
-
-const defaultNavLinks = [
-  { label: sharedNavCopy.markets, href: "/markets" },
-  { label: sharedNavCopy.protect, href: "/protect" },
-  { label: sharedNavCopy.underwrite, href: "/underwrite" },
-  { label: sharedNavCopy.proof, href: "/proof" },
-];
 
 export function Header({
   variant = "app",
-  navLinks = defaultNavLinks,
+  navLinks = primaryNavLinks,
   walletAddress,
   secondaryAction,
+  extra,
 }: HeaderProps) {
   if (variant === "landing") {
     return (
@@ -61,6 +56,7 @@ export function Header({
         </nav>
       </div>
       <div className="flex items-center gap-[10px]">
+        {extra}
         {secondaryAction ? (
           <Button variant="ghost" size="sm" href={secondaryAction.href}>
             {secondaryAction.label}
