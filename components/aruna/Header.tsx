@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
 import { brandCopy, landingCopy } from "@/lib/content/copy";
@@ -16,7 +17,10 @@ export function Header({
     return (
       <header className="flex flex-wrap items-center justify-between gap-[12px] px-[20px] sm:px-[48px] py-[14px] sm:py-0 sm:h-[72px] border-b border-border">
         <div className="flex items-center gap-[16px] sm:gap-[32px]">
-          <span className="font-display text-[26px] text-foreground">{brandCopy.name}</span>
+          <div className="flex items-center gap-[8px]">
+            <Image src="/images/logo.png" alt="" width={28} height={28} />
+            <span className="font-display text-[26px] text-foreground">{brandCopy.name}</span>
+          </div>
           <span className="hidden sm:inline font-mono text-[11px] tracking-[0.1em] text-foreground-muted">
             {brandCopy.chainTag}
           </span>
@@ -36,7 +40,8 @@ export function Header({
   return (
     <header className="flex flex-wrap items-center justify-between gap-[12px] px-[20px] sm:px-[32px] py-[12px] sm:py-0 sm:h-[64px] border-b border-border bg-header">
       <div className="flex items-center gap-[18px] sm:gap-[30px]">
-        <Link href="/" className="font-display text-[24px] text-foreground">
+        <Link href="/" className="flex items-center gap-[8px] font-display text-[24px] text-foreground">
+          <Image src="/images/logo.png" alt="" width={24} height={24} />
           {brandCopy.name}
         </Link>
         <nav className="flex flex-wrap gap-[14px] sm:gap-[22px] text-[14px]">

@@ -65,6 +65,22 @@ export interface NumberedStepProps {
   children: ReactNode;
 }
 
+export interface StepShowcaseImage {
+  src: string;
+  width: number;
+  height: number;
+}
+
+export interface StepShowcaseProps {
+  eyebrow: string;
+  headline: string;
+  steps: readonly string[];
+  images: readonly StepShowcaseImage[];
+  footnote: string;
+  tone: "accent" | "positive";
+  startIndex?: number;
+}
+
 export interface AmountInputQuickAction {
   label: string;
   onClick: () => void;

@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { StatCard } from "@/components/aruna/StatCard";
+import { StepShowcase } from "@/components/aruna/StepShowcase";
 import { LineChart } from "@/components/aruna/charts/LineChart";
 import { brandCopy, landingCopy, lpQuoteCopy } from "@/lib/content/copy";
 import { primaryNavLinks } from "@/lib/nav";
@@ -14,6 +16,24 @@ import { mockActiveCoverDetail } from "@/lib/mock/positions";
 import { mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 
 const FEATURED_VAULT_ID = "weth-usdc-005";
+
+// Real screenshots of the actual screen each step describes, in order —
+// captured from the app itself rather than generic icons. Each keeps its
+// own captured aspect ratio instead of being forced into a uniform box,
+// since a fixed height either crops the tall ones or shrinks the wide
+// ones down to illegible.
+const lpStepImages = [
+  { src: "/images/steps/lp-1.png", width: 856, height: 104 },
+  { src: "/images/steps/lp-2.png", width: 796, height: 260 },
+  { src: "/images/steps/lp-3.png", width: 400, height: 228 },
+  { src: "/images/steps/lp-4.png", width: 680, height: 295 },
+];
+const uwStepImages = [
+  { src: "/images/steps/uw-1.png", width: 796, height: 179 },
+  { src: "/images/steps/uw-2.png", width: 1280, height: 134 },
+  { src: "/images/steps/uw-3.png", width: 816, height: 341 },
+  { src: "/images/steps/uw-4.png", width: 380, height: 317 },
+];
 
 export default function LandingPage() {
   const vault = useVault(FEATURED_VAULT_ID).data;
@@ -30,7 +50,7 @@ export default function LandingPage() {
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="landing" />
 
-      <section className="flex flex-col lg:flex-row gap-[64px] items-start px-[24px] lg:px-[48px] pt-[56px] lg:pt-[88px] pb-[72px]">
+      <section className="flex flex-col lg:flex-row gap-[64px] items-start px-[24px] lg:px-[48px] max-w-[1440px] mx-auto w-full pt-[56px] lg:pt-[88px] pb-[72px]">
         <div className="w-full lg:flex-1 lg:max-w-[660px] lg:min-w-0 flex flex-col gap-[28px]">
           <span className="font-mono text-[12px] tracking-[0.12em] text-accent">
             {landingCopy.hero.eyebrow}
@@ -93,7 +113,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="px-[24px] lg:px-[48px] pb-[80px]">
+      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
         <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[8px]">
           {landingCopy.comparison.heading}
         </h2>
@@ -150,43 +170,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="px-[24px] lg:px-[48px] pb-[80px]">
+      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
         <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[32px]">
           {landingCopy.twoSides.heading}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
-          <Card padding="lg" className="flex flex-col gap-[18px]">
-            <span className="font-mono text-[11px] tracking-[0.1em] text-accent">
-              {landingCopy.twoSides.lp.eyebrow}
-            </span>
-            <div className="font-display text-[27px] font-normal">{landingCopy.twoSides.lp.headline}</div>
-            <ol className="list-decimal pl-[20px] text-[15px] leading-[1.85] text-foreground-secondary">
-              {landingCopy.twoSides.lp.steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-            <div className="text-[14px] text-foreground-muted border-t border-border pt-[16px]">
-              {landingCopy.twoSides.lp.footnote}
-            </div>
-          </Card>
-          <Card padding="lg" className="flex flex-col gap-[18px]">
-            <span className="font-mono text-[11px] tracking-[0.1em] text-positive">
-              {landingCopy.twoSides.uw.eyebrow}
-            </span>
-            <div className="font-display text-[27px] font-normal">{landingCopy.twoSides.uw.headline}</div>
-            <ol className="list-decimal pl-[20px] text-[15px] leading-[1.85] text-foreground-secondary">
-              {landingCopy.twoSides.uw.steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-            <div className="text-[14px] text-foreground-muted border-t border-border pt-[16px]">
-              {landingCopy.twoSides.uw.footnote}
-            </div>
-          </Card>
+        <div className="flex flex-col gap-[24px]">
+          <StepShowcase
+            eyebrow={landingCopy.twoSides.lp.eyebrow}
+            headline={landingCopy.twoSides.lp.headline}
+            steps={landingCopy.twoSides.lp.steps}
+            images={lpStepImages}
+            footnote={landingCopy.twoSides.lp.footnote}
+            tone="accent"
+          />
+          <StepShowcase
+            eyebrow={landingCopy.twoSides.uw.eyebrow}
+            headline={landingCopy.twoSides.uw.headline}
+            steps={landingCopy.twoSides.uw.steps}
+            images={uwStepImages}
+            footnote={landingCopy.twoSides.uw.footnote}
+            tone="positive"
+            startIndex={2}
+          />
         </div>
       </section>
 
-      <section className="px-[24px] lg:px-[48px] pb-[80px]">
+      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
         <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[32px]">
           {landingCopy.refuse.heading}
         </h2>
@@ -203,7 +212,10 @@ export default function LandingPage() {
       <footer className="mt-auto border-t border-border">
         <div className="px-[24px] lg:px-[48px] py-[40px] flex flex-col md:flex-row md:justify-between gap-[32px]">
           <div className="flex flex-col gap-[10px] max-w-[320px]">
-            <span className="font-display text-[22px] text-foreground">{brandCopy.name}</span>
+            <div className="flex items-center gap-[8px]">
+              <Image src="/images/logo.png" alt="" width={22} height={22} />
+              <span className="font-display text-[22px] text-foreground">{brandCopy.name}</span>
+            </div>
             <span className="font-mono text-[11px] tracking-[0.1em] text-foreground-muted">
               {landingCopy.hero.eyebrow}
             </span>

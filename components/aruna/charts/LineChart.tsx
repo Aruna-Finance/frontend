@@ -24,63 +24,76 @@ export function LineChart({
   ariaLabel,
   className,
 }: LineChartProps) {
+  // Labels are plain HTML positioned by percentage, not SVG <text> — the
+  // chart's viewBox is stretched non-uniformly (preserveAspectRatio="none",
+  // needed so the line fills wide/short containers without letterboxing),
+  // which would otherwise squash or stretch glyph shapes on any screen
+  // whose aspect ratio doesn't match the viewBox's own W:H ratio.
   return (
-    <svg
-      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-      preserveAspectRatio="none"
-      className={className}
-      aria-label={ariaLabel}
-    >
-      {thresholds.map((threshold, index) => {
-        const y = threshold.y * viewBoxHeight;
-        return (
-          <g key={index}>
-            <line
-              x1={0}
-              y1={y}
-              x2={viewBoxWidth}
-              y2={y}
-              stroke={threshold.tone ? toneStroke[threshold.tone] : "var(--chart-grid-strike)"}
-              strokeWidth={1}
-              strokeDasharray={threshold.dashed === false ? undefined : "4 4"}
-            />
-            {threshold.label ? (
-              <text x={4} y={y - 6} fill="var(--color-foreground-muted)" fontSize={10} fontFamily="IBM Plex Mono">
-                {threshold.label}
-              </text>
-            ) : null}
-          </g>
-        );
-      })}
-      {verticalMarkers.map((marker, index) => {
-        const x = marker.x * viewBoxWidth;
-        return (
-          <g key={index}>
-            <line x1={x} y1={viewBoxHeight * 0.05} x2={x} y2={viewBoxHeight * 0.9} stroke="var(--chart-grid)" strokeWidth={1} />
-            {marker.label ? (
-              <text
-                x={x - 24}
-                y={viewBoxHeight * 0.96}
-                fill="var(--color-foreground-muted)"
-                fontSize={10}
-                fontFamily="IBM Plex Mono"
-              >
-                {marker.label}
-              </text>
-            ) : null}
-          </g>
-        );
-      })}
-      {series.map((line, index) => {
-        const stroke = toneStroke[line.tone ?? "accent"];
-        const marker = line.markerAtEnd ? lastPoint(line.points) : null;
-        return (
-          <g key={index}>
-            <polyline points={line.points} fill="none" stroke={stroke} strokeWidth={line.strokeWidth ?? 2.5} />
-            {marker ? <circle cx={marker.x} cy={marker.y} r={4.5} fill={stroke} /> : null}
-          </g>
-        );
-      })}
-    </svg>
+    <div className={`relative ${className ?? ""}`}>
+      <svg
+        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+        preserveAspectRatio="none"
+        className="block w-full h-full"
+        aria-label={ariaLabel}
+      >
+        {thresholds.map((threshold, index) => (
+          <line
+            key={index}
+            x1={0}
+            y1={threshold.y * viewBoxHeight}
+            x2={viewBoxWidth}
+            y2={threshold.y * viewBoxHeight}
+            stroke={threshold.tone ? toneStroke[threshold.tone] : "var(--chart-grid-strike)"}
+            strokeWidth={1}
+            strokeDasharray={threshold.dashed === false ? undefined : "4 4"}
+          />
+        ))}
+        {verticalMarkers.map((marker, index) => (
+          <line
+            key={index}
+            x1={marker.x * viewBoxWidth}
+            y1={viewBoxHeight * 0.05}
+            x2={marker.x * viewBoxWidth}
+            y2={viewBoxHeight * 0.9}
+            stroke="var(--chart-grid)"
+            strokeWidth={1}
+          />
+        ))}
+        {series.map((line, index) => {
+          const stroke = toneStroke[line.tone ?? "accent"];
+          const marker = line.markerAtEnd ? lastPoint(line.points) : null;
+          return (
+            <g key={index}>
+              <polyline points={line.points} fill="none" stroke={stroke} strokeWidth={line.strokeWidth ?? 2.5} />
+              {marker ? <circle cx={marker.x} cy={marker.y} r={4.5} fill={stroke} /> : null}
+            </g>
+          );
+        })}
+      </svg>
+
+      {thresholds.map((threshold, index) =>
+        threshold.label ? (
+          <span
+            key={index}
+            className="absolute left-[4px] -translate-y-full font-mono text-[10px] text-foreground-muted whitespace-nowrap"
+            style={{ top: `${threshold.y * 100}%` }}
+          >
+            {threshold.label}
+          </span>
+        ) : null,
+      )}
+      {verticalMarkers.map((marker, index) =>
+        marker.label ? (
+          <span
+            key={index}
+            className="absolute -translate-x-1/2 font-mono text-[10px] text-foreground-muted whitespace-nowrap"
+            style={{ left: `${marker.x * 100}%`, bottom: "4%" }}
+          >
+            {marker.label}
+          </span>
+        ) : null,
+      )}
+    </div>
   );
 }
