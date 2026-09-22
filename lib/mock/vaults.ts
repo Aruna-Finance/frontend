@@ -72,7 +72,18 @@ export const mockVaults: Vault[] = [
     utilizationPercent: 5.1,
     premiumsCurrentCycleUsdc: 940,
     premiumIndication: null,
-    cycleHistory: [],
+    // Mockup only gives relative bar heights for this vault (no dollar
+    // labels, unlike weth-usdc-005's history) — netResultPercent below is
+    // those heights (14/11/16/12/9/15px) scaled so they sum to the known
+    // +1.18% cumulative, not a claimed precise per-cycle dollar return.
+    cycleHistory: [
+      { label: "C06", netResultUsdc: null, netResultPercent: 0.21 },
+      { label: "C07", netResultUsdc: null, netResultPercent: 0.17 },
+      { label: "C08", netResultUsdc: null, netResultPercent: 0.25 },
+      { label: "C09", netResultUsdc: null, netResultPercent: 0.18 },
+      { label: "C10", netResultUsdc: null, netResultPercent: 0.14 },
+      { label: "C11", netResultUsdc: null, netResultPercent: 0.23 },
+    ],
     cumulativeReturnPercent: 1.18,
     lossCount: 0,
   },
@@ -117,6 +128,12 @@ export const mockUnderwriterPosition = {
   walletBalanceUsdc: 512_400,
   minimumDepositUsdc: 1_000,
   worstCaseUsdc: -131_048,
+  // UWDeposit.dc.html shows "vault after deposit" = 1,240,000 for a
+  // 200,000 deposit — implying cohort 13 already had 1,040,000 committed
+  // before this deposit. Kept as its own figure so the deposit page can
+  // recompute vault-after-deposit / share / worst-case reactively as the
+  // amount input changes, instead of only being correct at exactly 200,000.
+  existingCommittedCapitalUsdc: 1_040_000,
 };
 
 export const mockVaultScenarioTable = [
@@ -146,6 +163,7 @@ export const mockLastSettlement = {
   cycleResultPercent: -1.05,
   policiesPaidOut: 29,
   policiesSettled: 47,
+  priorLosingCohortId: 9,
   claimsSplit: [
     { label: "0x7a4c…9f21 · you", sharePercent: 16.13, premiumsUsdc: 2_970.97, claimsUsdc: -5_077.42, isYou: true },
     { label: "0x1d90…44c8", sharePercent: 28.23, premiumsUsdc: 5_199.97, claimsUsdc: -8_886.8 },
