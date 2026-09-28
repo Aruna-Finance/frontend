@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Providers } from "@/components/aruna/Providers";
+import { Toaster } from "@/components/aruna/Toaster";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -32,7 +34,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${instrumentSerif.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+        <Toaster />
+      </body>
     </html>
   );
 }

@@ -23,7 +23,6 @@ interface QuoteClientProps {
   cohortId: number;
   timeLeft: string;
   realizedVolPercent: number | null;
-  walletAddress?: string;
 }
 
 const chartGeometry: Record<number, { strikeX: number; breakevenX: number; points: string }> = {
@@ -42,7 +41,6 @@ export function QuoteClient({
   cohortId,
   timeLeft,
   realizedVolPercent,
-  walletAddress,
 }: QuoteClientProps) {
   const [strikePercent, setStrikePercent] = useState(35);
   const defaultCoverage = Math.round(position.valueUsdc / 1000) * 1000;
@@ -63,7 +61,7 @@ export function QuoteClient({
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={walletAddress} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator

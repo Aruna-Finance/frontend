@@ -5,7 +5,6 @@ import { Table, TableRow } from "@/components/aruna/Table";
 import { proofCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc } from "@/lib/format";
-import { useWallet } from "@/hooks/useWallet";
 import {
   mockProofContracts,
   mockProofDerivation,
@@ -24,11 +23,10 @@ const sampleColumns: TableColumn[] = [
 ];
 
 export default function ProofPage() {
-  const wallet = useWallet();
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/proof")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/proof")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>

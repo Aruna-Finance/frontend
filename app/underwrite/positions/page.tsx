@@ -6,18 +6,16 @@ import { uwMyPositionsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdcDecimal } from "@/lib/format";
 import { useVaults } from "@/hooks/useVaults";
-import { useWallet } from "@/hooks/useWallet";
 import { mockUnderwriterPositions } from "@/lib/mock/vaults";
 
 const DASHBOARD_MODELED_VAULT_ID = "weth-usdc-005";
 
 export default function MyUnderwritingPositionsPage() {
-  const wallet = useWallet();
   const vaults = useVaults().data ?? [];
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <h1 className="font-display text-[32px] lg:text-[36px] font-normal">{uwMyPositionsCopy.heading}</h1>

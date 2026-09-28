@@ -9,20 +9,18 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDateInline, formatUsdc } from "@/lib/format";
 import { useVaults } from "@/hooks/useVaults";
 import { useCohorts } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import type { BarHistoryBar } from "@/types/aruna";
 
 const FEATURED_VAULT_ID = "weth-usdc-005";
 
 export default function UnderwritePage() {
   const vaults = (useVaults().data ?? []).filter((vault) => vault.cycleHistory.length > 0);
-  const wallet = useWallet();
   const nextCohort = useCohorts(FEATURED_VAULT_ID).data?.find((item) => item.status === "FUNDING");
   const nextCohortDate = nextCohort ? formatCohortDateInline(nextCohort.startsAt) : "";
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[30px] flex flex-col md:flex-row justify-between md:items-end gap-[12px]">
         <div>

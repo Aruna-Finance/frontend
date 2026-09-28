@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { useVault } from "@/hooks/useVaults";
 import { useCohorts } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { getUnderwriterPositionForVault, mockUnderwriterWallet } from "@/lib/mock/vaults";
 import { DepositClient } from "./DepositClient";
 
@@ -19,8 +18,6 @@ export default async function UWDepositPage(props: PageProps<"/underwrite/[vault
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const cohorts = useCohorts(vaultId).data ?? [];
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
 
   const activeCohort = cohorts.find((item) => item.status === "ACTIVE");
   const fundingCohort = cohorts.find((item) => item.status === "FUNDING");
@@ -36,7 +33,6 @@ export default async function UWDepositPage(props: PageProps<"/underwrite/[vault
       fundingCohortId={fundingCohort.id}
       fundingStartsAt={fundingCohort.startsAt}
       fundingEndsAt={fundingCohort.endsAt}
-      walletAddress={wallet.address}
       existingCommittedCapitalUsdc={existingCommittedCapitalUsdc}
       walletBalanceUsdc={mockUnderwriterWallet.walletBalanceUsdc}
       minimumDepositUsdc={mockUnderwriterWallet.minimumDepositUsdc}

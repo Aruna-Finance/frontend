@@ -19,7 +19,6 @@ interface DepositClientProps {
   fundingCohortId: number;
   fundingStartsAt: string;
   fundingEndsAt: string;
-  walletAddress?: string;
   existingCommittedCapitalUsdc: number;
   walletBalanceUsdc: number;
   minimumDepositUsdc: number;
@@ -34,7 +33,6 @@ export function DepositClient({
   fundingCohortId,
   fundingStartsAt,
   fundingEndsAt,
-  walletAddress,
   existingCommittedCapitalUsdc,
   walletBalanceUsdc,
   minimumDepositUsdc,
@@ -55,7 +53,7 @@ export function DepositClient({
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={walletAddress} />
+      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px]">
         <Link href="/underwrite" className="text-[13px] text-foreground-muted">

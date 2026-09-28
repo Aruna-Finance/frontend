@@ -1,16 +1,30 @@
 import { http, createConfig } from "wagmi";
-import { arbitrum } from "wagmi/chains";
+import { arbitrumSepolia } from "wagmi/chains";
 import { injected } from "wagmi/connectors";
+import { arunaChainId } from "./addresses";
 
-// TODO: ganti dengan RPC URL produksi (Alchemy/Infura/QuickNode) sebelum deploy.
-// Fallback publik ini cukup untuk pengembangan lokal tapi rate-limited.
-const ARBITRUM_RPC_URL =
-  process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL ?? "https://arb1.arbitrum.io/rpc";
+// Public RPC is enough for development but is rate-limited; set
+// NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL (see .env.example) for anything shared.
+const RPC_URL = process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL || arbitrumSepolia.rpcUrls.default.http[0];
+
+export const supportedChain = arbitrumSepolia;
+
+if (supportedChain.id !== arunaChainId) {
+  throw new Error(`Configured chain ${supportedChain.id} does not match deployment chain ${arunaChainId}`);
+}
 
 export const wagmiConfig = createConfig({
-  chains: [arbitrum],
+  chains: [arbitrumSepolia],
   connectors: [injected()],
   transports: {
-    [arbitrum.id]: http(ARBITRUM_RPC_URL),
+    [arbitrumSepolia.id]: http(RPC_URL),
   },
+  // Server render always sees "disconnected"; wagmi reconnects after mount
+  // instead of hydrating with a stale account.
+  ssr: true,
 });
+
+const EXPLORER_URL = arbitrumSepolia.blockExplorers.default.url;
+
+export const explorerTxUrl = (hash: string) => `${EXPLORER_URL}/tx/${hash}`;
+export const explorerAddressUrl = (address: string) => `${EXPLORER_URL}/address/${address}`;

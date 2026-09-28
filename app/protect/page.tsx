@@ -9,12 +9,10 @@ import { withActiveNavLink } from "@/lib/nav";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { usePositions } from "@/hooks/usePosition";
-import { useWallet } from "@/hooks/useWallet";
 import { mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 import { formatRangeValue, formatUsd } from "@/lib/format";
 
 export default function ProtectSelectPositionPage() {
-  const wallet = useWallet();
   const positions = usePositions().data ?? [];
   const featuredVault = useVault("weth-usdc-005").data;
   const featuredCohort = useCohort("weth-usdc-005").data;
@@ -24,7 +22,7 @@ export default function ProtectSelectPositionPage() {
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator

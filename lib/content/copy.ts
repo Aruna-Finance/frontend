@@ -18,7 +18,7 @@ export const stepIndicatorCopy = {
 } as const;
 
 export const landingCopy = {
-  nav: { openApp: "Open app", connectWallet: "Connect wallet" },
+  nav: { useAruna: "Use Aruna" },
   hero: {
     eyebrow: "IMPERMANENT LOSS COVER · UNISWAP V3",
     heading: "Cover priced by how wildly price moves - not which way it went.",
@@ -513,6 +513,21 @@ export const statesCopy = {
   pageFootnote:
     "Every state above exists to keep one promise visible: the payout is capped by capital that already exists, and the LP's loss is capped by the premium.",
   backLink: "← Back to landing",
+  toasts: {
+    heading: "Toasts",
+    subtitle: "One global notification for every flow, from connecting a wallet to a confirmed transaction.",
+    successLabel: "Success",
+    successTitle: "Wallet connected",
+    successDescription: "0x7a4c…9f21 on Arbitrum Sepolia.",
+    errorLabel: "Error",
+    errorTitle: "Deposit failed",
+    errorDescription: "You rejected the request in your wallet.",
+    actionLabel: "With action",
+    actionTitle: "Deposit confirmed",
+    actionDescription: "1,000 USDC added to the current cohort.",
+    actionLink: "View on Arbiscan",
+    clearLabel: "Clear all",
+  },
   cards: {
     notEnoughCapacity: {
       title: "Not enough capacity",
@@ -603,4 +618,34 @@ export const proofCopy = {
     label: "WHY TWAP AND NOT SPOT",
     body: "A spot price can be pushed for a single block with borrowed capital. That would fabricate variance, trigger payouts and drain the vault without any real volatility occurring. Reading the pool's own time-weighted observations makes that attack cost real money for a sustained period — which is no longer manipulation, it is volatility.",
   },
+} as const;
+
+export const walletCopy = {
+  connect: "Connect wallet",
+  connecting: "Connecting…",
+  copyAddress: "Copy address",
+  viewOnExplorer: "View on explorer",
+  disconnect: "Disconnect",
+  addressCopied: "Address copied",
+  copyFailed: "Could not copy address",
+  connectedTitle: "Wallet connected",
+  disconnectedTitle: "Wallet disconnected",
+  connectFailedTitle: "Could not connect wallet",
+  disconnectFailedTitle: "Could not disconnect wallet",
+  noWalletTitle: "No wallet found",
+  noWalletBody: "Install a browser wallet such as MetaMask, then try again.",
+  modalTitle: "Connect Wallet",
+  installedBadge: "INSTALLED",
+  installBadge: "INSTALL",
+  connectingBadge: "CONNECTING…",
+  noWalletDetected: "No wallet detected in this browser. Install one below, then reload this page.",
+  suggestedHeading: "Get a wallet",
+  helpLabel: "What is a wallet?",
+  helpTitle: "What is a wallet?",
+  helpBody: [
+    "A wallet is an app that holds your account. Aruna never holds your funds: you approve every deposit and every cover in your own wallet.",
+    "Connecting only shares your public address. Nothing moves until you confirm a transaction.",
+  ],
+  helpBack: "Back to wallets",
+  closeLabel: "Close",
 } as const;

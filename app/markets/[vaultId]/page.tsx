@@ -12,7 +12,6 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc } from "@/lib/format";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { mockCohortDayLabels, mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 
 export default async function MarketDetailPage(props: PageProps<"/markets/[vaultId]">) {
@@ -31,15 +30,13 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const cohort = useCohort(vaultId).data;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
   const daysElapsed = cohort ? mockCohortDaysElapsed[cohort.id] : undefined;
   const timeLeft = cohort ? mockCohortTimeRemaining[cohort.id] : undefined;
   const utilization = vault.totalCapitalUsdc > 0 ? vault.freeCapacityUsdc / vault.totalCapitalUsdc : 0;
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/markets")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/markets")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[16px]">
         <div>
