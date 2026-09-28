@@ -21,7 +21,7 @@ export const landingCopy = {
   nav: { openApp: "Open app", connectWallet: "Connect wallet" },
   hero: {
     eyebrow: "IMPERMANENT LOSS COVER · UNISWAP V3",
-    heading: "Cover priced by how wildly price moves — not which way it went.",
+    heading: "Cover priced by how wildly price moves - not which way it went.",
     body: "Impermanent loss is a function of variance. Strike-price options pay on direction, which is only a proxy. Aruna settles on realized variance read from the pool's own TWAP oracle.",
     ctaProtect: "Protect a position",
     ctaUnderwrite: "Underwrite a vault",

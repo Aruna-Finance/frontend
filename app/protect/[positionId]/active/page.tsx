@@ -13,8 +13,12 @@ import { useWallet } from "@/hooks/useWallet";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { lpActiveCopy } from "@/lib/content/copy";
+import { closeAreaPath, smoothLinePath } from "@/lib/chart-path";
 import { getActiveCoverForPosition, mockActiveCoverDetail } from "@/lib/mock/positions";
 import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
+
+const ACTIVE_LINE_POINTS = "44,260 120,246 196,228 272,200 348,190 424,168 500,152 576,124 620,112 640,108";
+const realizedLinePath = smoothLinePath(ACTIVE_LINE_POINTS);
 
 function scenarioLabel(entry: (typeof mockActiveCoverDetail.scenarioTable)[number]) {
   if (entry.isCapFinish) return `${entry.finishVolPercent}%+`;
@@ -57,7 +61,7 @@ export default async function LPActivePage(props: PageProps<"/protect/[positionI
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>
           <div className="flex items-center gap-[12px] flex-wrap">
             <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{lpActiveCopy.heading(cover.coverId)}</h1>
@@ -75,7 +79,7 @@ export default async function LPActivePage(props: PageProps<"/protect/[positionI
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[18px]">
           <Card className="flex flex-col flex-grow">
             <div className="flex justify-between items-baseline flex-wrap gap-[8px]">
@@ -105,11 +109,21 @@ export default async function LPActivePage(props: PageProps<"/protect/[positionI
               <text x="590" y="36" fill="var(--color-foreground-muted)" fontSize={11} fontFamily="IBM Plex Mono">
                 {lpActiveCopy.payoutCapLabel}
               </text>
-              <polyline
-                points="44,260 120,246 196,228 272,200 348,190 424,168 500,152 576,124 620,112 640,108"
+              <defs>
+                <linearGradient id="active-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="var(--color-accent)" stopOpacity={0.32} />
+                  <stop offset="1" stopColor="var(--color-accent)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <path d={closeAreaPath(realizedLinePath, ACTIVE_LINE_POINTS, 260)} fill="url(#active-area-gradient)" stroke="none" />
+              <path
+                d={realizedLinePath}
                 fill="none"
                 stroke="var(--color-accent)"
-                strokeWidth={2.5}
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
               />
               <circle cx="640" cy="108" r="4.5" fill="var(--color-accent)" />
               <line x1="640" y1="20" x2="640" y2="272" stroke="var(--chart-grid)" strokeWidth={1} />

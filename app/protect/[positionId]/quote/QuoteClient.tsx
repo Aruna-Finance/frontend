@@ -11,6 +11,7 @@ import { StepIndicator } from "@/components/aruna/StepIndicator";
 import { lpQuoteCopy, stepIndicatorCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsd, formatUsdc } from "@/lib/format";
+import { closeAreaPath, roundedCornerPath } from "@/lib/chart-path";
 import { useQuote } from "@/hooks/useQuote";
 import { mockQuoteDefaults, mockQuoteStrikeTable } from "@/lib/mock/positions";
 import type { Position, Vault } from "@/types/domain";
@@ -50,6 +51,7 @@ export function QuoteClient({
 
   const quote = useQuote({ vaultId: vault.id, strikePercent, coveredAmountUsdc: defaultCoverage }).data;
   const geometry = chartGeometry[strikePercent] ?? chartGeometry[35];
+  const payoutPath = roundedCornerPath(geometry.points, 18);
 
   function pickQuick(kind: "25" | "50" | "max") {
     const fraction = kind === "25" ? 0.25 : kind === "50" ? 0.5 : 1;
@@ -63,7 +65,7 @@ export function QuoteClient({
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={walletAddress} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[26px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator
           steps={[stepIndicatorCopy.position, stepIndicatorCopy.cover, stepIndicatorCopy.confirm]}
           currentIndex={1}
@@ -82,7 +84,7 @@ export function QuoteClient({
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[18px]">
           <Card>
             <label htmlFor="coverage" className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
@@ -105,7 +107,7 @@ export function QuoteClient({
                   key={kind}
                   type="button"
                   onClick={() => pickQuick(kind)}
-                  className={`h-[44px] px-[14px] rounded-control text-[13px] ${
+                  className={`h-[44px] px-[14px] rounded-control text-[13px] transition-all duration-300 ${
                     activeQuick === kind ? "border border-accent bg-accent-soft text-foreground" : "border border-border text-foreground"
                   }`}
                 >
@@ -131,7 +133,7 @@ export function QuoteClient({
                     key={option}
                     type="button"
                     onClick={() => setStrikePercent(option)}
-                    className={`flex flex-col items-start p-[16px] rounded-control text-left ${
+                    className={`flex flex-col items-start p-[16px] rounded-control text-left transition-all duration-300 ${
                       active ? "border-[1.5px] border-accent bg-accent-soft" : "border border-border bg-canvas"
                     }`}
                   >
@@ -169,7 +171,22 @@ export function QuoteClient({
                 <text x="560" y="40" fill="var(--color-foreground-muted)" fontSize={11} fontFamily="IBM Plex Mono">
                   {lpQuoteCopy.capLabel(formatUsdc(quote.maxPayoutUsdc))}
                 </text>
-                <polyline points={geometry.points} fill="none" stroke="var(--color-accent)" strokeWidth={3} />
+                <defs>
+                  <linearGradient id="quote-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="var(--color-accent)" stopOpacity={0.32} />
+                    <stop offset="1" stopColor="var(--color-accent)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <path d={closeAreaPath(payoutPath, geometry.points, 200)} fill="url(#quote-area-gradient)" stroke="none" />
+                <path
+                  d={payoutPath}
+                  fill="none"
+                  stroke="var(--color-accent)"
+                  strokeWidth={1}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
                 <line
                   x1={geometry.strikeX}
                   y1="20"

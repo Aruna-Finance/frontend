@@ -26,7 +26,7 @@ export default function ProtectSelectPositionPage() {
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[26px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator
           steps={[stepIndicatorCopy.position, stepIndicatorCopy.cover, stepIndicatorCopy.confirm]}
           currentIndex={0}
@@ -44,7 +44,7 @@ export default function ProtectSelectPositionPage() {
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[26px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[26px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[14px]">
           {positions.map((position, index) => {
             const highlighted = index === firstEligibleIndex;

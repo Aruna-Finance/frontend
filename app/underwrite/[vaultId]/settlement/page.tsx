@@ -51,7 +51,7 @@ export default async function UWSettlementPage(props: PageProps<"/underwrite/[va
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>
           <div className="flex items-center gap-[12px] flex-wrap">
             <h1 className="font-display text-[30px] lg:text-[34px] font-normal">
@@ -68,7 +68,7 @@ export default async function UWSettlementPage(props: PageProps<"/underwrite/[va
         </Button>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[18px]">
           <Card>
             <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">

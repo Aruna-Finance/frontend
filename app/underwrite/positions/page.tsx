@@ -19,12 +19,12 @@ export default function MyUnderwritingPositionsPage() {
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[26px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <h1 className="font-display text-[32px] lg:text-[36px] font-normal">{uwMyPositionsCopy.heading}</h1>
         <p className="text-[15px] text-foreground-secondary pt-[8px]">{uwMyPositionsCopy.subtitle}</p>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[26px] flex flex-col gap-[14px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[26px] flex flex-col gap-[14px] flex-grow">
         {mockUnderwriterPositions.length === 0 ? (
           <Card className="flex flex-col items-start gap-[14px]">
             <span className="text-[14.5px] text-foreground-secondary">{uwMyPositionsCopy.emptyState}</span>

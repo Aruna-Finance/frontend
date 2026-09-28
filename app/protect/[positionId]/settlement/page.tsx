@@ -44,11 +44,11 @@ export default async function LPSettlementPage(props: PageProps<"/protect/[posit
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px]">
         <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{lpSettlementCopy.heading(cohort.id)}</h1>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px]">
         <div className="max-w-[680px]">
           {settled.kind === "paid_out" ? (
             <Card variant="success" className="flex flex-col gap-[20px]">

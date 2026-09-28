@@ -7,6 +7,7 @@ export interface ButtonProps {
   variant?: "primary" | "ghost";
   size?: "default" | "sm";
   href?: string;
+  newTab?: boolean;
   disabled?: boolean;
   type?: "button" | "submit";
   onClick?: () => void;
@@ -79,6 +80,7 @@ export interface StepShowcaseProps {
   footnote: string;
   tone: "accent" | "positive";
   startIndex?: number;
+  reverse?: boolean;
 }
 
 export interface AmountInputQuickAction {

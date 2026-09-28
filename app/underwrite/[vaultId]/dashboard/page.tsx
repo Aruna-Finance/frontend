@@ -73,7 +73,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>
           <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{uwDashboardCopy.heading(poolLabel)}</h1>
           <div className="font-mono text-[13px] text-foreground-muted pt-[8px]">
@@ -88,7 +88,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] pt-[22px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[22px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
         <Card>
           <StatCard label={uwDashboardCopy.statLabels.capitalCommitted} value={formatUsdcDecimal(position.capitalCommittedUsdc)} size="lg" />
         </Card>
@@ -118,7 +118,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
         </Card>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[20px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[20px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <Card className="flex-grow lg:min-w-0 flex flex-col">
           <div className="flex justify-between items-baseline flex-wrap gap-[8px]">
             <span className="text-[16px] font-semibold">{uwDashboardCopy.scenarioTitle}</span>

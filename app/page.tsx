@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { StatCard } from "@/components/aruna/StatCard";
 import { StepShowcase } from "@/components/aruna/StepShowcase";
+import { Reveal } from "@/components/aruna/Reveal";
+import { SmoothScroll } from "@/components/aruna/SmoothScroll";
+import { GradientWordmark } from "@/components/aruna/GradientWordmark";
 import { LineChart } from "@/components/aruna/charts/LineChart";
 import { brandCopy, landingCopy, lpQuoteCopy } from "@/lib/content/copy";
 import { primaryNavLinks } from "@/lib/nav";
@@ -48,6 +50,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
+      <SmoothScroll />
       <Header variant="landing" />
 
       <section className="flex flex-col lg:flex-row gap-[64px] items-start px-[24px] lg:px-[48px] max-w-[1440px] mx-auto w-full pt-[56px] lg:pt-[88px] pb-[72px]">
@@ -62,7 +65,7 @@ export default function LandingPage() {
             {landingCopy.hero.body}
           </p>
           <div className="flex gap-[14px] pt-[8px]">
-            <Button href="/protect" icon={<ShieldCheckIcon />}>
+            <Button href="/protect">
               {landingCopy.hero.ctaProtect}
             </Button>
             <Button variant="ghost" href="/underwrite">
@@ -71,7 +74,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="w-full lg:flex-1 lg:min-w-0 border border-border bg-surface rounded-card-lg p-[28px] flex flex-col gap-[20px]">
+        <div className="w-full lg:flex-1 lg:min-w-0 border border-border rounded-card-lg p-[28px] flex flex-col gap-[20px]">
           <div className="text-[11px] tracking-[0.08em] text-foreground-muted">
             {landingCopy.hero.liveCardLabel(poolLabelCompact)}
           </div>
@@ -113,7 +116,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
+      <Reveal className="px-[24px] lg:px-[48px] w-full max-w-[1440px] mx-auto pb-[80px]">
         <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[8px]">
           {landingCopy.comparison.heading}
         </h2>
@@ -168,34 +171,37 @@ export default function LandingPage() {
             </div>
           </Card>
         </div>
-      </section>
+      </Reveal>
 
-      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
-        <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[32px]">
-          {landingCopy.twoSides.heading}
-        </h2>
-        <div className="flex flex-col gap-[24px]">
-          <StepShowcase
-            eyebrow={landingCopy.twoSides.lp.eyebrow}
-            headline={landingCopy.twoSides.lp.headline}
-            steps={landingCopy.twoSides.lp.steps}
-            images={lpStepImages}
-            footnote={landingCopy.twoSides.lp.footnote}
-            tone="accent"
-          />
-          <StepShowcase
-            eyebrow={landingCopy.twoSides.uw.eyebrow}
-            headline={landingCopy.twoSides.uw.headline}
-            steps={landingCopy.twoSides.uw.steps}
-            images={uwStepImages}
-            footnote={landingCopy.twoSides.uw.footnote}
-            tone="positive"
-            startIndex={2}
-          />
+      <Reveal className="w-full bg-surface mb-[80px]">
+        <div className="w-full max-w-[1440px] mx-auto px-[24px] lg:px-[48px] py-[80px]">
+          <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[32px]">
+            {landingCopy.twoSides.heading}
+          </h2>
+          <div className="flex flex-col gap-[24px]">
+            <StepShowcase
+              eyebrow={landingCopy.twoSides.lp.eyebrow}
+              headline={landingCopy.twoSides.lp.headline}
+              steps={landingCopy.twoSides.lp.steps}
+              images={lpStepImages}
+              footnote={landingCopy.twoSides.lp.footnote}
+              tone="accent"
+            />
+            <StepShowcase
+              eyebrow={landingCopy.twoSides.uw.eyebrow}
+              headline={landingCopy.twoSides.uw.headline}
+              steps={landingCopy.twoSides.uw.steps}
+              images={uwStepImages}
+              footnote={landingCopy.twoSides.uw.footnote}
+              tone="positive"
+              startIndex={2}
+              reverse
+            />
+          </div>
         </div>
-      </section>
+      </Reveal>
 
-      <section className="px-[24px] lg:px-[48px] max-w-[1440px] mx-auto pb-[80px]">
+      <Reveal className="px-[24px] lg:px-[48px] w-full max-w-[1440px] mx-auto pb-[80px]">
         <h2 className="font-display text-[30px] lg:text-[38px] font-normal mb-[32px]">
           {landingCopy.refuse.heading}
         </h2>
@@ -207,53 +213,65 @@ export default function LandingPage() {
             </Card>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       <footer className="mt-auto border-t border-border">
-        <div className="px-[24px] lg:px-[48px] py-[40px] flex flex-col md:flex-row md:justify-between gap-[32px]">
-          <div className="flex flex-col gap-[10px] max-w-[320px]">
-            <div className="flex items-center gap-[8px]">
-              <Image src="/images/logo.png" alt="" width={22} height={22} />
-              <span className="font-display text-[22px] text-foreground">{brandCopy.name}</span>
+        {/* Same column as every other section; the wordmark is sized to its
+            width, so its visible edges line up with the cards above. */}
+        <div className="w-full max-w-[1440px] mx-auto px-[24px] lg:px-[48px]">
+          <div className="py-[40px] flex flex-col md:flex-row md:justify-between gap-[32px]">
+            <div className="flex flex-col gap-[10px] max-w-[320px]">
+              <div className="flex items-center gap-[8px]">
+                <Image src="/images/logo.png" alt="" width={22} height={22} />
+                <span className="font-display text-[22px] text-foreground">{brandCopy.name}</span>
+              </div>
+              <span className="font-mono text-[11px] tracking-[0.1em] text-foreground-muted">
+                {landingCopy.hero.eyebrow}
+              </span>
             </div>
-            <span className="font-mono text-[11px] tracking-[0.1em] text-foreground-muted">
-              {landingCopy.hero.eyebrow}
-            </span>
+            <nav className="flex flex-wrap gap-x-[32px] gap-y-[10px] text-[14px]">
+              {primaryNavLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-foreground-secondary hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           </div>
-          <nav className="flex flex-wrap gap-x-[32px] gap-y-[10px] text-[14px]">
-            {primaryNavLinks.map((link) => (
+
+          <div className="border-t border-border py-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[8px] sm:gap-[16px]">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-[4px] sm:gap-[16px]">
+              <span className="font-mono text-[12px] text-foreground-muted">
+                {landingCopy.footer.copyright(new Date().getFullYear())}
+              </span>
+              <span className="font-mono text-[12px] text-foreground-muted">
+                {landingCopy.footer.disclaimer}
+              </span>
+            </div>
+            <div className="flex gap-[16px]">
               <Link
-                key={link.href}
-                href={link.href}
-                className="text-foreground-secondary hover:text-foreground transition-colors"
+                href="/proof"
+                className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
               >
-                {link.label}
+                {landingCopy.footer.proofLink}
               </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="border-t border-border px-[24px] lg:px-[48px] py-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[8px] sm:gap-[16px]">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-[4px] sm:gap-[16px]">
-            <span className="font-mono text-[12px] text-foreground-muted">
-              {landingCopy.footer.copyright(new Date().getFullYear())}
-            </span>
-            <span className="font-mono text-[12px] text-foreground-muted">
-              {landingCopy.footer.disclaimer}
-            </span>
+              <Link
+                href="/states"
+                className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
+              >
+                {landingCopy.footer.statesReferenceLink}
+              </Link>
+            </div>
           </div>
-          <div className="flex gap-[16px]">
-            <Link
-              href="/proof"
-              className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
-            >
-              {landingCopy.footer.proofLink}
-            </Link>
-            <Link
-              href="/states"
-              className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
-            >
-              {landingCopy.footer.statesReferenceLink}
-            </Link>
+
+          <div className="@container overflow-hidden pt-[56px]">
+            <GradientWordmark
+              text={brandCopy.name.toUpperCase()}
+              className="font-display [font-size:calc(100cqw/2.328)] leading-[0.74] -mb-[0.16em] -ml-[0.0613em]"
+            />
           </div>
         </div>
       </footer>

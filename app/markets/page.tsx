@@ -120,7 +120,7 @@ export default function MarketsPage() {
         }
       />
 
-      <div className="px-[24px] lg:px-[32px] pt-[32px] flex flex-col md:flex-row justify-between md:items-end gap-[16px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[32px] flex flex-col md:flex-row justify-between md:items-end gap-[16px]">
         <div>
           <h1 className="font-display text-[36px] font-normal">{marketsCopy.heading}</h1>
           <p className="text-[15px] text-foreground-secondary pt-[8px]">{marketsCopy.subtitle}</p>
@@ -128,20 +128,20 @@ export default function MarketsPage() {
         <div className="flex gap-[8px]">
           <button
             type="button"
-            className="h-[40px] px-[16px] rounded-control border border-accent bg-accent-soft text-foreground text-[13px]"
+            className="h-[40px] px-[16px] rounded-control border border-accent bg-accent-soft text-foreground text-[13px] transition-all duration-300"
           >
             {marketsCopy.chainFilter.arbitrumOne}
           </button>
           <button
             type="button"
-            className="h-[40px] px-[16px] rounded-control border border-border text-foreground-muted text-[13px]"
+            className="h-[40px] px-[16px] rounded-control border border-border text-foreground-muted text-[13px] transition-all duration-300"
           >
             {marketsCopy.chainFilter.allChains}
           </button>
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex-grow">
         <Table columns={tableColumns}>
           {vaults.map((vault) => (
             <VaultRow key={vault.id} vault={vault} />
