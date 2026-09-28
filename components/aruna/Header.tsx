@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
 import { HideOnScrollHeader } from "./HideOnScrollHeader";
+import { WalletButton } from "./WalletButton";
 import { brandCopy, landingCopy } from "@/lib/content/copy";
 import { primaryNavLinks } from "@/lib/nav";
 import type { HeaderProps } from "@/types/aruna";
@@ -9,7 +11,6 @@ import type { HeaderProps } from "@/types/aruna";
 export function Header({
   variant = "app",
   navLinks = primaryNavLinks,
-  walletAddress,
   secondaryAction,
   extra,
 }: HeaderProps) {
@@ -27,11 +28,9 @@ export function Header({
             </span>
           </div>
           <div className="flex items-center gap-[10px] sm:gap-[12px]">
-            <Button variant="ghost" size="sm" href="/markets" newTab>
-              {landingCopy.nav.openApp}
-            </Button>
-            <Button variant="primary" size="sm" href="/protect">
-              {landingCopy.nav.connectWallet}
+            <Button variant="primary" size="sm" href="/markets" newTab>
+              {landingCopy.nav.useAruna}
+              <ArrowUpRightIcon aria-hidden className="w-[16px] h-[16px]" />
             </Button>
           </div>
         </div>
@@ -70,11 +69,7 @@ export function Header({
               {secondaryAction.label}
             </Button>
           ) : null}
-          {walletAddress ? (
-            <span className="inline-flex items-center h-[36px] px-[12px] rounded-control border border-border font-mono text-[12px] text-foreground-secondary">
-              {walletAddress}
-            </span>
-          ) : null}
+          <WalletButton />
         </div>
       </div>
     </header>

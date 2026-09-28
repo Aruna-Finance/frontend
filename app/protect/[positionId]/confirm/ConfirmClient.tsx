@@ -21,7 +21,6 @@ interface ConfirmClientProps {
   cohortEndsAt: string;
   quote: QuoteResult;
   coveredAmountUsdc: number;
-  walletAddress?: string;
 }
 
 export function ConfirmClient({
@@ -30,7 +29,6 @@ export function ConfirmClient({
   cohortEndsAt,
   quote,
   coveredAmountUsdc,
-  walletAddress,
 }: ConfirmClientProps) {
   const [acknowledged, setAcknowledged] = useState(true);
   const premium = formatUsdcDecimal(quote.premiumUsdc);
@@ -40,7 +38,7 @@ export function ConfirmClient({
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={walletAddress} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator

@@ -8,11 +8,9 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatSettlementDate, formatUsdcDecimal } from "@/lib/format";
 import { usePositions } from "@/hooks/usePosition";
 import { useVault } from "@/hooks/useVaults";
-import { useWallet } from "@/hooks/useWallet";
 import { mockPositionCovers } from "@/lib/mock/positions";
 
 export default function MyCoversPage() {
-  const wallet = useWallet();
   const positions = usePositions().data ?? [];
   const vault = useVault("weth-usdc-005").data;
 
@@ -23,7 +21,7 @@ export default function MyCoversPage() {
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <h1 className="font-display text-[32px] lg:text-[36px] font-normal">{lpMyCoversCopy.heading}</h1>

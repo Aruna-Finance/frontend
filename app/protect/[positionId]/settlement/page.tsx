@@ -8,7 +8,6 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatSettlementDate, formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { usePosition } from "@/hooks/usePosition";
 import { useCohort } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { lpSettlementCopy } from "@/lib/content/copy";
 import { getSettledCoverForPosition } from "@/lib/mock/positions";
 
@@ -30,8 +29,6 @@ export default async function LPSettlementPage(props: PageProps<"/protect/[posit
   const position = usePosition(positionId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const cohort = useCohort(cover.vaultId).data;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
 
   if (!position || !cohort) {
     notFound();
@@ -42,7 +39,7 @@ export default async function LPSettlementPage(props: PageProps<"/protect/[posit
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px]">
         <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{lpSettlementCopy.heading(cohort.id)}</h1>

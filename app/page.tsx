@@ -65,10 +65,10 @@ export default function LandingPage() {
             {landingCopy.hero.body}
           </p>
           <div className="flex gap-[14px] pt-[8px]">
-            <Button href="/protect">
+            <Button href="/protect" newTab>
               {landingCopy.hero.ctaProtect}
             </Button>
-            <Button variant="ghost" href="/underwrite">
+            <Button variant="ghost" href="/underwrite" newTab>
               {landingCopy.hero.ctaUnderwrite}
             </Button>
           </div>
@@ -234,6 +234,8 @@ export default function LandingPage() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-foreground-secondary hover:text-foreground transition-colors"
                 >
                   {link.label}
@@ -254,12 +256,16 @@ export default function LandingPage() {
             <div className="flex gap-[16px]">
               <Link
                 href="/proof"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
               >
                 {landingCopy.footer.proofLink}
               </Link>
               <Link
                 href="/states"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[13px] text-foreground-muted hover:text-foreground transition-colors"
               >
                 {landingCopy.footer.statesReferenceLink}

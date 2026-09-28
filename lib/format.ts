@@ -55,3 +55,9 @@ export function formatRangeValue(value: number): string {
   const fractionDigits = value < 10 ? 4 : 2;
   return value.toLocaleString("en-US", { minimumFractionDigits: fractionDigits });
 }
+
+// 0x7a4c1b...9f21 -> 0x7a4c…9f21
+export function shortenAddress(address: string, head = 6, tail = 4): string {
+  if (address.length <= head + tail + 1) return address;
+  return `${address.slice(0, head)}…${address.slice(-tail)}`;
+}

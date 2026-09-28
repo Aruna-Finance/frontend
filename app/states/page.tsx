@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StateCard } from "@/components/aruna/StateCard";
+import { ToastPreview } from "@/components/aruna/ToastPreview";
 import { statesCopy } from "@/lib/content/copy";
 
 export default function StatesPage() {
@@ -106,6 +107,10 @@ export default function StatesPage() {
           actions={[{ label: cards.wrongNetwork.actions[0], variant: "primary" }]}
           footnote={cards.wrongNetwork.footnote}
         />
+      </div>
+
+      <div className="pt-[18px]">
+        <ToastPreview />
       </div>
 
       <div className="mt-auto pt-[20px] border-t border-border flex flex-col sm:flex-row justify-between gap-[8px] text-[13px] text-foreground-muted">

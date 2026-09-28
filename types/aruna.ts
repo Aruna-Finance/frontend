@@ -157,7 +157,6 @@ export interface HeaderSecondaryAction {
 export interface HeaderProps {
   variant?: "landing" | "app";
   navLinks?: HeaderNavLink[];
-  walletAddress?: string;
   secondaryAction?: HeaderSecondaryAction;
   extra?: ReactNode;
 }
@@ -200,4 +199,31 @@ export interface BarHistoryBar {
 export interface BarHistoryChartProps {
   bars: BarHistoryBar[];
   ariaLabel: string;
+}
+
+export type ToastTone = "success" | "error";
+
+export interface ToastAction {
+  label: string;
+  href?: string;
+  onClick?: () => void;
+}
+
+export interface ToastOptions {
+  // Passing the id of a toast that is still on screen replaces it in place
+  // (e.g. "Transaction submitted" -> "Deposit confirmed") instead of stacking.
+  id?: string;
+  description?: ReactNode;
+  action?: ToastAction;
+  // Milliseconds before auto-dismiss. Infinity keeps it until closed.
+  duration?: number;
+}
+
+export interface ToastRecord {
+  id: string;
+  tone: ToastTone;
+  title: string;
+  description?: ReactNode;
+  action?: ToastAction;
+  duration: number;
 }

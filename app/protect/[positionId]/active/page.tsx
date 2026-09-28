@@ -9,7 +9,6 @@ import { DetailRow } from "@/components/aruna/DetailRow";
 import { usePosition } from "@/hooks/usePosition";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { lpActiveCopy } from "@/lib/content/copy";
@@ -46,8 +45,6 @@ export default async function LPActivePage(props: PageProps<"/protect/[positionI
   const vault = useVault(cover.vaultId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const cohort = useCohort(cover.vaultId).data;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
 
   if (!position || !vault || !cohort) {
     notFound();
@@ -59,7 +56,7 @@ export default async function LPActivePage(props: PageProps<"/protect/[positionI
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/protect")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>

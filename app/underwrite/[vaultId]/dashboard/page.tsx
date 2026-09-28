@@ -9,7 +9,6 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 import { getUnderwriterPositionForVault, mockVaultScenarioTable, mockVaultStrikeBreakdown } from "@/lib/mock/vaults";
 import type { BarHistoryBar } from "@/types/aruna";
@@ -42,8 +41,6 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
   const vault = useVault(vaultId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const cohort = useCohort(vaultId, position.cohortId).data;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
 
   if (!vault || !cohort) {
     notFound();
@@ -71,7 +68,7 @@ export default async function UWDashboardPage(props: PageProps<"/underwrite/[vau
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
+      <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>

@@ -8,7 +8,6 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDate, formatUsdc } from "@/lib/format";
 import { useVaults, useVaultRealizedVol } from "@/hooks/useVaults";
 import { useCohort, useCohorts } from "@/hooks/useCohort";
-import { useWallet } from "@/hooks/useWallet";
 import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 import type { TableColumn } from "@/types/aruna";
 import type { Vault } from "@/types/domain";
@@ -103,14 +102,12 @@ export default function MarketsPage() {
   const featuredCohort = useCohort(FEATURED_VAULT_ID).data;
   const nextCohort = useCohorts(FEATURED_VAULT_ID)
     .data?.find((cohort) => cohort.status === "FUNDING");
-  const wallet = useWallet();
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header
         variant="app"
         navLinks={withActiveNavLink("/markets")}
-        walletAddress={wallet.address}
         extra={
           featuredCohort ? (
             <span className="inline-flex items-center h-[36px] px-[12px] rounded-control border border-border font-mono text-[12px] text-foreground-secondary">

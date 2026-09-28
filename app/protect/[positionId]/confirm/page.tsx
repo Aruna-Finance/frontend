@@ -3,7 +3,6 @@ import { usePosition } from "@/hooks/usePosition";
 import { useVault } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { useQuote } from "@/hooks/useQuote";
-import { useWallet } from "@/hooks/useWallet";
 import { mockQuoteDefaults } from "@/lib/mock/positions";
 import { ConfirmClient } from "./ConfirmClient";
 
@@ -29,8 +28,6 @@ export default async function LPConfirmPage(props: PageProps<"/protect/[position
   const cohort = useCohort(vaultId).data;
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const quote = useQuote({ vaultId, strikePercent, coveredAmountUsdc: mockQuoteDefaults.coveredAmountUsdc }).data;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wallet = useWallet();
 
   if (!vault || !cohort || !quote) {
     notFound();
@@ -43,7 +40,6 @@ export default async function LPConfirmPage(props: PageProps<"/protect/[position
       cohortEndsAt={cohort.endsAt}
       quote={quote}
       coveredAmountUsdc={mockQuoteDefaults.coveredAmountUsdc}
-      walletAddress={wallet.address}
     />
   );
 }
