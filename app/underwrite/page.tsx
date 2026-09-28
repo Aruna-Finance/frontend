@@ -24,7 +24,7 @@ export default function UnderwritePage() {
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[30px] flex flex-col md:flex-row justify-between md:items-end gap-[12px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[30px] flex flex-col md:flex-row justify-between md:items-end gap-[12px]">
         <div>
           <h1 className="font-display text-[36px] font-normal">{uwVaultsCopy.heading}</h1>
           <p className="text-[15px] text-foreground-secondary pt-[8px] max-w-[700px]">{uwVaultsCopy.subtitle}</p>
@@ -34,7 +34,7 @@ export default function UnderwritePage() {
         </Button>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col gap-[16px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col gap-[16px] flex-grow">
         {vaults.map((vault) => {
           const magnitudes = vault.cycleHistory.map((cycle) => cycle.netResultUsdc ?? cycle.netResultPercent ?? 0);
           const trueMaxAbs = Math.max(...magnitudes.map((value) => Math.abs(value)));

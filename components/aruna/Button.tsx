@@ -19,6 +19,7 @@ export function Button({
   variant = "primary",
   size = "default",
   href,
+  newTab = false,
   disabled = false,
   type = "button",
   onClick,
@@ -26,7 +27,7 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const classes = [
-    "inline-flex items-center justify-center rounded-button transition-colors",
+    "inline-flex items-center justify-center rounded-button transition-all duration-300",
     sizeClasses[size],
     disabled ? disabledClasses : variantClasses[variant],
     className,
@@ -45,7 +46,12 @@ export function Button({
 
   if (href && !disabled) {
     return (
-      <Link href={href} className={classes}>
+      <Link
+        href={href}
+        className={classes}
+        target={newTab ? "_blank" : undefined}
+        rel={newTab ? "noopener noreferrer" : undefined}
+      >
         {content}
       </Link>
     );

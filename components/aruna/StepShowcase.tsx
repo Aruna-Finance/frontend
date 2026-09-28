@@ -18,20 +18,16 @@ const toneBorderClasses = {
 // Soft radial glow behind the floating screenshot, tinted per side —
 // color-mix keeps it a translucent tint over the canvas rather than a flat
 // opaque fill, echoing the glowing product-panel look from the reference.
-const glowStyle = {
-  accent: {
+function glowStyle(tone: "accent" | "positive", originX: number) {
+  return {
     background:
-      "radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--color-accent) 40%, transparent) 0%, transparent 62%), var(--color-canvas)",
-  },
-  positive: {
-    background:
-      "radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--color-positive) 40%, transparent) 0%, transparent 62%), var(--color-canvas)",
-  },
-};
+      `radial-gradient(120% 120% at ${originX}% 20%, color-mix(in srgb, var(--color-${tone}) 40%, transparent) 0%, transparent 62%), var(--color-canvas)`,
+  };
+}
 
 const AUTO_ADVANCE_MS = 7000;
 
-export function StepShowcase({ eyebrow, headline, steps, images, footnote, tone, startIndex = 0 }: StepShowcaseProps) {
+export function StepShowcase({ eyebrow, headline, steps, images, footnote, tone, startIndex = 0, reverse = false }: StepShowcaseProps) {
   const [activeIndex, setActiveIndex] = useState(startIndex);
   const active = images[activeIndex];
 
@@ -45,8 +41,8 @@ export function StepShowcase({ eyebrow, headline, steps, images, footnote, tone,
   }, [activeIndex, steps.length]);
 
   return (
-    <div className="rounded-card border border-border bg-surface overflow-hidden flex flex-col">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_1.3fr]">
+    <div className="rounded-card border border-border overflow-hidden flex flex-col">
+      <div className={`grid grid-cols-1 ${reverse ? "md:grid-cols-[1.3fr_1fr]" : "md:grid-cols-[1fr_1.3fr]"}`}>
         <div className="flex flex-col gap-[18px] p-[28px]">
           <span className={`font-mono text-[11px] tracking-[0.1em] ${toneTextClasses[tone]}`}>{eyebrow}</span>
           <div className="font-display text-[27px] font-normal">{headline}</div>
@@ -58,7 +54,7 @@ export function StepShowcase({ eyebrow, headline, steps, images, footnote, tone,
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 aria-current={index === activeIndex}
-                className={`font-mono text-[26px] tabular-nums pb-[10px] border-b-2 transition-colors ${
+                className={`font-mono text-[26px] tabular-nums pb-[10px] border-b-2 transition-all duration-300 ${
                   index === activeIndex
                     ? `${toneTextClasses[tone]} ${toneBorderClasses[tone]}`
                     : "text-foreground-muted border-transparent hover:text-foreground"
@@ -85,7 +81,10 @@ export function StepShowcase({ eyebrow, headline, steps, images, footnote, tone,
           </div>
         </div>
 
-        <div className="relative min-h-[240px] overflow-hidden" style={glowStyle[tone]}>
+        <div
+          className={`relative min-h-[240px] overflow-hidden ${reverse ? "md:order-first" : ""}`}
+          style={glowStyle(tone, reverse ? 70 : 30)}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}

@@ -7,6 +7,7 @@ export default function StatesPage() {
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground px-[24px] lg:px-[32px] py-[36px]">
+      <div className="flex flex-col flex-1 w-full max-w-[1376px] mx-auto">
       <div className="pb-[24px]">
         <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{statesCopy.pageHeading}</h1>
         <p className="text-[15px] text-foreground-secondary pt-[8px]">{statesCopy.pageSubtitle}</p>
@@ -112,6 +113,7 @@ export default function StatesPage() {
         <Link href="/" className="text-foreground-muted">
           {statesCopy.backLink}
         </Link>
+      </div>
       </div>
     </div>
   );

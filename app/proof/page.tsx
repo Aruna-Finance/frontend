@@ -30,7 +30,7 @@ export default function ProofPage() {
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/proof")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[12px]">
         <div>
           <h1 className="font-display text-[30px] lg:text-[34px] font-normal">
             {proofCopy.heading(mockProofSummary.cohortId)}
@@ -38,16 +38,16 @@ export default function ProofPage() {
           <p className="text-[15px] text-foreground-secondary pt-[8px] max-w-[760px]">{proofCopy.subtitle}</p>
         </div>
         <div className="flex gap-[10px]">
-          <button type="button" className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px]">
+          <button type="button" className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300">
             {proofCopy.downloadCsvCta}
           </button>
-          <button type="button" className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px]">
+          <button type="button" className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300">
             {proofCopy.viewExplorerCta}
           </button>
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <Card className="flex-grow lg:min-w-0 flex flex-col" padding="sm">
           <div className="flex justify-between items-baseline flex-wrap gap-[8px] px-[4px] pt-[2px]">
             <span className="text-[16px] font-semibold">{proofCopy.sampleTableTitle}</span>

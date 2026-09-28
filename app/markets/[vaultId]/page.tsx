@@ -41,7 +41,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/markets")} walletAddress={wallet.address} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[16px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px] flex flex-col md:flex-row justify-between md:items-start gap-[16px]">
         <div>
           <Link href="/markets" className="text-[13px] text-foreground-muted">
             {marketDetailCopy.backLink}
@@ -65,7 +65,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
       </div>
 
       {cohort ? (
-        <div className="px-[24px] lg:px-[32px] pt-[24px]">
+        <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[24px]">
           <Card>
             <div className="flex flex-col sm:flex-row justify-between gap-[8px]">
               <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
@@ -100,7 +100,7 @@ export default async function MarketDetailPage(props: PageProps<"/markets/[vault
         </div>
       ) : null}
 
-      <div className="px-[24px] lg:px-[32px] py-[20px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[20px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[20px]">
           {vault.premiumIndication && cohort?.realizedVolPercent !== null && cohort?.realizedVolPercent !== undefined ? (
             <Card className="flex flex-col flex-grow">

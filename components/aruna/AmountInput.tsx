@@ -21,7 +21,7 @@ export function AmountInput({ id, label, value, unit, quickActions = [], onChang
             type="button"
             onClick={action.onClick}
             className={[
-              "h-[44px] px-[14px] rounded-control text-[13px]",
+              "h-[44px] px-[14px] rounded-control text-[13px] transition-all duration-300",
               action.active
                 ? "border border-accent bg-accent-soft text-foreground"
                 : "border border-border text-foreground",

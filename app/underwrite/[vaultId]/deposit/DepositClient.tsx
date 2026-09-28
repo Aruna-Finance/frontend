@@ -57,7 +57,7 @@ export function DepositClient({
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/underwrite")} walletAddress={walletAddress} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[28px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[28px]">
         <Link href="/underwrite" className="text-[13px] text-foreground-muted">
           {uwDepositCopy.backLink}
         </Link>
@@ -69,7 +69,7 @@ export function DepositClient({
         </div>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[18px]">
           <Card>
             <label htmlFor="amount" className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
@@ -87,14 +87,14 @@ export function DepositClient({
               <button
                 type="button"
                 onClick={() => setAmountInput(String(Math.round(walletBalanceUsdc / 2)))}
-                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px]"
+                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300"
               >
                 {uwDepositCopy.quickHalf}
               </button>
               <button
                 type="button"
                 onClick={() => setAmountInput(String(walletBalanceUsdc))}
-                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px]"
+                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300"
               >
                 {uwDepositCopy.quickMax}
               </button>

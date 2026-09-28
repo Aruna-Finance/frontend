@@ -42,7 +42,7 @@ export function ConfirmClient({
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
       <Header variant="app" navLinks={withActiveNavLink("/protect")} walletAddress={walletAddress} />
 
-      <div className="px-[24px] lg:px-[32px] pt-[26px]">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[26px]">
         <StepIndicator
           steps={[stepIndicatorCopy.position, stepIndicatorCopy.cover, stepIndicatorCopy.confirm]}
           currentIndex={2}
@@ -50,7 +50,7 @@ export function ConfirmClient({
         <h1 className="font-display text-[32px] lg:text-[36px] font-normal pt-[14px]">{lpConfirmCopy.heading}</h1>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col lg:flex-row gap-[20px] flex-grow">
         <div className="flex-grow lg:min-w-0 flex flex-col gap-[18px]">
           <Card>
             <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
