@@ -11,6 +11,12 @@ export const mockPositions: Position[] = [
     feesEarnedUsdc: 214.6,
     valueUsdc: 40_183,
     hasVaultForPool: true,
+    token0Symbol: null,
+    token1Symbol: null,
+    token0Amount: null,
+    token1Amount: null,
+    token0FeesOwed: null,
+    token1FeesOwed: null,
   },
   {
     tokenId: "479204",
@@ -22,6 +28,12 @@ export const mockPositions: Position[] = [
     feesEarnedUsdc: 41.2,
     valueUsdc: 18_640,
     hasVaultForPool: true,
+    token0Symbol: null,
+    token1Symbol: null,
+    token0Amount: null,
+    token1Amount: null,
+    token0FeesOwed: null,
+    token1FeesOwed: null,
   },
   {
     tokenId: "491877",
@@ -33,6 +45,12 @@ export const mockPositions: Position[] = [
     feesEarnedUsdc: 88.05,
     valueUsdc: 9_320,
     hasVaultForPool: false,
+    token0Symbol: null,
+    token1Symbol: null,
+    token0Amount: null,
+    token1Amount: null,
+    token0FeesOwed: null,
+    token1FeesOwed: null,
   },
   {
     // Added so the "active, still running" cover (#7743 below) has a
@@ -46,6 +64,12 @@ export const mockPositions: Position[] = [
     feesEarnedUsdc: 96.4,
     valueUsdc: 22_950,
     hasVaultForPool: true,
+    token0Symbol: null,
+    token1Symbol: null,
+    token0Amount: null,
+    token1Amount: null,
+    token0FeesOwed: null,
+    token1FeesOwed: null,
   },
 ];
 

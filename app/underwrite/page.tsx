@@ -1,7 +1,10 @@
+"use client";
+
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { Badge } from "@/components/aruna/Badge";
+import { PairIcon } from "@/components/aruna/PairIcon";
 import { StatCard } from "@/components/aruna/StatCard";
 import { BarHistoryChart } from "@/components/aruna/charts/BarHistoryChart";
 import { uwVaultsCopy } from "@/lib/content/copy";
@@ -11,11 +14,15 @@ import { useVaults } from "@/hooks/useVaults";
 import { useCohorts } from "@/hooks/useCohort";
 import type { BarHistoryBar } from "@/types/aruna";
 
-const FEATURED_VAULT_ID = "weth-usdc-005";
-
 export default function UnderwritePage() {
-  const vaults = (useVaults().data ?? []).filter((vault) => vault.cycleHistory.length > 0);
-  const nextCohort = useCohorts(FEATURED_VAULT_ID).data?.find((item) => item.status === "FUNDING");
+  const { data: allVaults, isLoading, isError } = useVaults();
+  // Vaults with no settled cycle yet have nothing to show here (no track
+  // record) — this vault list is about "here's how underwriting has gone so
+  // far", not a full market list (that's /markets). A brand new real vault
+  // is genuinely empty here until its first cohort settles.
+  const vaults = (allVaults ?? []).filter((vault) => vault.cycleHistory.length > 0);
+  const featuredVaultId = allVaults?.[0]?.id;
+  const nextCohort = useCohorts(featuredVaultId ?? "").data?.find((item) => item.status === "FUNDING");
   const nextCohortDate = nextCohort ? formatCohortDateInline(nextCohort.startsAt) : "";
 
   return (
@@ -33,6 +40,14 @@ export default function UnderwritePage() {
       </div>
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex flex-col gap-[16px] flex-grow">
+        {isError ? <p className="text-[14px] text-negative">Could not load vaults from the indexer.</p> : null}
+        {isLoading ? <p className="text-[14px] text-foreground-muted">Loading vaults…</p> : null}
+        {!isLoading && !isError && vaults.length === 0 ? (
+          <p className="text-[14px] text-foreground-muted">
+            No vault has completed a cycle yet — check back once the current cohort settles.
+          </p>
+        ) : null}
+
         {vaults.map((vault) => {
           const magnitudes = vault.cycleHistory.map((cycle) => cycle.netResultUsdc ?? cycle.netResultPercent ?? 0);
           const trueMaxAbs = Math.max(...magnitudes.map((value) => Math.abs(value)));
@@ -42,16 +57,14 @@ export default function UnderwritePage() {
             height: Math.abs(magnitudes[index]) / maxAbs,
             tone: magnitudes[index] >= 0 ? "positive" : "negative",
           }));
-          const isFeatured = vault.id === FEATURED_VAULT_ID;
-          const meta =
-            vault.id === "wsteth-weth-001"
-              ? `${vault.underwriterCount ?? 0} underwriters · ${uwVaultsCopy.correlatedPairMeta}`
-              : uwVaultsCopy.vaultMeta(vault.underwriterCount ?? 0, nextCohortDate);
+          const isFeatured = vault.id === featuredVaultId;
+          const meta = uwVaultsCopy.vaultMeta(vault.underwriterCount ?? 0, nextCohortDate);
 
           return (
             <Card key={vault.id} className="flex flex-col lg:flex-row gap-[24px] lg:items-center">
               <div className="flex-grow lg:min-w-0">
                 <div className="flex items-center gap-[12px] flex-wrap">
+                  {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
                   <span className="text-[19px] font-semibold">
                     {vault.poolLabel} {vault.poolFeeTier}
                   </span>

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/aruna/Header";
@@ -12,12 +14,10 @@ import { LineChart } from "@/components/aruna/charts/LineChart";
 import { brandCopy, landingCopy, lpQuoteCopy } from "@/lib/content/copy";
 import { primaryNavLinks } from "@/lib/nav";
 import { formatUsdc } from "@/lib/format";
-import { useVault } from "@/hooks/useVaults";
+import { formatDuration, secondsUntil } from "@/lib/contracts/units";
+import { useVault, useVaults } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { mockActiveCoverDetail } from "@/lib/mock/positions";
-import { mockCohortTimeRemaining } from "@/lib/mock/cohorts";
-
-const FEATURED_VAULT_ID = "weth-usdc-005";
 
 // Real screenshots of the actual screen each step describes, in order —
 // captured from the app itself rather than generic icons. Each keeps its
@@ -38,15 +38,19 @@ const uwStepImages = [
 ];
 
 export default function LandingPage() {
-  const vault = useVault(FEATURED_VAULT_ID).data;
-  const cohort = useCohort(FEATURED_VAULT_ID).data;
+  // Only one real vault exists today; the hero card just shows whichever
+  // comes back first rather than a hardcoded id that no longer matches a
+  // real vault address.
+  const featuredVaultId = useVaults().data?.[0]?.id;
+  const vault = useVault(featuredVaultId ?? "").data;
+  const cohort = useCohort(featuredVaultId ?? "").data;
 
   if (!vault || !cohort) {
     return null;
   }
 
   const poolLabelCompact = `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`;
-  const timeLeft = mockCohortTimeRemaining[cohort.id] ?? "";
+  const timeLeft = formatDuration(secondsUntil(cohort.endsAt));
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
@@ -79,7 +83,9 @@ export default function LandingPage() {
             {landingCopy.hero.liveCardLabel(poolLabelCompact)}
           </div>
           <div className="flex items-baseline gap-[12px]">
-            <span className="font-mono text-[46px] text-accent">{cohort.realizedVolPercent}%</span>
+            <span className="font-mono text-[46px] text-accent">
+              {cohort.realizedVolPercent !== null ? `${cohort.realizedVolPercent}%` : "—"}
+            </span>
             <span className="text-[14px] text-foreground-muted">
               {landingCopy.hero.realizedVolCaption}
             </span>

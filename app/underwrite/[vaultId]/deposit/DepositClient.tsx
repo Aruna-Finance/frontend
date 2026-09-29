@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { formatUnits, type Address } from "viem";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
@@ -11,45 +13,87 @@ import { AcknowledgeCheckbox } from "@/components/aruna/AcknowledgeCheckbox";
 import { uwDepositCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDateInline, formatUsdc, formatUsdcDecimal } from "@/lib/format";
-import type { Vault } from "@/types/domain";
-
-interface DepositClientProps {
-  vault: Vault;
-  activeCohortId: number;
-  fundingCohortId: number;
-  fundingStartsAt: string;
-  fundingEndsAt: string;
-  existingCommittedCapitalUsdc: number;
-  walletBalanceUsdc: number;
-  minimumDepositUsdc: number;
-  worstCaseUsdc: number;
-}
+import { arunaAddresses } from "@/lib/contracts/addresses";
+import { USDC_DECIMALS, parseTokenAmount } from "@/lib/contracts/units";
+import { useVault } from "@/hooks/useVaults";
+import { useCohort, useCohortFinancials } from "@/hooks/useCohort";
+import { useWallet } from "@/hooks/useWallet";
+import { useWalletModal } from "@/hooks/useWalletModal";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useAllowance } from "@/hooks/useAllowance";
+import { useApprove } from "@/hooks/useApprove";
+import { useDeposit } from "@/hooks/useDeposit";
 
 const BASELINE_DEPOSIT = 200_000;
 
-export function DepositClient({
-  vault,
-  activeCohortId,
-  fundingCohortId,
-  fundingStartsAt,
-  fundingEndsAt,
-  existingCommittedCapitalUsdc,
-  walletBalanceUsdc,
-  minimumDepositUsdc,
-  worstCaseUsdc,
-}: DepositClientProps) {
+export function DepositClient({ vaultId }: { vaultId: string }) {
+  const { data: vault, isLoading: vaultLoading } = useVault(vaultId);
+  const activeCohortId = vault?.currentCohortId ?? 0;
+  const fundingCohortId = activeCohortId + 1;
+  const fundingCohort = useCohort(vaultId, fundingCohortId).data;
+  const { data: fundingFinancials } = useCohortFinancials(vaultId, fundingCohortId);
+
+  const { address } = useWallet();
+  const walletModal = useWalletModal();
+  const vaultAddress = vault?.id as Address | undefined;
+  const balanceQuery = useTokenBalance(arunaAddresses.settlementToken, address);
+  const allowanceQuery = useAllowance(arunaAddresses.settlementToken, address, vaultAddress ?? arunaAddresses.coverVault);
+  const { approve, isPending: approving } = useApprove();
+  const { deposit, isPending: depositing } = useDeposit();
+
   const [amountInput, setAmountInput] = useState(String(BASELINE_DEPOSIT));
   const [acknowledged, setAcknowledged] = useState(false);
 
+  if (vaultLoading) {
+    return (
+      <div className="flex flex-col flex-1 bg-canvas text-foreground">
+        <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
+        <p className="px-[24px] lg:px-[32px] pt-[32px] text-[14px] text-foreground-muted">Loading vault…</p>
+      </div>
+    );
+  }
+  if (!vault || !vault.hasVault || !fundingCohort) {
+    notFound();
+  }
+
   const amount = Number(amountInput) || 0;
+  const walletBalanceUsdc = balanceQuery.data !== undefined ? Number(formatUnits(balanceQuery.data, USDC_DECIMALS)) : 0;
+  const existingCommittedCapitalUsdc = fundingFinancials?.totalCapitalUsdc ?? 0;
   const scale = amount / BASELINE_DEPOSIT;
   const vaultAfterDeposit = existingCommittedCapitalUsdc + amount;
   const sharePercent = vaultAfterDeposit > 0 ? (amount / vaultAfterDeposit) * 100 : 0;
   const estPremiums = (vault.premiumsCurrentCycleUsdc ?? 0) * (sharePercent / 100);
-  const worstCase = worstCaseUsdc * scale;
+  // The contract's own ceiling — the most a deposit could ever be reserved
+  // against, not a projection from any one scenario.
+  const worstCase = -(amount * vault.maxUtilizationBps) / 10_000;
 
   const poolLabel = `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`;
-  const lockedUntil = formatCohortDateInline(fundingEndsAt);
+  const lockedUntil = formatCohortDateInline(fundingCohort.endsAt);
+
+  const amountBaseUnits = parseTokenAmount(amountInput, 6);
+  const hasEnoughBalance = amountBaseUnits !== undefined && balanceQuery.data !== undefined && amountBaseUnits <= balanceQuery.data;
+  const needsApproval =
+    amountBaseUnits !== undefined && allowanceQuery.data !== undefined && allowanceQuery.data < amountBaseUnits;
+  const busy = approving || depositing;
+
+  async function handlePrimaryAction() {
+    if (!address) {
+      walletModal.open();
+      return;
+    }
+    if (!vaultAddress || amountBaseUnits === undefined) return;
+    if (needsApproval) {
+      await approve({ token: arunaAddresses.settlementToken, spender: vaultAddress, amount: amountBaseUnits, symbol: "USDC" });
+      return;
+    }
+    await deposit({ vault: vaultAddress, cohortId: fundingCohortId, amount: amountBaseUnits });
+  }
+
+  const primaryLabel = !address
+    ? uwDepositCopy.connectWalletCta
+    : needsApproval
+      ? uwDepositCopy.approveCta
+      : uwDepositCopy.positionCard.cta;
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
@@ -63,7 +107,7 @@ export function DepositClient({
           {uwDepositCopy.heading(poolLabel)}
         </h1>
         <div className="font-mono text-[13px] text-foreground-muted pt-[6px]">
-          {uwDepositCopy.cohortRange(fundingCohortId, formatCohortDateInline(fundingStartsAt), lockedUntil)}
+          {uwDepositCopy.cohortRange(fundingCohortId, formatCohortDateInline(fundingCohort.startsAt), lockedUntil)}
         </div>
       </div>
 
@@ -98,9 +142,11 @@ export function DepositClient({
               </button>
             </div>
             <div className="flex justify-between flex-wrap gap-[8px] pt-[10px] font-mono text-[12px] text-foreground-muted">
-              <span>{uwDepositCopy.walletBalance(formatUsdcDecimal(walletBalanceUsdc))}</span>
-              <span>{uwDepositCopy.minimumDeposit(formatUsdcDecimal(minimumDepositUsdc))}</span>
+              <span>{uwDepositCopy.walletBalance(address ? formatUsdcDecimal(walletBalanceUsdc) : "—")}</span>
             </div>
+            {address && amount > 0 && !hasEnoughBalance ? (
+              <div className="text-[13px] text-negative pt-[10px]">{uwDepositCopy.insufficientBalance}</div>
+            ) : null}
           </Card>
 
           <Card>
@@ -118,26 +164,28 @@ export function DepositClient({
             </div>
           </Card>
 
-          <Card className="flex flex-col flex-grow">
-            <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-              {uwDepositCopy.historyLabel(formatUsdc(amount))}
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[12px] pt-[16px]">
-              {vault.cycleHistory.map((cycle) => {
-                const value = (cycle.netResultUsdc ?? 0) * scale;
-                return (
-                  <div key={cycle.label} className="bg-canvas border border-border rounded-control p-[14px]">
-                    <div className="font-mono text-[12px] text-foreground-muted">{cycle.label}</div>
-                    <div className={`font-mono text-[16px] pt-[6px] ${value >= 0 ? "text-positive" : "text-negative"}`}>
-                      {value >= 0 ? "+" : ""}
-                      {formatUsdc(Math.round(value))}
+          {vault.cycleHistory.length > 0 ? (
+            <Card className="flex flex-col flex-grow">
+              <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
+                {uwDepositCopy.historyLabel(formatUsdc(amount))}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[12px] pt-[16px]">
+                {vault.cycleHistory.map((cycle) => {
+                  const value = (cycle.netResultUsdc ?? 0) * scale;
+                  return (
+                    <div key={cycle.label} className="bg-canvas border border-border rounded-control p-[14px]">
+                      <div className="font-mono text-[12px] text-foreground-muted">{cycle.label}</div>
+                      <div className={`font-mono text-[16px] pt-[6px] ${value >= 0 ? "text-positive" : "text-negative"}`}>
+                        {value >= 0 ? "+" : ""}
+                        {formatUsdc(Math.round(value))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="text-[13px] text-foreground-muted pt-[14px]">{uwDepositCopy.historyFootnote}</div>
-          </Card>
+                  );
+                })}
+              </div>
+              <div className="text-[13px] text-foreground-muted pt-[14px]">{uwDepositCopy.historyFootnote}</div>
+            </Card>
+          ) : null}
         </div>
 
         <div className="w-full lg:w-[400px] lg:shrink-0 flex flex-col gap-[18px]">
@@ -160,8 +208,12 @@ export function DepositClient({
                 divider={false}
               />
             </div>
-            <Button href={`/underwrite/${vault.id}/dashboard`} disabled={!acknowledged}>
-              {uwDepositCopy.positionCard.cta}
+            <Button
+              type="button"
+              onClick={handlePrimaryAction}
+              disabled={!acknowledged || busy || (Boolean(address) && (amount <= 0 || !hasEnoughBalance))}
+            >
+              {busy ? uwDepositCopy.processingCta : primaryLabel}
             </Button>
           </Card>
 

@@ -22,6 +22,16 @@ export function varianceWadToVolPercent(variance: bigint): number {
   return Math.sqrt(Number(variance) / Number(WAD)) * 100;
 }
 
+// A raw variance/sumSq figure (WAD), for a settlement breakdown — these can
+// be anywhere from ~1e-7 (a short test policy) to ~0.2 (a full 7-day cohort),
+// so a fixed decimal count would print "0.0000" for the small end. Uses
+// scientific notation below 0.01, plain decimals above it.
+export function formatVarianceWad(value: bigint): string {
+  const asNumber = Number(value) / Number(WAD);
+  if (asNumber === 0) return "0";
+  return Math.abs(asNumber) < 0.01 ? asNumber.toExponential(4) : asNumber.toFixed(4);
+}
+
 // Returns undefined for input the contract would not accept (negative, not a
 // number, or larger than a uint64 can hold), so callers can disable submit.
 export function volPercentToStrikeAnnualized(volPercent: number): bigint | undefined {
@@ -70,4 +80,16 @@ export function formatDuration(totalSeconds: number): string {
   if (minutes && !days) parts.push(`${minutes}m`);
   if (parts.length === 0) return `${seconds % 60}s`;
   return parts.slice(0, 2).join(" ");
+}
+
+// Whole days since an ISO timestamp, clamped to 0 (never negative, e.g. for a
+// cohort that technically starts slightly in the future by clock skew).
+export function daysElapsedSince(iso: string, now: Date = new Date()): number {
+  const elapsedMs = now.getTime() - new Date(iso).getTime();
+  return Math.max(0, Math.floor(elapsedMs / 86_400_000));
+}
+
+// Seconds between now and a future ISO timestamp, clamped to 0 once passed.
+export function secondsUntil(iso: string, now: Date = new Date()): number {
+  return Math.max(0, Math.floor((new Date(iso).getTime() - now.getTime()) / 1000));
 }
