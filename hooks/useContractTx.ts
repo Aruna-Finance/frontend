@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useConfig, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { explorerTxUrl } from "@/lib/contracts/config";
+import { getContractErrorMessage } from "@/lib/contracts/errors";
 import { toast } from "@/lib/toast";
 import type { ToastAction } from "@/types/aruna";
 
@@ -59,8 +60,10 @@ export function useContractTx() {
         return true;
       } catch (error) {
         // wagmi's receipt wait itself throws when the tx reverted, so this is
-        // also the path for on-chain reverts (message = the revert reason).
-        toast.error(error, { id: labels.id, title: labels.failed, action });
+        // also the path for on-chain reverts. Prefer the decoded CoverVault
+        // error's own copy over viem's generic revert message when we have it.
+        const description = getContractErrorMessage(error);
+        toast.error(error, { id: labels.id, title: labels.failed, action, ...(description ? { description } : {}) });
         return false;
       } finally {
         setIsPending(false);

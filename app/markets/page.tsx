@@ -1,18 +1,19 @@
+"use client";
+
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
+import { PairIcon } from "@/components/aruna/PairIcon";
 import { ProgressBar } from "@/components/aruna/ProgressBar";
 import { Table, TableRow } from "@/components/aruna/Table";
 import { marketsCopy, sharedNavCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDate, formatUsdc } from "@/lib/format";
+import { daysElapsedSince, formatDuration, secondsUntil } from "@/lib/contracts/units";
 import { useVaults, useVaultRealizedVol } from "@/hooks/useVaults";
 import { useCohort, useCohorts } from "@/hooks/useCohort";
-import { mockCohortDaysElapsed, mockCohortTimeRemaining } from "@/lib/mock/cohorts";
 import type { TableColumn } from "@/types/aruna";
 import type { Vault } from "@/types/domain";
-
-const FEATURED_VAULT_ID = "weth-usdc-005";
 
 const tableColumns: TableColumn[] = [
   { key: "pool", header: marketsCopy.tableHeaders[0], width: "minmax(220px, 1fr)" },
@@ -24,23 +25,30 @@ const tableColumns: TableColumn[] = [
   { key: "action", header: marketsCopy.tableHeaders[6], width: "120px" },
 ];
 
-function VaultRow({ vault }: { vault: Vault }) {
+// Whether this row gets the primary (vs. ghost) action button. There's only
+// ever one vault worth highlighting today, so "the first one returned" is a
+// fine stand-in for a real "featured vault" concept until there are several.
+function VaultRow({ vault, isPrimary }: { vault: Vault; isPrimary: boolean }) {
   const realizedVol = useVaultRealizedVol(vault.id).data;
+  const cohort = useCohort(vault.id).data;
   const dimmed = !vault.hasVault;
   const utilization = vault.hasVault && vault.totalCapitalUsdc > 0 ? vault.freeCapacityUsdc / vault.totalCapitalUsdc : 0;
 
   const poolCell = (
-    <div>
-      <div className="text-[15px] font-semibold">{vault.poolLabel}</div>
-      <div className="text-[12px] text-foreground-muted pt-[3px]">
-        {vault.poolFeeTier} · {vault.chainLabel}
+    <div className="flex items-center gap-[12px]">
+      {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
+      <div>
+        <div className="text-[15px] font-semibold">{vault.poolLabel}</div>
+        <div className="text-[12px] text-foreground-muted pt-[3px]">
+          {vault.poolFeeTier} · {vault.chainLabel}
+        </div>
       </div>
     </div>
   );
 
   const cohortCell = vault.currentCohortId ? (
     <span className="font-mono text-[14px]">
-      #{vault.currentCohortId} · day {mockCohortDaysElapsed[vault.currentCohortId] ?? "—"}
+      #{vault.currentCohortId} · day {cohort ? daysElapsedSince(cohort.startsAt) : "—"}
     </span>
   ) : (
     <span className="font-mono text-[14px] text-foreground-muted">—</span>
@@ -78,7 +86,7 @@ function VaultRow({ vault }: { vault: Vault }) {
   );
 
   const actionCell = vault.hasVault ? (
-    <Button href={`/markets/${vault.id}`} variant={vault.id === FEATURED_VAULT_ID ? "primary" : "ghost"} size="sm">
+    <Button href={`/markets/${vault.id}`} variant={isPrimary ? "primary" : "ghost"} size="sm">
       {marketsCopy.openCta}
     </Button>
   ) : (
@@ -98,10 +106,10 @@ function VaultRow({ vault }: { vault: Vault }) {
 }
 
 export default function MarketsPage() {
-  const vaults = useVaults().data ?? [];
-  const featuredCohort = useCohort(FEATURED_VAULT_ID).data;
-  const nextCohort = useCohorts(FEATURED_VAULT_ID)
-    .data?.find((cohort) => cohort.status === "FUNDING");
+  const { data: vaults, isLoading, isError } = useVaults();
+  const featuredVaultId = vaults?.[0]?.id;
+  const featuredCohort = useCohort(featuredVaultId ?? "").data;
+  const nextCohort = useCohorts(featuredVaultId ?? "").data?.find((cohort) => cohort.status === "FUNDING");
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
@@ -111,7 +119,7 @@ export default function MarketsPage() {
         extra={
           featuredCohort ? (
             <span className="inline-flex items-center h-[36px] px-[12px] rounded-control border border-border font-mono text-[12px] text-foreground-secondary">
-              {sharedNavCopy.cohortChip(featuredCohort.id, mockCohortTimeRemaining[featuredCohort.id] ?? "")}
+              {sharedNavCopy.cohortChip(featuredCohort.id, formatDuration(secondsUntil(featuredCohort.endsAt)))}
             </span>
           ) : null
         }
@@ -139,9 +147,14 @@ export default function MarketsPage() {
       </div>
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex-grow">
+        {isError ? (
+          <p className="text-[14px] text-negative pb-[16px]">Could not load markets from the indexer.</p>
+        ) : null}
+        {isLoading ? <p className="text-[14px] text-foreground-muted pb-[16px]">Loading markets…</p> : null}
+
         <Table columns={tableColumns}>
-          {vaults.map((vault) => (
-            <VaultRow key={vault.id} vault={vault} />
+          {(vaults ?? []).map((vault) => (
+            <VaultRow key={vault.id} vault={vault} isPrimary={vault.id === featuredVaultId} />
           ))}
         </Table>
 

@@ -151,6 +151,12 @@ export const lpSelectPositionCopy = {
   badgeOutOfRange: "OUT OF RANGE",
   positionMeta: (lower: string, upper: string, fees: string) => `Range ${lower} – ${upper} · fees earned ${fees} USDC`,
   positionValueLabel: "POSITION VALUE",
+  // Real on-chain quantities, shown with no price attached (see E8: this
+  // testnet has no USD price feed, and the pool's own ratio isn't a
+  // meaningful one either).
+  feesOwedLabel: (amount0: string, symbol0: string, amount1: string, symbol1: string) =>
+    `Fees owed ${amount0} ${symbol0} + ${amount1} ${symbol1}`,
+  holdingsUnavailableLabel: "HOLDINGS",
   selectCta: "Select",
   noVaultForPoolCta: "No vault for this pool",
   manualEntry: {
@@ -294,7 +300,7 @@ export const lpActiveCopy = {
   legendStrike: (strikePercent: number) => `-- strike ${strikePercent}%`,
   legendBreakeven: (breakevenPercent: number) => `-- breakeven ${breakevenPercent}%`,
   axisNowLabel: (dayNumber: number) => `now · day ${dayNumber}`,
-  axisStartLabel: "cohort start",
+  axisStartLabel: "cover start",
   payoutCapLabel: "payout cap",
   scenarioLabel: "WHAT SETTLEMENT PAYS AT DIFFERENT FINISHES",
   scenarioFootnote:
@@ -347,6 +353,7 @@ export const lpSettlementCopy = {
     premiumPaid: "Premium paid",
   },
   capAppliedNo: (cap: string) => `no · cap was ${cap}`,
+  capAppliedYes: (cap: string) => `yes · capped at ${cap}`,
   noPayoutRows: {
     finalRealizedVariance: "Final realized variance",
     strikeVariance: "Strike variance",
@@ -418,7 +425,10 @@ export const uwDepositCopy = {
   quickHalf: "Half",
   quickMax: "Max",
   walletBalance: (amount: string) => `Wallet balance ${amount} USDC`,
-  minimumDeposit: (amount: string) => `Minimum deposit ${amount} USDC`,
+  insufficientBalance: "Amount exceeds your wallet balance.",
+  connectWalletCta: "Connect wallet",
+  approveCta: "Approve USDC",
+  processingCta: "Processing…",
   signUpLabel: "WHAT YOU ARE SIGNING UP FOR",
   signUpSteps: [
     (date: string) =>
@@ -438,7 +448,7 @@ export const uwDepositCopy = {
       lockedUntil: "Locked until",
       estPremiums: (cohortId: number) => `Est. premiums at cycle-${cohortId} pace`,
     },
-    cta: "Approve and deposit",
+    cta: "Deposit",
   },
   worstCase: {
     label: "WORST CASE, STATED PLAINLY",
@@ -450,8 +460,8 @@ export const uwDepositCopy = {
 
 export const uwDashboardCopy = {
   heading: (pool: string) => `My underwriting · ${pool}`,
-  meta: (cohortId: number, day: number, sharePercent: number, totalCapital: string) =>
-    `Cohort ${cohortId} · day ${day} of 7 · ${sharePercent}% of a ${totalCapital} USDC vault`,
+  meta: (cohortId: number, day: number, totalDays: number, sharePercent: number, totalCapital: string) =>
+    `Cohort ${cohortId} · day ${day} of ${totalDays} · ${sharePercent}% of a ${totalCapital} USDC vault`,
   settlesInLabel: "SETTLES IN",
   statLabels: {
     capitalCommitted: "CAPITAL COMMITTED",
@@ -480,6 +490,7 @@ export const uwDashboardCopy = {
 export const uwSettlementCopy = {
   heading: (cohortId: number) => `Cohort ${cohortId} settled`,
   badgeLosingCycle: "LOSING CYCLE",
+  badgeProfitableCycle: "PROFITABLE CYCLE",
   meta: (pool: string, volPercent: number, date: string) => `${pool} · final realized vol ${volPercent}% · settled ${date}`,
   verifyCta: "Verify the settlement",
   cycleLabel: "THE VAULT'S CYCLE",
@@ -491,8 +502,14 @@ export const uwSettlementCopy = {
   },
   splitPremiumsIn: "premiums in",
   splitClaimsOut: "claims out",
-  cycleFootnote: (paidOut: number, total: number, priorLosingCohortId: number) =>
-    `${paidOut} of ${total} policies finished above their strike. Claims exceeded premiums for the first time since cohort ${priorLosingCohortId}. No policy paid above its cap, and no capital beyond the vault was touched.`,
+  cycleFootnote: (paidOut: number, total: number, hitCapCount: number, netUsdc: number) => {
+    const netSentence = netUsdc >= 0 ? "Premiums exceeded claims this cycle." : "Claims exceeded premiums this cycle.";
+    const capSentence =
+      hitCapCount > 0
+        ? `${hitCapCount} ${hitCapCount === 1 ? "policy" : "policies"} paid at its cap.`
+        : "No policy paid above its cap.";
+    return `${paidOut} of ${total} policies finished above their strike. ${netSentence} ${capSentence}`;
+  },
   claimsSplitLabel: "HOW CLAIMS WERE SPLIT",
   claimsSplitHeaders: ["UNDERWRITER", "SHARE", "PREMIUMS", "CLAIMS"],
   claimsSplitFootnote: "Nobody absorbed a policy alone. Every claim was divided by capital share, to the cent.",
@@ -500,8 +517,8 @@ export const uwSettlementCopy = {
   unit: "USDC",
   rows: { capital: "Capital", premiums: "Premiums", claims: "Claims", net: "Net" },
   nextCycleLabel: "NEXT CYCLE",
-  nextCycleBody: (cohortId: number) =>
-    `Cohort ${cohortId} opens at 08:00 UTC. Your capital is free until you commit it again — rolling is a choice, never a default.`,
+  nextCycleBody: (cohortId: number, dateLabel: string) =>
+    `Cohort ${cohortId} opens ${dateLabel}. Your capital is free until you commit it again — rolling is a choice, never a default.`,
   rollCta: (amount: string, cohortId: number) => `Roll ${amount} into cohort ${cohortId}`,
   rollDifferentCta: "Roll a different amount",
   withdrawCta: "Withdraw and stop",
@@ -606,6 +623,12 @@ export const proofCopy = {
     "Ticks are already log prices, so no price conversion enters the computation. Nothing here reads spot price at any point.",
   placeholderFootnote: "Sample figures shown for layout. Contract references below are placeholders until deployment.",
   resultLabel: "SETTLEMENT RESULT",
+  // Shown instead of resultLabel while the cohort hasn't finalized — the
+  // number above it is real, but it's a running extrapolation, not a
+  // decided payout, and a short sample window makes it noisy.
+  resultLabelInProgress: "REALIZED VOL SO FAR",
+  inProgressCaption: (sampleCount: number, window: string) =>
+    `Based on ${sampleCount} sample${sampleCount === 1 ? "" : "s"} over ${window} — narrows as more accumulate.`,
   unit: "realized vol",
   rows: {
     policiesSettled: "Policies settled",

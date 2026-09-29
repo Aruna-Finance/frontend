@@ -1,21 +1,28 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { Badge } from "@/components/aruna/Badge";
+import { PairIcon } from "@/components/aruna/PairIcon";
 import { lpMyCoversCopy, lpSettlementCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatSettlementDate, formatUsdcDecimal } from "@/lib/format";
-import { usePositions } from "@/hooks/usePosition";
+import { useCoversByWallet, usePositions } from "@/hooks/usePosition";
 import { useVault } from "@/hooks/useVaults";
-import { mockPositionCovers } from "@/lib/mock/positions";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function MyCoversPage() {
+  const { address } = useWallet();
   const positions = usePositions().data ?? [];
-  const vault = useVault("weth-usdc-005").data;
+  const { data: covers, isLoading, isError } = useCoversByWallet(address);
+  // Only one real vault right now; its label is a reasonable stand-in until
+  // covers can come from more than one vault at once.
+  const vault = useVault(covers?.[0]?.vaultId ?? "").data;
 
   // Active covers first — what's still running is what you'd check most often.
-  const covers = [...mockPositionCovers].sort((a, b) =>
+  const sortedCovers = [...(covers ?? [])].sort((a, b) =>
     a.status === "active" && b.status !== "active" ? -1 : b.status === "active" && a.status !== "active" ? 1 : 0,
   );
 
@@ -29,13 +36,16 @@ export default function MyCoversPage() {
       </div>
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[26px] flex flex-col gap-[14px] flex-grow">
-        {covers.length === 0 ? (
+        {isError ? <p className="text-[14px] text-negative">Could not load your covers from the indexer.</p> : null}
+        {address && isLoading ? <p className="text-[14px] text-foreground-muted">Loading your covers…</p> : null}
+
+        {sortedCovers.length === 0 && !isLoading ? (
           <Card className="flex flex-col items-start gap-[14px]">
             <span className="text-[14.5px] text-foreground-secondary">{lpMyCoversCopy.emptyState}</span>
             <Button href="/protect">{lpMyCoversCopy.emptyStateCta}</Button>
           </Card>
         ) : (
-          covers.map((cover) => {
+          sortedCovers.map((cover) => {
             const position = positions.find((item) => item.tokenId === cover.positionId);
             const poolLabel = vault ? `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}` : cover.vaultId;
             const isSettled = cover.settledAt !== null;
@@ -57,6 +67,7 @@ export default function MyCoversPage() {
               >
                 <div className="flex flex-col gap-[8px]">
                   <div className="flex items-center gap-[10px] flex-wrap">
+                    {vault?.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
                     <span className="text-[17px] font-semibold">{lpMyCoversCopy.coverTitle(cover.id)}</span>
                     {position ? (
                       <span className="font-mono text-[12px] text-foreground-muted">

@@ -1,42 +1,9 @@
-import { notFound } from "next/navigation";
-import { useVault } from "@/hooks/useVaults";
-import { useCohorts } from "@/hooks/useCohort";
-import { getUnderwriterPositionForVault, mockUnderwriterWallet } from "@/lib/mock/vaults";
 import { DepositClient } from "./DepositClient";
 
+// Vault/cohort existence now depends on an async indexer fetch, so it can no
+// longer be checked synchronously here — DepositClient calls notFound()
+// itself once loading resolves and the vault genuinely isn't there.
 export default async function UWDepositPage(props: PageProps<"/underwrite/[vaultId]/deposit">) {
   const { vaultId } = await props.params;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const vault = useVault(vaultId).data;
-  if (!vault || !vault.hasVault) {
-    notFound();
-  }
-
-  const existingPosition = getUnderwriterPositionForVault(vaultId);
-  const existingCommittedCapitalUsdc = vault.totalCapitalUsdc - (existingPosition?.capitalCommittedUsdc ?? 0);
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const cohorts = useCohorts(vaultId).data ?? [];
-
-  const activeCohort = cohorts.find((item) => item.status === "ACTIVE");
-  const fundingCohort = cohorts.find((item) => item.status === "FUNDING");
-
-  if (!activeCohort || !fundingCohort) {
-    notFound();
-  }
-
-  return (
-    <DepositClient
-      vault={vault}
-      activeCohortId={activeCohort.id}
-      fundingCohortId={fundingCohort.id}
-      fundingStartsAt={fundingCohort.startsAt}
-      fundingEndsAt={fundingCohort.endsAt}
-      existingCommittedCapitalUsdc={existingCommittedCapitalUsdc}
-      walletBalanceUsdc={mockUnderwriterWallet.walletBalanceUsdc}
-      minimumDepositUsdc={mockUnderwriterWallet.minimumDepositUsdc}
-      worstCaseUsdc={mockUnderwriterWallet.worstCaseUsdc}
-    />
-  );
+  return <DepositClient vaultId={vaultId} />;
 }

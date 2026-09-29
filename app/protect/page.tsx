@@ -1,22 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { Badge } from "@/components/aruna/Badge";
+import { PairIcon } from "@/components/aruna/PairIcon";
 import { StepIndicator } from "@/components/aruna/StepIndicator";
 import { lpSelectPositionCopy, stepIndicatorCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
-import { useVault } from "@/hooks/useVaults";
+import { formatDuration, secondsUntil } from "@/lib/contracts/units";
+import { useVault, useVaults } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { usePositions } from "@/hooks/usePosition";
-import { mockCohortTimeRemaining } from "@/lib/mock/cohorts";
-import { formatRangeValue, formatUsd } from "@/lib/format";
+import { formatRangeValue, formatTokenNumber, formatUsd } from "@/lib/format";
 
 export default function ProtectSelectPositionPage() {
   const positions = usePositions().data ?? [];
-  const featuredVault = useVault("weth-usdc-005").data;
-  const featuredCohort = useCohort("weth-usdc-005").data;
-  const timeLeft = featuredCohort ? mockCohortTimeRemaining[featuredCohort.id] : undefined;
+  // Only one real vault today; NFT enumeration itself is still mock (that's
+  // separate follow-up work), this just points the sidebar's "see market"
+  // link and time-left note at a real vault id instead of a stale slug.
+  const featuredVaultId = useVaults().data?.[0]?.id;
+  const featuredVault = useVault(featuredVaultId ?? "").data;
+  const featuredCohort = useCohort(featuredVaultId ?? "").data;
+  const timeLeft = featuredCohort ? formatDuration(secondsUntil(featuredCohort.endsAt)) : undefined;
 
   const firstEligibleIndex = positions.findIndex((position) => position.hasVaultForPool);
 
@@ -58,6 +65,9 @@ export default function ProtectSelectPositionPage() {
               >
                 <div className="flex flex-col gap-[8px]">
                   <div className="flex items-center gap-[10px] flex-wrap">
+                    {position.token0Symbol && position.token1Symbol ? (
+                      <PairIcon symbol0={position.token0Symbol} symbol1={position.token1Symbol} />
+                    ) : null}
                     <span className="text-[17px] font-semibold">
                       {position.poolLabel} {position.poolFeeTier}
                     </span>
@@ -70,19 +80,41 @@ export default function ProtectSelectPositionPage() {
                     ) : null}
                   </div>
                   <div className="font-mono text-[13px] text-foreground-secondary">
-                    {lpSelectPositionCopy.positionMeta(
-                      formatRangeValue(position.rangeLowerUsdc),
-                      formatRangeValue(position.rangeUpperUsdc),
-                      position.feesEarnedUsdc.toFixed(2),
-                    )}
+                    {position.rangeLowerUsdc !== null && position.rangeUpperUsdc !== null && position.feesEarnedUsdc !== null
+                      ? lpSelectPositionCopy.positionMeta(
+                          formatRangeValue(position.rangeLowerUsdc),
+                          formatRangeValue(position.rangeUpperUsdc),
+                          position.feesEarnedUsdc.toFixed(2),
+                        )
+                      : position.token0FeesOwed !== null && position.token1FeesOwed !== null
+                        ? lpSelectPositionCopy.feesOwedLabel(
+                            formatTokenNumber(position.token0FeesOwed),
+                            position.token0Symbol ?? "",
+                            formatTokenNumber(position.token1FeesOwed),
+                            position.token1Symbol ?? "",
+                          )
+                        : "—"}
                   </div>
                 </div>
                 <div className="flex items-center gap-[28px]">
                   <div className="text-right">
                     <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-                      {lpSelectPositionCopy.positionValueLabel}
+                      {position.valueUsdc !== null ? lpSelectPositionCopy.positionValueLabel : lpSelectPositionCopy.holdingsUnavailableLabel}
                     </div>
-                    <div className="font-mono text-[22px] pt-[4px]">{formatUsd(position.valueUsdc)}</div>
+                    {position.valueUsdc !== null ? (
+                      <div className="font-mono text-[22px] pt-[4px]">{formatUsd(position.valueUsdc)}</div>
+                    ) : position.token0Amount !== null && position.token1Amount !== null ? (
+                      <div className="pt-[4px]">
+                        <div className="font-mono text-[15px]">
+                          {formatTokenNumber(position.token0Amount)} {position.token0Symbol}
+                        </div>
+                        <div className="font-mono text-[15px]">
+                          {formatTokenNumber(position.token1Amount)} {position.token1Symbol}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-mono text-[22px] pt-[4px]">—</div>
+                    )}
                   </div>
                   {position.hasVaultForPool ? (
                     <Button href={quoteHref} variant={highlighted ? "primary" : "ghost"}>

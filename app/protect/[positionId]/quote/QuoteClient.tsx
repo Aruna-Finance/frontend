@@ -43,7 +43,11 @@ export function QuoteClient({
   realizedVolPercent,
 }: QuoteClientProps) {
   const [strikePercent, setStrikePercent] = useState(35);
-  const defaultCoverage = Math.round(position.valueUsdc / 1000) * 1000;
+  // This page still runs entirely on mock data (see lib/mock/lookup.ts) where
+  // valueUsdc is always populated; the `?? 0` only satisfies the type shared
+  // with the now-real usePositions(), where a testnet position has none.
+  const positionValueUsdc = position.valueUsdc ?? 0;
+  const defaultCoverage = Math.round(positionValueUsdc / 1000) * 1000;
   const [coverageInput, setCoverageInput] = useState(String(defaultCoverage));
   const [activeQuick, setActiveQuick] = useState<"25" | "50" | "max" | null>("max");
 
@@ -53,7 +57,7 @@ export function QuoteClient({
 
   function pickQuick(kind: "25" | "50" | "max") {
     const fraction = kind === "25" ? 0.25 : kind === "50" ? 0.5 : 1;
-    setCoverageInput(String(Math.round((position.valueUsdc * fraction) / 100) * 100));
+    setCoverageInput(String(Math.round((positionValueUsdc * fraction) / 100) * 100));
     setActiveQuick(kind);
   }
 
@@ -74,7 +78,7 @@ export function QuoteClient({
             {lpQuoteCopy.headerMeta(
               positionId,
               `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`,
-              formatUsd(position.valueUsdc),
+              formatUsd(positionValueUsdc),
               cohortId,
               timeLeft,
             )}

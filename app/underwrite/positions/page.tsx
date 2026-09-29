@@ -1,17 +1,23 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
+import { PairIcon } from "@/components/aruna/PairIcon";
 import { uwMyPositionsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatUsdcDecimal } from "@/lib/format";
 import { useVaults } from "@/hooks/useVaults";
-import { mockUnderwriterPositions } from "@/lib/mock/vaults";
-
-const DASHBOARD_MODELED_VAULT_ID = "weth-usdc-005";
+import { useUnderwriterPositionsByWallet } from "@/hooks/useUnderwriterPositions";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function MyUnderwritingPositionsPage() {
+  const { address } = useWallet();
   const vaults = useVaults().data ?? [];
+  const { data: positions, isLoading, isError } = useUnderwriterPositionsByWallet(address);
+  // Dashboard pages only exist for real, non-test vaults today.
+  const dashboardVaultIds = new Set(vaults.map((vault) => vault.id));
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
@@ -23,25 +29,31 @@ export default function MyUnderwritingPositionsPage() {
       </div>
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[26px] flex flex-col gap-[14px] flex-grow">
-        {mockUnderwriterPositions.length === 0 ? (
+        {isError ? <p className="text-[14px] text-negative">Could not load your positions from the indexer.</p> : null}
+        {address && isLoading ? <p className="text-[14px] text-foreground-muted">Loading your positions…</p> : null}
+
+        {(positions ?? []).length === 0 && !isLoading ? (
           <Card className="flex flex-col items-start gap-[14px]">
             <span className="text-[14.5px] text-foreground-secondary">{uwMyPositionsCopy.emptyState}</span>
             <Button href="/underwrite">{uwMyPositionsCopy.emptyStateCta}</Button>
           </Card>
         ) : (
-          mockUnderwriterPositions.map((position) => {
+          (positions ?? []).map((position) => {
             const vault = vaults.find((item) => item.id === position.vaultId);
             const poolLabel = vault ? `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}` : position.vaultId;
-            const dashboardAvailable = position.vaultId === DASHBOARD_MODELED_VAULT_ID;
+            const dashboardAvailable = dashboardVaultIds.has(position.vaultId);
 
             return (
               <Card
-                key={position.vaultId}
+                key={`${position.vaultId}-${position.cohortId}`}
                 variant={dashboardAvailable ? "raised" : "default"}
                 className="flex flex-col sm:flex-row justify-between sm:items-center gap-[16px]"
               >
                 <div className="flex flex-col gap-[8px]">
-                  <span className="text-[17px] font-semibold">{poolLabel}</span>
+                  <div className="flex items-center gap-[10px]">
+                    {vault?.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
+                    <span className="text-[17px] font-semibold">{poolLabel}</span>
+                  </div>
                   <div className="font-mono text-[13px] text-foreground-secondary">
                     {uwMyPositionsCopy.cardMeta(position.cohortId, position.sharePercent)}
                   </div>
