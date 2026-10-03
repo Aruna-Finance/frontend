@@ -41,8 +41,8 @@
 }
 
 @theme inline {
-  --font-display: var(--font-instrument-serif);
-  --font-body: var(--font-ibm-plex-sans);
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-geist);
   --font-mono: var(--font-ibm-plex-mono);
   --color-chart-scale-pattern-color: var(----chart-scale-pattern-color);
   --color-chart-scale-05: var(----chart-scale-05);

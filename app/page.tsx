@@ -140,28 +140,44 @@ export default function LandingPage() {
   const cvaultRef = useRef<HTMLCanvasElement>(null);
   const cTwapRef = useRef<HTMLCanvasElement>(null);
   const cLiaRef = useRef<HTMLCanvasElement>(null);
+  const cCapRef = useRef<HTMLCanvasElement>(null);
 
   // mutable RAF state — no re-renders
   const st = useRef({
-    yaw: -0.6, pitch: 0.95, vyaw: 0, drag3d: false, drag3dLx: 0, drag3dLy: 0,
-    priceMove: 78, rangeTightness: 30,
+    yaw: -2.45, pitch: 0.50, vyaw: 0, drag3d: false, drag3dLx: 0, drag3dLy: 0,
+    priceMove: 78, rangeTightness: 65,
     pathT: 0, autoPlay: false, autoT0: 0,
     realizedVol: 0.637,
     dispPay: new Spring(0, 90, 14), dispLp: new Spring(0, 90, 14), dispUw: new Spring(0, 90, 14),
     particles: [] as Particle[],
     vaultSold: 0, coverSize: 400,
     twap: buildTwapData(-1), wickIdx: -1,
+    twapAutoNext: 420, twapWickFlash: 0,
+    twapSpot: 1.0, twapRw: 0,
+    twapSpotHist: Array.from({ length: 120 }, () => 1.0) as number[],
+    twapSmoothed: Array.from({ length: 120 }, () => 1.0) as number[],
     liaVol: 64, liaExit: 3,
+    liaAutoT: 0,
+    liaNetHist: Array.from({ length: 120 }, () => 0) as number[],
     px: -9999,
+    capLevel: 1000,
+    capHistory: Array.from({ length: 120 }, () => 1000) as number[],
+    capFlash: 0,
+    capFlashOk: true,
+    capNextEvent: 160,
   });
+
+  // DOM refs for per-frame readouts — mutated directly to avoid React re-renders every RAF tick
+  const calmBarFill = useRef<HTMLDivElement>(null);
+  const calmBarText = useRef<HTMLSpanElement>(null);
+  const whipBarFill = useRef<HTMLDivElement>(null);
+  const whipBarText = useRef<HTMLSpanElement>(null);
+  const scrubThumb = useRef<HTMLDivElement>(null);
+  const cmpTOut = useRef<HTMLOutputElement>(null);
 
   // display state for readouts
   const [il3d, setIl3d] = useState({ move: '+0%', k: '3.0×', il: '0.00%', ilk: '0.0%' });
   const [vault, setVault] = useState({ vol: '63.7%', pay: '0', lp: '+0', uw: '+0', note: '' });
-  const [cmpT, setCmpT] = useState('day 0.0 / 7');
-  const [scrubPos, setScrubPos] = useState(0);
-  const [calmBars, setCalmBars] = useState({ w: '0%', t: '0.0000' });
-  const [whipBars, setWhipBars] = useState({ w: '0%', t: '0.0000' });
   const [refuseA, setRefuseA] = useState({ left: '1,000 capacity left', msg: 'Choose a size and try to buy it.', bad: false });
   const [refuseB, setRefuseB] = useState({ spot: '—', twap: '—', btnLabel: 'Fire a flash-loan wick' });
   const [refuseC, setRefuseC] = useState({ msg: '' });
@@ -285,10 +301,12 @@ export default function LandingPage() {
       if (elC) { const { w, h, dpr } = cvSize(elC); const ctx = elC.getContext('2d')!; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); drawChart(ctx,w,h,calmPath,INK); }
       if (elW) { const { w, h, dpr } = cvSize(elW); const ctx = elW.getContext('2d')!; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); drawChart(ctx,w,h,whipPath,O1); }
       const i = Math.round(s.pathT * N);
-      setCmpT('day ' + (s.pathT * 7).toFixed(1) + ' / 7');
-      setScrubPos(s.pathT);
-      setCalmBars({ w: (calmPath.cum[i] / maxCum * 100) + '%', t: calmPath.cum[i].toFixed(4) });
-      setWhipBars({ w: (whipPath.cum[i] / maxCum * 100) + '%', t: whipPath.cum[i].toFixed(4) });
+      if (cmpTOut.current) cmpTOut.current.textContent = 'day ' + (s.pathT * 7).toFixed(1) + ' / 7';
+      if (scrubThumb.current) scrubThumb.current.style.left = `calc(${s.pathT * 100}% - 5px)`;
+      if (calmBarFill.current) calmBarFill.current.style.width = (calmPath.cum[i] / maxCum * 100) + '%';
+      if (calmBarText.current) calmBarText.current.textContent = calmPath.cum[i].toFixed(4);
+      if (whipBarFill.current) whipBarFill.current.style.width = (whipPath.cum[i] / maxCum * 100) + '%';
+      if (whipBarText.current) whipBarText.current.textContent = whipPath.cum[i].toFixed(4);
     }
 
     function drawVault(ts: number) {
@@ -347,29 +365,162 @@ export default function LandingPage() {
       ctx.globalAlpha = 1;
     }
 
+    function drawCapacity() {
+      const el = cCapRef.current; if (!el) return;
+      const { w, h, dpr } = cvSize(el);
+      const ctx = el.getContext('2d')!;
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+
+      // simulate capacity events
+      s.capNextEvent--;
+      if (s.capNextEvent <= 0) {
+        if (s.capLevel > 0) {
+          const bite = Math.min(s.capLevel, 150 + Math.random() * 200);
+          s.capLevel = Math.max(0, s.capLevel - bite);
+          s.capFlash = 18; s.capFlashOk = true;
+        } else {
+          s.capFlash = 18; s.capFlashOk = false;
+        }
+        s.capNextEvent = 130 + Math.floor(Math.random() * 100);
+      }
+      // slow refill
+      s.capLevel = Math.min(1000, s.capLevel + 0.35);
+      s.capHistory.push(s.capLevel);
+      if (s.capHistory.length > 120) s.capHistory.shift();
+      if (s.capFlash > 0) s.capFlash--;
+
+      const CAP_MAX = 1000;
+      const L = 44, R = 10, Tp = 12, B = 20;
+      const X = (i: number) => L + (w - L - R) * i / (s.capHistory.length - 1);
+      const Y = (v: number) => Tp + (h - Tp - B) * (1 - v / CAP_MAX);
+
+      // grid
+      ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+      [0, 500, 1000].forEach(v => {
+        ctx.strokeStyle = 'rgba(236,234,229,.07)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke();
+        ctx.fillStyle = 'rgba(236,234,229,.35)';
+        ctx.fillText(v === 1000 ? '1k' : v === 500 ? '500' : '0', L - 5, Y(v));
+      });
+      ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
+      ctx.fillText('capacity', L + (w - L - R) / 2, h - 6);
+
+      // fill area under curve
+      const grad = ctx.createLinearGradient(0, Tp, 0, h - B);
+      grad.addColorStop(0, 'rgba(224,138,74,.18)');
+      grad.addColorStop(1, 'rgba(224,138,74,.02)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      s.capHistory.forEach((v, i) => { const x = X(i), y = Y(v); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.lineTo(X(s.capHistory.length - 1), h - B);
+      ctx.lineTo(X(0), h - B);
+      ctx.closePath(); ctx.fill();
+
+      // capacity line
+      ctx.strokeStyle = s.capLevel < 100 ? 'rgba(200,80,70,.9)' : O1;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      s.capHistory.forEach((v, i) => { const x = X(i), y = Y(v); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.stroke();
+
+      // flash event marker at right edge
+      if (s.capFlash > 0) {
+        const alpha = s.capFlash / 18;
+        const xFlash = X(s.capHistory.length - 1);
+        ctx.strokeStyle = s.capFlashOk ? `rgba(224,138,74,${alpha})` : `rgba(200,70,60,${alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(xFlash, Tp); ctx.lineTo(xFlash, h - B); ctx.stroke();
+        // dot
+        ctx.fillStyle = s.capFlashOk ? `rgba(239,164,105,${alpha})` : `rgba(220,80,70,${alpha})`;
+        ctx.beginPath(); ctx.arc(xFlash, Y(s.capLevel), 4, 0, Math.PI * 2); ctx.fill();
+        // label
+        ctx.fillStyle = s.capFlashOk ? `rgba(239,164,105,${alpha})` : `rgba(220,80,70,${alpha})`;
+        ctx.font = '9px ' + MONO_FONT; ctx.textAlign = 'right';
+        ctx.fillText(s.capFlashOk ? 'sold' : 'rejected', w - R - 2, Tp + 10);
+      }
+    }
+
     function drawTwap() {
       const el = cTwapRef.current; if (!el) return;
       const { w, h, dpr } = cvSize(el);
       const ctx = el.getContext('2d')!;
       ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-      const { spot, tw } = s.twap;
-      const L = 34, R = 8, Tp = 10, B = 18, Ya = 0.94, Yb = 1.24;
-      const X = (i: number) => L + (w - L - R) * i / BN;
+
+      // simulate rolling spot price with auto wick
+      s.twapAutoNext--;
+      if (s.twapWickFlash > 0) s.twapWickFlash--;
+      if (s.twapAutoNext <= 0) {
+        s.twapSpot *= 1.22;
+        s.twapWickFlash = 50;
+        s.twapAutoNext = 480 + Math.floor(Math.random() * 180);
+      } else {
+        s.twapRw += (Math.random() - 0.5) * 0.004;
+        s.twapRw *= 0.94;
+        s.twapSpot *= Math.exp(s.twapRw * 0.02);
+        s.twapSpot = clamp(s.twapSpot, 0.88, 1.18);
+      }
+      s.twapSpotHist.push(s.twapSpot);
+      if (s.twapSpotHist.length > 120) s.twapSpotHist.shift();
+      // TWAP = slow moving average (last 24 samples)
+      const win = 24;
+      const twapVal = s.twapSpotHist.slice(-win).reduce((a, b) => a + b, 0) / win;
+      s.twapSmoothed.push(twapVal);
+      if (s.twapSmoothed.length > 120) s.twapSmoothed.shift();
+
+      const N2 = s.twapSpotHist.length;
+      const allVals = [...s.twapSpotHist, ...s.twapSmoothed];
+      const Ya = Math.min(...allVals) - 0.02, Yb = Math.max(...allVals) + 0.02;
+      const L = 44, R = 10, Tp = 12, B = 20;
+      const X = (i: number) => L + (w - L - R) * i / (N2 - 1);
       const Y = (p: number) => Tp + (h - Tp - B) * (1 - (p - Ya) / (Yb - Ya));
-      ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(236,234,229,.4)';
-      [1, 1.1, 1.2].forEach(v2 => {
-        ctx.strokeStyle = 'rgba(236,234,229,.08)'; ctx.beginPath(); ctx.moveTo(L, Y(v2)); ctx.lineTo(w - R, Y(v2)); ctx.stroke();
-        ctx.fillText(v2.toFixed(2), L - 4, Y(v2));
+
+      // grid
+      ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+      const mid = (Ya + Yb) / 2;
+      [Ya + (Yb - Ya) * 0.1, mid, Yb - (Yb - Ya) * 0.1].forEach(v2 => {
+        ctx.strokeStyle = 'rgba(236,234,229,.07)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(L, Y(v2)); ctx.lineTo(w - R, Y(v2)); ctx.stroke();
+        ctx.fillStyle = 'rgba(236,234,229,.35)';
+        ctx.fillText(v2.toFixed(2), L - 5, Y(v2));
       });
-      ctx.textAlign = 'center';
-      for (let hr = 0; hr <= 12; hr += 3) ctx.fillText(hr + 'h', X(hr / 12 * BN), h - 7);
-      ctx.strokeStyle = 'rgba(236,234,229,.5)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let i = 0; i < BN; i += 1) { const x = X(i), y = Y(spot[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
+      ctx.fillText('twap', L + (w - L - R) / 2, h - 6);
+
+      // spot line (dim)
+      ctx.strokeStyle = 'rgba(236,234,229,.3)'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      s.twapSpotHist.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-      ctx.strokeStyle = O1; ctx.lineWidth = 2; ctx.beginPath();
-      tw.forEach((v2, k) => { const x0 = X(k * BS), x1 = X((k + 1) * BS), y = Y(v2); k ? ctx.lineTo(x0, y) : ctx.moveTo(x0, y); ctx.lineTo(x1, y); });
+
+      // TWAP fill area
+      const grad = ctx.createLinearGradient(0, Tp, 0, h - B);
+      grad.addColorStop(0, 'rgba(224,138,74,.18)');
+      grad.addColorStop(1, 'rgba(224,138,74,.02)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      s.twapSmoothed.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.lineTo(X(N2 - 1), h - B); ctx.lineTo(X(0), h - B);
+      ctx.closePath(); ctx.fill();
+
+      // TWAP line (orange)
+      ctx.strokeStyle = O1; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      s.twapSmoothed.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-      ctx.fillStyle = O2; tw.forEach((v2, k) => ctx.fillRect(X((k + 1) * BS) - 2.5, Y(v2) - 2.5, 5, 5));
+
+      // wick flash marker
+      if (s.twapWickFlash > 0) {
+        const alpha = s.twapWickFlash / 30;
+        const xFlash = X(N2 - 1);
+        ctx.strokeStyle = `rgba(236,234,229,${alpha * 0.6})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(xFlash, Tp); ctx.lineTo(xFlash, h - B); ctx.stroke();
+        ctx.fillStyle = `rgba(236,234,229,${alpha})`;
+        ctx.beginPath(); ctx.arc(xFlash, Y(s.twapSpot), 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '9px ' + MONO_FONT; ctx.textAlign = 'right';
+        ctx.fillStyle = `rgba(236,234,229,${alpha * 0.7})`;
+        ctx.fillText('wick', w - R - 2, Tp + 10);
+      }
     }
 
     function drawLia() {
@@ -377,30 +528,60 @@ export default function LandingPage() {
       const { w, h, dpr } = cvSize(el);
       const ctx = el.getContext('2d')!;
       ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-      const v = s.liaVol / 100, e = s.liaExit;
-      const cur = calcVault(v);
-      const L = 40, R = 10, Tp = 10, B = 18;
-      const y0 = -VP * 1.8, y1 = Math.max(300, cur.lp * 1.12);
-      const X = (d: number) => L + (w - L - R) * d / 7;
-      const Y2 = (n: number) => Tp + (h - Tp - B) * (1 - (n - y0) / (y1 - y0));
-      ctx.save(); ctx.beginPath(); ctx.rect(L, Y2(-VP), w - L - R, h - B - Y2(-VP)); ctx.clip();
-      ctx.strokeStyle = 'rgba(239,164,105,.25)'; ctx.lineWidth = 1;
-      for (let k = -h; k < w; k += 9) { ctx.beginPath(); ctx.moveTo(L + k, h - B); ctx.lineTo(L + k + h, Y2(-VP)); ctx.stroke(); }
-      ctx.restore();
-      ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(236,234,229,.4)';
-      [0, 500].forEach(n => {
-        if (n < y1) { ctx.strokeStyle = 'rgba(236,234,229,.1)'; ctx.beginPath(); ctx.moveTo(L, Y2(n)); ctx.lineTo(w - R, Y2(n)); ctx.stroke(); ctx.fillText('' + n, L - 4, Y2(n)); }
+
+      // auto-animate: net P&L oscillates, floor stays fixed
+      s.liaAutoT += 0.005;
+      const autoVol = 20 + 80 * (0.5 + 0.5 * Math.sin(s.liaAutoT));
+      const autoExit = 3.5 + 3 * Math.sin(s.liaAutoT * 0.55);
+      const cur = calcVault(autoVol / 100);
+      const netNow = cur.pay * clamp(autoExit, 0, 7) / 7 - VP;
+      s.liaNetHist.push(netNow);
+      if (s.liaNetHist.length > 120) s.liaNetHist.shift();
+
+      const FLOOR = -VP;
+      const N2 = s.liaNetHist.length;
+      const maxNet = Math.max(...s.liaNetHist, 50);
+      const L = 44, R = 10, Tp = 12, B = 20;
+      const Ya = FLOOR - (maxNet - FLOOR) * 0.18, Yb = maxNet + (maxNet - FLOOR) * 0.1;
+      const X = (i: number) => L + (w - L - R) * i / (N2 - 1);
+      const Y = (n: number) => Tp + (h - Tp - B) * (1 - (n - Ya) / (Yb - Ya));
+
+      // grid
+      ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+      [0, Math.round(maxNet * 0.5)].forEach(v2 => {
+        ctx.strokeStyle = 'rgba(236,234,229,.07)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(L, Y(v2)); ctx.lineTo(w - R, Y(v2)); ctx.stroke();
+        ctx.fillStyle = 'rgba(236,234,229,.35)'; ctx.fillText(v2 === 0 ? '0' : '+' + v2, L - 5, Y(v2));
       });
-      ctx.textAlign = 'center';
-      for (let d = 0; d <= 7; d++) ctx.fillText('' + d, X(d), h - 7);
-      ctx.strokeStyle = O1; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(L, Y2(-VP)); ctx.lineTo(w - R, Y2(-VP)); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = O1; ctx.textAlign = 'left'; ctx.fillText('floor −' + VP + ' · nothing owed below', L + 6, Y2(-VP) + 12);
-      const net = (d: number) => cur.pay * d / 7 - VP;
-      ctx.strokeStyle = PAPER; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(0), Y2(net(0))); ctx.lineTo(X(7), Y2(net(7))); ctx.stroke();
-      ctx.strokeStyle = O2; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(0), Y2(net(0))); ctx.lineTo(X(e), Y2(net(e))); ctx.stroke();
-      ctx.fillStyle = O2; ctx.fillRect(X(e) - 4, Y2(net(e)) - 4, 8, 8);
-      const n2 = net(e);
-      setRefuseC({ msg: `Exit day ${e}: net ${sgn(n2)}. Worst case: −${VP}.` });
+      ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
+      ctx.fillText('net p&l', L + (w - L - R) / 2, h - 6);
+
+      // floor line (orange dashed)
+      ctx.strokeStyle = O1; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(L, Y(FLOOR)); ctx.lineTo(w - R, Y(FLOOR)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(224,138,74,.7)'; ctx.textAlign = 'left'; ctx.font = '9px ' + MONO_FONT;
+      ctx.fillText('floor −' + VP, L + 5, Y(FLOOR) - 7);
+
+      // fill area between net line and floor
+      const grad = ctx.createLinearGradient(0, Tp, 0, Y(FLOOR));
+      grad.addColorStop(0, 'rgba(224,138,74,.15)');
+      grad.addColorStop(1, 'rgba(224,138,74,.03)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      s.liaNetHist.forEach((v2, i) => { const x = X(i), y = Y(Math.max(v2, FLOOR)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.lineTo(X(N2 - 1), Y(FLOOR)); ctx.lineTo(X(0), Y(FLOOR));
+      ctx.closePath(); ctx.fill();
+
+      // net P&L line
+      ctx.strokeStyle = 'rgba(236,234,229,.5)'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      s.liaNetHist.forEach((v2, i) => { const x = X(i), y = Y(Math.max(v2, FLOOR)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.stroke();
+
+      // dot at current value
+      ctx.fillStyle = O2;
+      ctx.beginPath(); ctx.arc(X(N2 - 1), Y(Math.max(netNow, FLOOR)), 3.5, 0, Math.PI * 2); ctx.fill();
     }
 
     function updateVaultReadout() {
@@ -433,6 +614,7 @@ export default function LandingPage() {
       draw3d(ts);
       drawComparison();
       drawVault(ts);
+      drawCapacity();
       drawTwap();
       drawLia();
       rafId = requestAnimationFrame(frame);
@@ -498,7 +680,7 @@ export default function LandingPage() {
     st.current.dispPay.t = cur.pay; st.current.dispLp.t = cur.lp; st.current.dispUw.t = cur.uw;
     setVault({ vol: v.toFixed(1) + '%', pay: fmt(cur.pay), lp: sgn(cur.lp), uw: sgn(cur.uw), note: cur.pay >= VC ? 'Payout hit the cap.' : `Breakeven: ${(be * 100).toFixed(1)}% realized vol.` });
   };
-  const onScrub = (v: number) => { const s = st.current; s.autoPlay = false; s.pathT = v / 1000; setScrubPos(v / 1000); };
+  const onScrub = (v: number) => { const s = st.current; s.autoPlay = false; s.pathT = v / 1000; if (scrubThumb.current) scrubThumb.current.style.left = `calc(${(v / 1000) * 100}% - 5px)`; };
   const onBuyCover = () => {
     const s = st.current;
     if (s.vaultSold + s.coverSize > 1000) {
@@ -541,7 +723,7 @@ export default function LandingPage() {
             <div className="flex flex-col justify-between pt-[8px] pb-0 lg:pt-[20px] lg:pb-0">
               <div className="flex flex-1 items-center">
                 <div className="w-full max-w-[430px]">
-              <h1 className="font-display text-[clamp(2.6rem,4.2vw,5rem)] leading-[0.98] font-normal tracking-[-0.015em]">
+              <h1 className="font-display text-[clamp(2rem,3.2vw,3.8rem)] leading-[0.98] font-normal tracking-[-0.015em]">
                 Cover priced<br />
                 by how{" "}
                 <em className="text-accent not-italic" style={{ animation: 'wildPulse 3s ease-in-out infinite' }}>wildly</em>
@@ -561,33 +743,7 @@ export default function LandingPage() {
 
             {/* 3D IL surface panel */}
             <div className="bg-[#101010] relative overflow-hidden min-h-[520px] lg:min-h-0 flex flex-col">
-              <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-[16px] py-[14px] pointer-events-none">
-                <span className="font-mono text-[9px] tracking-[0.12em] text-foreground-muted/70">INTERACTIVE MODEL / 01</span>
-                <span className="font-mono text-[9px] tracking-[0.12em] text-accent/70">IL SURFACE · ILLUSTRATIVE</span>
-              </div>
               <canvas ref={c3dRef} className="block w-full flex-1 min-h-0 cursor-grab active:cursor-grabbing" aria-label="3D impermanent loss surface" />
-              <div className="px-[16px] pt-[12px] pb-[14px] bg-canvas/60 flex flex-col gap-[6px]">
-                <label className="grid grid-cols-[110px_1fr_60px] gap-[12px] items-center">
-                  <span className="font-mono text-[9px] tracking-[0.1em] text-foreground-muted">price move</span>
-                  <input type="range" min={0} max={100} defaultValue={78} onChange={e => onPriceMoveChange(+e.target.value)} className="w-full cursor-pointer" />
-                  <output className="font-mono text-[11px] text-right text-accent-hover">{il3d.move}</output>
-                </label>
-                <label className="grid grid-cols-[110px_1fr_60px] gap-[12px] items-center">
-                  <span className="font-mono text-[9px] tracking-[0.1em] text-foreground-muted">range tightness</span>
-                  <input type="range" min={10} max={80} defaultValue={30} onChange={e => onRangeTightnessChange(+e.target.value)} className="w-full cursor-pointer" />
-                  <output className="font-mono text-[11px] text-right text-accent-hover">{il3d.k}</output>
-                </label>
-              </div>
-              <div className="grid grid-cols-2">
-                <div className="px-[16px] py-[14px]">
-                  <div className="font-mono text-[9px] tracking-[0.1em] text-foreground-muted mb-[6px]">FULL-RANGE LP</div>
-                  <div className="font-display text-[2rem] font-normal leading-tight">−{il3d.il}</div>
-                </div>
-                <div className="px-[16px] py-[14px]">
-                  <div className="font-mono text-[9px] tracking-[0.1em] text-foreground-muted mb-[6px]">CONCENTRATED ≈</div>
-                  <div className="font-display text-[2rem] font-normal leading-tight text-accent">{il3d.ilk === '0.0%' ? '−' + il3d.ilk : '−' + il3d.ilk}</div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -618,9 +774,9 @@ export default function LandingPage() {
               <div className="mt-[20px] flex items-center gap-[14px]">
                 <span className="font-mono text-[10px] text-[#9c9690] shrink-0">variance accrued</span>
                 <div className="flex-1 h-[3px] bg-[#c8c3bb] overflow-hidden">
-                  <div className="h-full bg-[#6b6560]" style={{ width: calmBars.w }} />
+                  <div ref={calmBarFill} className="h-full bg-[#6b6560]" />
                 </div>
-                <span className="font-mono text-[11px] text-[#1a1814] shrink-0">{calmBars.t}</span>
+                <span ref={calmBarText} className="font-mono text-[11px] text-[#1a1814] shrink-0">0.0000</span>
               </div>
               <p className="mt-[20px] text-[13px] text-[#6b6560] leading-[1.6]">Little variance accumulated. Little impermanent loss. No payout owed — and the premium reflected that up front.</p>
             </div>
@@ -639,9 +795,9 @@ export default function LandingPage() {
               <div className="mt-[20px] flex items-center gap-[14px]">
                 <span className="font-mono text-[10px] text-[#9c9690] shrink-0">variance accrued</span>
                 <div className="flex-1 h-[3px] bg-[#c8c3bb] overflow-hidden">
-                  <div className="h-full bg-[#c97d3e]" style={{ width: whipBars.w }} />
+                  <div ref={whipBarFill} className="h-full bg-[#c97d3e]" />
                 </div>
-                <span className="font-mono text-[11px] text-[#c97d3e] shrink-0">{whipBars.t}</span>
+                <span ref={whipBarText} className="font-mono text-[11px] text-[#c97d3e] shrink-0">0.0000</span>
               </div>
               <p className="mt-[20px] text-[13px] text-[#6b6560] leading-[1.6]">Every swing is rebalanced against you. Variance is what drained the position, so variance is what the contract pays on.</p>
             </div>
@@ -663,11 +819,12 @@ export default function LandingPage() {
             >
               <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#a09890]" />
               <div
+                ref={scrubThumb}
                 className="absolute top-1/2 -translate-y-1/2 w-[10px] h-[10px] rotate-45 bg-[#c97d3e]"
-                style={{ left: `calc(${scrubPos * 100}% - 5px)` }}
+                style={{ left: 'calc(0% - 5px)' }}
               />
             </div>
-            <output className="shrink-0 font-mono text-[10px] text-[#9c9690] min-w-[7em] text-right">{cmpT}</output>
+            <output ref={cmpTOut} className="shrink-0 font-mono text-[10px] text-[#9c9690] min-w-[7em] text-right">day 0.0 / 7</output>
           </div>
         </div>
       </section>
@@ -714,69 +871,27 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-on-accent/15">
             {/* no 1 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[560px]">
+            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
+              <canvas ref={cCapRef} className="block w-full flex-1 mb-[28px]" />
               <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
                 If capacity isn't there,<br />the cover isn't sold.
               </h3>
-              <div className="mt-auto pt-[28px] border-t border-border flex flex-col gap-[12px]">
-                <div className="h-[28px] border border-border relative overflow-hidden bg-surface">
-                  <div className="absolute inset-y-0 left-0 bg-accent transition-[width] duration-500" style={{ width: (st.current.vaultSold / 1000 * 100) + '%' }} />
-                  <span className="absolute inset-0 flex items-center px-[10px] font-mono text-[10px] mix-blend-difference text-white">{refuseA.left}</span>
-                </div>
-                <label className="grid grid-cols-[60px_1fr_44px] gap-[10px] items-center">
-                  <span className="font-mono text-[9px] text-foreground-muted">size</span>
-                  <input type="range" min={100} max={1500} step={50} defaultValue={400} onChange={e => { st.current.coverSize = +e.target.value; }} className="w-full cursor-pointer" />
-                  <output className="font-mono text-[10px] text-accent text-right">400</output>
-                </label>
-                <div className="flex gap-[10px] pt-[4px]">
-                  <Button onClick={onBuyCover} className="!rounded-none">Buy cover</Button>
-                  <Button variant="ghost" onClick={onResetVault} className="!rounded-none">Reset</Button>
-                </div>
-              </div>
             </div>
 
             {/* no 2 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[560px]">
+            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
+              <canvas ref={cTwapRef} className="block w-full flex-1 mb-[28px] bg-[#121212]" />
               <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
                 A flash-loan wick can't<br />manufacture variance.
               </h3>
-              <div className="mt-auto pt-[28px] border-t border-border flex flex-col gap-[12px]">
-                <canvas ref={cTwapRef} className="block w-full h-[160px] bg-[#121212]" />
-                <div className="grid grid-cols-2 gap-[1px] bg-border">
-                  <div className="bg-[#121212] p-[10px_14px]">
-                    <div className="font-mono text-[9px] text-foreground-muted uppercase tracking-[0.1em] mb-[5px]">Spot vol</div>
-                    <div className="font-mono text-[22px] font-medium leading-none">{refuseB.spot}</div>
-                  </div>
-                  <div className="bg-[#121212] p-[10px_14px]">
-                    <div className="font-mono text-[9px] text-foreground-muted uppercase tracking-[0.1em] mb-[5px]">TWAP vol</div>
-                    <div className="font-mono text-[22px] font-medium leading-none text-accent">{refuseB.twap}</div>
-                  </div>
-                </div>
-                <div className="pt-[4px]">
-                  <Button onClick={onFireWick} className="!rounded-none">{refuseB.btnLabel}</Button>
-                </div>
-              </div>
             </div>
 
             {/* no 3 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[560px]">
+            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
+              <canvas ref={cLiaRef} className="block w-full flex-1 mb-[28px]" />
               <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
                 The premium is your<br />maximum loss. Always.
               </h3>
-              <div className="mt-auto pt-[28px] border-t border-border flex flex-col gap-[12px]">
-                <canvas ref={cLiaRef} className="block w-full h-[160px]" />
-                <label className="grid grid-cols-[60px_1fr_44px] gap-[10px] items-center">
-                  <span className="font-mono text-[9px] text-foreground-muted">vol</span>
-                  <input type="range" min={5} max={120} defaultValue={64} onChange={e => onLiaVol(+e.target.value)} className="w-full cursor-pointer" />
-                  <output className="font-mono text-[10px] text-accent text-right">{liaReadout.vol}%</output>
-                </label>
-                <label className="grid grid-cols-[60px_1fr_44px] gap-[10px] items-center">
-                  <span className="font-mono text-[9px] text-foreground-muted">exit day</span>
-                  <input type="range" min={0} max={7} step={0.5} defaultValue={3} onChange={e => onLiaExit(+e.target.value)} className="w-full cursor-pointer" />
-                  <output className="font-mono text-[10px] text-accent text-right">{liaReadout.exit}</output>
-                </label>
-                {refuseC.msg && <p className="font-mono text-[10px] text-foreground-muted leading-[1.5]">{refuseC.msg}</p>}
-              </div>
             </div>
           </div>
         </div>
