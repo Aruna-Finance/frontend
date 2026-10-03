@@ -1,6 +1,5 @@
-// Full compiled ABI for VarianceAccumulator, copied verbatim from indexer/abis/ (Foundry
-// build artifact via the indexer's own codegen). Refresh from there if the
-// contract is redeployed or changed — do not hand-edit this file.
+// Generated via `forge inspect VarianceAccumulator abi` from smart-contract commit
+// 01dc2fbfe3a4f2c34e3ba8813a130ff7002ad928 (branch rc/sandbox-1, v2).
 export const varianceAccumulatorAbi = [
   {
     "type": "constructor",
@@ -12,11 +11,6 @@ export const varianceAccumulatorAbi = [
       },
       {
         "name": "sampleInterval_",
-        "type": "uint32",
-        "internalType": "uint32"
-      },
-      {
-        "name": "twapWindow_",
         "type": "uint32",
         "internalType": "uint32"
       }
@@ -128,6 +122,11 @@ export const varianceAccumulatorAbi = [
             "name": "cumulativeSumSq",
             "type": "uint128",
             "internalType": "uint128"
+          },
+          {
+            "name": "elapsed",
+            "type": "uint16",
+            "internalType": "uint16"
           }
         ]
       }
@@ -162,16 +161,16 @@ export const varianceAccumulatorAbi = [
   },
   {
     "type": "function",
-    "name": "twapWindow",
+    "name": "tryPoke",
     "inputs": [],
     "outputs": [
       {
-        "name": "",
-        "type": "uint32",
-        "internalType": "uint32"
+        "name": "added",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
-    "stateMutability": "view"
+    "stateMutability": "nonpayable"
   },
   {
     "type": "event",

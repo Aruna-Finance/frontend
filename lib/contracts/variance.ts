@@ -17,8 +17,11 @@ export function sumSqCovered(endCumulativeSumSq: bigint, startSumSq: bigint): bi
 }
 
 // The strike is time-scaled: a 3-day cover owes 3/365 of the annual strike.
+// Rounded UP (mulDivUp), matching CoverVault.sol exactly — the contract rounds
+// this up so the strike threshold is a touch harder to cross (design §9.2).
 export function strikeAccumulated(strikeAnnualized: bigint, coveredSeconds: bigint): bigint {
-  return (strikeAnnualized * coveredSeconds) / SECONDS_PER_YEAR;
+  const numerator = strikeAnnualized * coveredSeconds;
+  return (numerator + SECONDS_PER_YEAR - 1n) / SECONDS_PER_YEAR;
 }
 
 export interface PayoutInput {
@@ -45,6 +48,22 @@ export function previewPayout(input: PayoutInput): bigint {
 // Display only, and only meaningful below the cap (maxPayout > premium);
 // callers should treat a result at/above the strike's own vol as "never
 // breaks even below the cap" rather than trusting the number blindly.
+// The realized vol (annualized, %) at which the payout saturates at
+// `maxPayout` — purely a function of the quote's own output, no live
+// accumulator read needed. Display only.
+export function capReachedVolPercent(input: {
+  varNotional: bigint;
+  maxPayout: bigint;
+  strikeAnnualized: bigint;
+  coveredSeconds: bigint;
+}): number {
+  if (input.varNotional <= 0n || input.coveredSeconds <= 0n) return 0;
+  const capExcess = (BigInt(input.maxPayout) * WAD) / input.varNotional;
+  const capSumSq = strikeAccumulated(input.strikeAnnualized, input.coveredSeconds) + capExcess;
+  const capAnnualized = realizedVarianceAnnualized(capSumSq, input.coveredSeconds);
+  return varianceWadToVolPercent(capAnnualized);
+}
+
 export function breakevenVolPercent(input: {
   premium: bigint;
   varNotional: bigint;

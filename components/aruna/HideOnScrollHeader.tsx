@@ -42,9 +42,7 @@ export function HideOnScrollHeader({ children, className }: HideOnScrollHeaderPr
       <motion.header
         className={`sticky top-0 z-50 ${className ?? ""}`}
         style={{
-          background: "color-mix(in srgb, var(--color-canvas) 82%, transparent)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
+          background: "#121212",
         }}
         animate={{ y: hidden ? "-100%" : "0%" }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}

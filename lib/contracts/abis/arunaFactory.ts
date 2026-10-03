@@ -1,6 +1,7 @@
-// Full compiled ABI for ArunaFactory, copied verbatim from indexer/abis/ (Foundry
-// build artifact via the indexer's own codegen). Refresh from there if the
-// contract is redeployed or changed — do not hand-edit this file.
+// Generated via `forge inspect ArunaFactory abi` from smart-contract commit
+// 01dc2fbfe3a4f2c34e3ba8813a130ff7002ad928 (branch rc/sandbox-1, v2). Permissionless
+// createVault, no canonical per-(pool, tenor) slot — see contract-integration-
+// requirements.md Lampiran A.4 for the full shape and VaultParams struct.
 export const arunaFactoryAbi = [
   {
     "type": "constructor",
@@ -14,9 +15,67 @@ export const arunaFactoryAbi = [
         "name": "settlementToken_",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "vaultDeployer_",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "accumulatorDeployer_",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "allowedTenors_",
+        "type": "uint32[]",
+        "internalType": "uint32[]"
+      },
+      {
+        "name": "gap_",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "sampleInterval_",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "maxKeeperShareBps_",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "maxPokeBounty_",
+        "type": "uint128",
+        "internalType": "uint128"
+      },
+      {
+        "name": "maxFinalizeBounty_",
+        "type": "uint128",
+        "internalType": "uint128"
+      },
+      {
+        "name": "maxSettleBounty_",
+        "type": "uint128",
+        "internalType": "uint128"
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "accumulatorDeployer",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -65,6 +124,19 @@ export const arunaFactoryAbi = [
         "name": "",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "allowedTenors",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32[]",
+        "internalType": "uint32[]"
       }
     ],
     "stateMutability": "view"
@@ -124,14 +196,29 @@ export const arunaFactoryAbi = [
             "internalType": "uint128"
           },
           {
-            "name": "sampleInterval",
+            "name": "policyCap",
             "type": "uint32",
             "internalType": "uint32"
           },
           {
-            "name": "twapWindow",
-            "type": "uint32",
-            "internalType": "uint32"
+            "name": "keeperShareBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "pokeBounty",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "finalizeBounty",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "settleBounty",
+            "type": "uint128",
+            "internalType": "uint128"
           }
         ]
       }
@@ -147,6 +234,109 @@ export const arunaFactoryAbi = [
   },
   {
     "type": "function",
+    "name": "gap",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isAllowedTenor",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isVault",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxFinalizeBounty",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128",
+        "internalType": "uint128"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxKeeperShareBps",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxPokeBounty",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128",
+        "internalType": "uint128"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "maxSettleBounty",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint128",
+        "internalType": "uint128"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "positionManager",
     "inputs": [],
     "outputs": [
@@ -154,6 +344,19 @@ export const arunaFactoryAbi = [
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "sampleInterval",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint32",
+        "internalType": "uint32"
       }
     ],
     "stateMutability": "view"
@@ -173,15 +376,28 @@ export const arunaFactoryAbi = [
   },
   {
     "type": "function",
-    "name": "vaultOf",
-    "inputs": [
+    "name": "vaultDeployer",
+    "inputs": [],
+    "outputs": [
       {
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "vaultsOf",
+    "inputs": [
+      {
+        "name": "pool",
+        "type": "address",
+        "internalType": "address"
       },
       {
-        "name": "",
+        "name": "tenor",
         "type": "uint32",
         "internalType": "uint32"
       }
@@ -189,8 +405,32 @@ export const arunaFactoryAbi = [
     "outputs": [
       {
         "name": "",
+        "type": "address[]",
+        "internalType": "address[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "vaultsOfLength",
+    "inputs": [
+      {
+        "name": "pool",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "tenor",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -233,7 +473,7 @@ export const arunaFactoryAbi = [
       {
         "name": "vault",
         "type": "address",
-        "indexed": false,
+        "indexed": true,
         "internalType": "address"
       },
       {
@@ -241,6 +481,96 @@ export const arunaFactoryAbi = [
         "type": "address",
         "indexed": false,
         "internalType": "address"
+      },
+      {
+        "name": "gap",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "sampleInterval",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "params",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct ArunaFactory.VaultParams",
+        "components": [
+          {
+            "name": "pool",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "tenor",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "pricer",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "valuer",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "anchor",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "maxUtilizationBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "maxExcessVariance",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "ewmaAlphaBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "seedVariance",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "policyCap",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "keeperShareBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "pokeBounty",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "finalizeBounty",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "settleBounty",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
       }
     ],
     "anonymous": false
@@ -252,7 +582,50 @@ export const arunaFactoryAbi = [
   },
   {
     "type": "error",
-    "name": "VaultExists",
+    "name": "BountyTooHigh",
+    "inputs": [
+      {
+        "name": "bounty",
+        "type": "uint128",
+        "internalType": "uint128"
+      },
+      {
+        "name": "max",
+        "type": "uint128",
+        "internalType": "uint128"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "KeeperShareTooHigh",
+    "inputs": [
+      {
+        "name": "keeperShareBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "max",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PoolLacksSettlementToken",
+    "inputs": [
+      {
+        "name": "pool",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PoolNotCanonical",
     "inputs": [
       {
         "name": "pool",
@@ -260,14 +633,20 @@ export const arunaFactoryAbi = [
         "internalType": "address"
       },
       {
+        "name": "canonical",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "TenorNotAllowed",
+    "inputs": [
+      {
         "name": "tenor",
         "type": "uint32",
         "internalType": "uint32"
-      },
-      {
-        "name": "existing",
-        "type": "address",
-        "internalType": "address"
       }
     ]
   }

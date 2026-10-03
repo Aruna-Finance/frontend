@@ -196,18 +196,15 @@ export const lpMyCoversCopy = {
 
 export const lpQuoteCopy = {
   heading: "Set your cover",
-  headerMeta: (positionId: string, pool: string, value: string, cohortId: number, timeLeft: string) =>
-    `Position #${positionId} · ${pool} · ${value} · cohort ${cohortId} ends in ${timeLeft}`,
-  coverageLabel: "HOW MUCH OF THE POSITION TO COVER",
-  unit: "USDC",
-  quickPct25: "25%",
-  quickPct50: "50%",
-  quickMax: "Max",
+  // v2: no USD figure here — real positions have no price feed (see E8), and
+  // there's no coverage amount to choose (cover is the whole position).
+  headerMeta: (positionId: string, pool: string, cohortId: number, timeLeft: string) =>
+    `Position #${positionId} · ${pool} · cohort ${cohortId} ends in ${timeLeft}`,
   strikeSectionLabel: "STRIKE — THE VOL LEVEL WHERE COVER STARTS PAYING",
   strikeSectionHint: "Lower strike, earlier payout, higher premium",
   premiumWord: "premium",
-  strikeFootnote: (timeLeft: string) =>
-    `Realized volatility is measured from the pool's 30-minute TWAP over the remaining ${timeLeft} of the cohort and annualized for comparison.`,
+  strikeFootnote: (sampleInterval: string, timeLeft: string) =>
+    `Realized volatility is measured from the pool's ${sampleInterval} TWAP over the remaining ${timeLeft} of the cohort and annualized for comparison.`,
   payoutChartTitle: "What you receive at settlement",
   payoutRateLabel: (rate: string) => `payout rate ${rate} USDC per unit of variance`,
   capLabel: (value: string) => `cap ${value}`,
@@ -218,7 +215,6 @@ export const lpQuoteCopy = {
   statLabels: {
     breakevenVol: "BREAKEVEN VOL",
     capReachedAt: "CAP REACHED AT",
-    ifVolStaysAt: (currentVolPercent: number) => `IF VOL STAYS AT ${currentVolPercent}%`,
   },
   quoteCard: {
     label: "YOUR QUOTE",
@@ -226,10 +222,8 @@ export const lpQuoteCopy = {
     unit: "USDC",
     disclaimer: "This is also the most you can lose. It cannot grow — not at settlement, not if you exit early.",
     rows: {
-      coveredAmount: "Covered amount",
       strike: "Strike",
       maxPayout: "Maximum payout",
-      fullCyclePrice: "Full-cycle price",
       chargedFor: "Charged for",
     },
     cta: "Review and buy",
@@ -237,10 +231,12 @@ export const lpQuoteCopy = {
   capacityCheck: {
     label: "CAPACITY CHECK",
     statusOk: "Vault can back this cover",
+    statusNotEnough: "Not enough free capacity for this cover",
     reservingCaption: (amount: string) => `reserving ${amount}`,
     freeCaption: (amount: string) => `${amount} free`,
     note: "Your maximum payout is locked out of the vault the moment you buy. No later buyer can claim it.",
   },
+  notActiveNote: "This cohort isn't open for cover right now.",
 } as const;
 
 export const lpConfirmCopy = {
@@ -252,40 +248,46 @@ export const lpConfirmCopy = {
   termsRows: {
     position: "Position",
     vault: "Vault",
-    coveredAmount: "Covered amount",
     strike: "Strike",
-    payoutRate: "Payout rate",
     payoutCap: "Payout cap",
     settles: "Settles",
     oracle: "Oracle",
   },
-  oracleValue: "Pool TWAP, 30 min",
+  oracleValue: "Pool TWAP",
+  // v2: the position NFT moves into the vault's escrow for the cover's
+  // duration — not a detail to bury, since it's the biggest behavior change
+  // from "just pay a premium".
+  escrowNotice: {
+    title: "Your position moves into the vault while covered",
+    body: "Its liquidity can't be withdrawn or changed until the cover ends, is cancelled, or settles. Your trading fees stay 100% yours — collect them anytime from the Active page. Never send this NFT to the vault address any other way: outside this exact flow, it can never be recovered.",
+  },
   warning: {
     title: "Read this before signing",
     body: (strikePercent: number, premium: string) =>
       `If realized volatility finishes at or below ${strikePercent}%, you receive nothing and the ${premium} USDC premium is gone. That is the expected outcome in a quiet week — it is what you are paying for in a violent one.`,
   },
   acknowledge: (cap: string) =>
-    `I understand the premium is non-refundable, the payout is capped at ${cap} USDC, and settlement uses the pool's TWAP rather than spot price.`,
+    `I understand the premium is non-refundable, the payout is capped at ${cap} USDC, my position moves into the vault while covered, and settlement uses the pool's TWAP rather than spot price.`,
   txCard: {
-    label: "TWO TRANSACTIONS",
-    approve: (amount: string) => `Approve ${amount} USDC`,
-    confirmed: (hash: string) => `Confirmed · ${hash}`,
-    statusConfirmed: "Confirmed",
-    statusPending: "Pending",
+    label: "THREE TRANSACTIONS",
+    approveUsdcTitle: (amount: string) => `Approve ${amount} USDC`,
+    approveNftTitle: (tokenId: string) => `Approve position #${tokenId}`,
+    approveNftBody: "Lets the vault pull this one position into escrow — nothing else.",
     buyCoverTitle: "Buy cover",
-    buyCoverBody: (cap: string) => `Pays the premium, reserves ${cap} USDC of vault capacity and mints your policy.`,
+    buyCoverBody: (cap: string) => `Pays the premium, escrows your position, reserves ${cap} USDC of vault capacity, and mints your policy.`,
     rows: {
       premium: "Premium",
-      networkFee: "Est. network fee",
     },
-    cta: "Sign and buy cover",
+    connectWalletCta: "Connect wallet",
+    approveUsdcCta: (amount: string) => `Approve ${amount} USDC`,
+    approveNftCta: "Approve position",
+    buyCoverCta: "Sign and buy cover",
+    processingCta: "Processing…",
     backCta: "Back to quote",
   },
-  quoteValidity: {
-    label: "QUOTE VALIDITY",
-    countdown: (time: string) => `re-prices in ${time}`,
-    note: "Premium is pro-rated to the time left in the cohort, so it keeps falling as the cycle runs down.",
+  liveQuote: {
+    label: "LIVE QUOTE",
+    note: "This premium is read live from the vault each time you open this page — it isn't locked in until your buyCover transaction confirms. If realized volatility moved a lot in between, go back and re-quote.",
   },
 } as const;
 
@@ -325,6 +327,16 @@ export const lpActiveCopy = {
     label: "ORACLE FEED",
     tickPrefix: "tick",
     fullRecordLink: "Full sample record →",
+  },
+  // v2: the position NFT sits in escrow for the cover's duration (design
+  // §5.5) — these are the only two actions the vault exposes on it before
+  // settlement.
+  manageCover: {
+    label: "MANAGE THIS COVER",
+    note: "Your position is held in escrow while this cover is active. You can still collect its trading fees anytime, or cancel the cover early.",
+    collectFeesCta: "Collect fees",
+    cancelCta: "Cancel cover",
+    cancelWarning: "Cancelling returns your position now, but the premium stays with the cohort — it is not refunded.",
   },
   atSettlement: {
     label: "AT SETTLEMENT",

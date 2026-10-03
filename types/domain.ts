@@ -102,20 +102,28 @@ export interface PositionCover {
 }
 
 export interface QuoteRequest {
-  vaultId: string;
+  vault: string;
+  cohortId: number;
+  positionTokenId: bigint;
   strikePercent: number;
-  coveredAmountUsdc: number;
 }
 
+// v2: no partial cover (varNotional is derived entirely from the position,
+// not a chosen amount), so there's no coveredAmountUsdc/fullCyclePremiumUsdc
+// here — quote() itself already prices exactly the remaining cohort window.
+// Raw (bigint) fields are kept alongside the formatted ones because Confirm
+// needs exact units for buyCover's maxPremium, not a rounded display number.
 export interface QuoteResult {
   strikePercent: number;
+  strikeAnnualized: bigint;
   premiumUsdc: number;
-  fullCyclePremiumUsdc: number;
+  premiumRaw: bigint;
+  varNotionalRaw: bigint;
+  maxPayoutUsdc: number;
+  maxPayoutRaw: bigint;
+  coveredSeconds: number;
   breakevenPercent: number;
   capReachedAtPercent: number;
-  maxPayoutUsdc: number;
-  estPayoutIfVolHoldsUsdc: number;
-  coveredSeconds: number;
 }
 
 export interface UnderwriterPosition {

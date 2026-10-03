@@ -1,7 +1,10 @@
-// Read side of the testnet mock NonfungiblePositionManager. It follows the
-// Uniswap v3 layout: `positions()` decodes with the canonical 12-field tuple
-// (checked against token 1 on-chain). The mock holds positions from many
-// pools, so callers must filter by token0/token1/fee for the vault's pool.
+// Read/write surface of Uniswap v3's own NonfungiblePositionManager on
+// Arbitrum Sepolia — confirmed on-chain (`name() = "Uniswap V3 Positions
+// NFT-V1"`), NOT an Aruna mock. It holds every Uniswap user's positions on
+// this pool, so callers must filter by token0/token1/fee for the vault's
+// pool. `positions()` decodes with the canonical 12-field tuple.
+// The ERC-721 `approve` is required before CoverVault.buyCover (v2): the
+// vault pulls the position NFT into escrow for the cover's duration.
 export const positionManagerAbi = [
   {
     type: "function",
@@ -53,5 +56,42 @@ export const positionManagerAbi = [
       { name: "tokensOwed0", type: "uint128" },
       { name: "tokensOwed1", type: "uint128" },
     ],
+  },
+  {
+    type: "function",
+    name: "getApproved",
+    stateMutability: "view",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "isApprovedForAll",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "operator", type: "address" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "approve",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "tokenId", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "setApprovalForAll",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "operator", type: "address" },
+      { name: "approved", type: "bool" },
+    ],
+    outputs: [],
   },
 ] as const;

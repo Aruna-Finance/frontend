@@ -16,9 +16,14 @@ import { closeAreaPath, smoothLinePath } from "@/lib/chart-path";
 import { usePoliciesByPosition } from "@/hooks/usePolicyByPosition";
 import { useVaultByAddress } from "@/hooks/useVaults";
 import { useProof } from "@/hooks/useProof";
+import { useWallet } from "@/hooks/useWallet";
+import { useWalletModal } from "@/hooks/useWalletModal";
+import { useCancel } from "@/hooks/useCancel";
+import { useCollectFees } from "@/hooks/useCollectFees";
 import { mapPolicyToCover } from "@/lib/indexer/mapPolicy";
 import { USDC_DECIMALS, formatDuration, secondsUntil, varianceWadToVolPercent } from "@/lib/contracts/units";
 import { previewPayout, realizedVarianceAnnualized, strikeAccumulated } from "@/lib/contracts/variance";
+import type { Address } from "viem";
 
 // Chart geometry matches the original mockup's viewBox (0 0 700 300) so the
 // grid lines/labels drawn around it don't need to move.
@@ -38,6 +43,10 @@ export function ActiveClient({ positionId }: { positionId: string }) {
   const raw = policies?.find((item) => !item.settled);
   const vault = useVaultByAddress(raw?.vault ?? "").data;
   const proof = useProof(raw?.vault ?? "").data;
+  const { address, isConnected } = useWallet();
+  const walletModal = useWalletModal();
+  const { cancel, isPending: cancelling } = useCancel();
+  const { collectFees, isPending: collectingFees } = useCollectFees();
 
   if (policiesLoading) {
     return (
@@ -273,6 +282,40 @@ export function ActiveClient({ positionId }: { positionId: string }) {
                 divider={false}
               />
             </div>
+          </Card>
+
+          <Card className="flex flex-col gap-[14px]">
+            <span className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
+              {lpActiveCopy.manageCover.label}
+            </span>
+            <div className="text-[14px] leading-[1.6] text-foreground-secondary">{lpActiveCopy.manageCover.note}</div>
+            {!isConnected || !address ? (
+              <Button type="button" variant="ghost" onClick={() => walletModal.open()}>
+                Connect wallet
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={collectingFees || cancelling}
+                  onClick={() =>
+                    collectFees({ vault: vault.id as Address, policyId: BigInt(raw.policyId), recipient: address })
+                  }
+                >
+                  {collectingFees ? "Collecting…" : lpActiveCopy.manageCover.collectFeesCta}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={collectingFees || cancelling}
+                  onClick={() => cancel({ vault: vault.id as Address, policyId: BigInt(raw.policyId) })}
+                >
+                  {cancelling ? "Cancelling…" : lpActiveCopy.manageCover.cancelCta}
+                </Button>
+              </>
+            )}
+            <div className="text-[12.5px] leading-[1.6] text-negative">{lpActiveCopy.manageCover.cancelWarning}</div>
           </Card>
 
           <Card>

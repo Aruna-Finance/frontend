@@ -1,10 +1,11 @@
 import { BaseError, ContractFunctionRevertedError, formatUnits } from "viem";
 import { USDC_DECIMALS } from "./units";
 
-// Friendly copy for every CoverVault custom error confirmed against the real
-// ABI (indexer/abis/CoverVaultAbi.ts) and the SC team's answers on 2026-09-29.
-// Args are typed `unknown[]` here (decoded by viem from the ABI at the call
-// site) and narrowed per error before use.
+// Friendly copy for every CoverVault custom error, confirmed against the real
+// v2 ABI (`forge inspect CoverVault abi`, smart-contract commit 01dc2fb) and
+// the SC team's earlier answers on the v0/v1 subset. Args are typed
+// `unknown[]` here (decoded by viem from the ABI at the call site) and
+// narrowed per error before use.
 const messages: Record<string, (args: readonly unknown[]) => string> = {
   PositionWrongPool: () => "This position isn't in the pool this vault covers.",
   PositionNotOwned: () => "This position isn't owned by the connected wallet.",
@@ -25,6 +26,22 @@ const messages: Record<string, (args: readonly unknown[]) => string> = {
   NothingToWithdraw: () => "There's nothing to withdraw for this cohort.",
   Reentrancy: () => "That request conflicted with another one in progress. Please retry.",
   TransferFailed: () => "The token transfer failed. Check your balance and allowance.",
+  // v2 additions (buyCover / policy escrow / keeper paths).
+  TooLateToBuy: () => "Too little time is left in this cohort to buy cover — try the next one.",
+  ZeroLiquidity: () => "This position has no liquidity, so there's nothing to cover.",
+  ZeroCapital: () => "This cohort has no underwriter capital yet, so it isn't selling cover.",
+  BelowMinPayout: (args) => {
+    const [, minPayout] = args as [bigint, bigint];
+    return `This position is too small for this cohort — it needs a minimum payout of ${formatUnits(minPayout, USDC_DECIMALS)} USDC.`;
+  },
+  PolicyCapReached: () => "This cohort has hit its limit on live policies. Try again next cohort.",
+  UnsolicitedPosition: () => "This position was never covered by this vault.",
+  NotPolicyOwner: () => "This policy isn't owned by the connected wallet.",
+  PolicyNotActive: () => "This cover isn't active anymore — it may already be cancelled or settled.",
+  PositionNotHeld: () => "This vault isn't holding that position (it's already been returned or claimed).",
+  NotParked: () => "There's no parked position to claim for this policy.",
+  ZeroRecipient: () => "Pick a wallet address to receive this, not the zero address.",
+  NothingToSettle: () => "There's nothing left to settle in this cohort.",
 };
 
 // Walks a caught error for a decoded CoverVault revert and returns copy a

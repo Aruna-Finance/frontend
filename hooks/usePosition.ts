@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Address } from "viem";
 import { useReadContract, useReadContracts } from "wagmi";
-import { arunaAddresses } from "@/lib/contracts/addresses";
+import { arunaAddresses, arunaMarkets } from "@/lib/contracts/addresses";
 import { erc20Abi } from "@/lib/contracts/abis/erc20";
 import { positionManagerAbi } from "@/lib/contracts/abis/positionManager";
 import { poolAbi } from "@/lib/contracts/abis/pool";
@@ -14,9 +14,7 @@ import { indexerRequest } from "@/lib/indexer/client";
 import { mapPolicyToCover } from "@/lib/indexer/mapPolicy";
 import { POLICIES_BY_OWNER_QUERY } from "@/lib/indexer/queries";
 import type { IndexerPolicy } from "@/lib/indexer/types";
-import { mockPositionCovers, mockPositions } from "@/lib/mock/positions";
 import type { Position, PositionCover } from "@/types/domain";
-import { useVaults } from "./useVaults";
 import { useWallet } from "./useWallet";
 
 export interface UsePositionsResult {
@@ -45,17 +43,19 @@ function poolKey(token0: Address, token1: Address, fee: number): string {
 }
 
 // Every Uniswap v3 position the connected wallet owns, straight from the
-// (mock) NonfungiblePositionManager — reads directly from the chain, not the
+// real NonfungiblePositionManager — reads directly from the chain, not the
 // indexer, since a wallet's own NFTs need to be current the moment this page
 // is opened. A position "has a vault for its pool" when its own
-// token0/token1/fee (from `positions()`) matches a real vault's pool.
+// token0/token1/fee (from `positions()`) matches a known v2 market's pool.
+// Matched against `arunaMarkets` (direct contract addresses), not the
+// indexer's vault list — the indexer still only watches the v0 factory and
+// has never heard of the v2 sandbox vault.
 export function usePositions(): UsePositionsResult {
   const { address } = useWallet();
-  const { data: vaults } = useVaults();
   const vaultPools = useMemo(
-    () => (vaults ?? []).map((v) => ({ vaultId: v.id, pool: v.poolAddress })).filter((v) => v.pool !== null),
-    [vaults],
-  ) as { vaultId: string; pool: Address }[];
+    () => arunaMarkets.map((m) => ({ vaultId: m.vault as string, pool: m.pool as Address })),
+    [],
+  );
 
   // token0/token1/fee/current-tick for every real vault's pool, so an owned
   // position can be matched against it without a network round trip per NFT.
@@ -181,12 +181,8 @@ export function usePositions(): UsePositionsResult {
         token1Amount = amounts.amount1 / 10 ** info1.decimals;
       }
 
-      const vaultLabel = match ? vaults?.find((v) => v.id === match.vaultId)?.poolLabel : undefined;
       const poolLabel =
-        vaultLabel ??
-        (info0 && info1
-          ? `${info0.symbol} / ${info1.symbol}`
-          : `${token0.slice(0, 6)}…/${token1.slice(0, 6)}…`);
+        info0 && info1 ? `${info0.symbol} / ${info1.symbol}` : `${token0.slice(0, 6)}…/${token1.slice(0, 6)}…`;
 
       positions.push({
         tokenId: tokenIds[i].toString(),
@@ -212,7 +208,7 @@ export function usePositions(): UsePositionsResult {
       });
     });
     return positions;
-  }, [address, positionsQuery.data, tokenIds, poolByKey, vaults, tokenInfoByAddress]);
+  }, [address, positionsQuery.data, tokenIds, poolByKey, tokenInfoByAddress]);
 
   return {
     data,
@@ -225,26 +221,122 @@ export function usePositions(): UsePositionsResult {
 
 export interface UsePositionResult {
   data: Position | undefined;
-  covers: PositionCover[];
+  // The NFT's current owner — Quote/Confirm need this to pre-check "do you
+  // actually own this position" before the wallet prompt, same check the
+  // contract itself makes (PositionNotOwned).
+  owner: Address | undefined;
   isLoading: boolean;
   isError: boolean;
 }
 
+// One specific Uniswap v3 position by its NFT token id — for Quote/Confirm,
+// which land on a route param rather than a wallet-owned list. Reads
+// directly from the real NFPM, matched against the known v2 market pool (see
+// usePositions() above for why not the indexer). Works for ANY token id,
+// not just ones the connected wallet owns — Quote needs to 404 honestly on
+// someone else's position, not just silently fail.
 export function usePosition(tokenId: string): UsePositionResult {
-  const position = mockPositions.find((item) => item.tokenId === tokenId);
-  const covers = mockPositionCovers.filter((cover) => cover.positionId === tokenId);
-  return { data: position, covers, isLoading: false, isError: false };
-}
+  let tokenIdBigInt: bigint | undefined;
+  try {
+    tokenIdBigInt = BigInt(tokenId);
+  } catch {
+    tokenIdBigInt = undefined;
+  }
 
-export interface UseCoverResult {
-  data: PositionCover | undefined;
-  isLoading: boolean;
-  isError: boolean;
-}
+  const ownerQuery = useReadContract({
+    address: arunaAddresses.positionManager,
+    abi: positionManagerAbi,
+    functionName: "ownerOf",
+    args: tokenIdBigInt !== undefined ? [tokenIdBigInt] : undefined,
+    query: { enabled: tokenIdBigInt !== undefined },
+  });
 
-export function useCover(coverId: string): UseCoverResult {
-  const cover = mockPositionCovers.find((item) => item.id === coverId);
-  return { data: cover, isLoading: false, isError: false };
+  const positionQuery = useReadContract({
+    address: arunaAddresses.positionManager,
+    abi: positionManagerAbi,
+    functionName: "positions",
+    args: tokenIdBigInt !== undefined ? [tokenIdBigInt] : undefined,
+    query: { enabled: tokenIdBigInt !== undefined },
+  });
+  const raw = positionQuery.data as RawPosition | undefined;
+
+  const market = arunaMarkets[0] as { vault: Address; pool: Address } | undefined;
+  const poolInfo = useReadContracts({
+    contracts: market
+      ? [
+          { address: market.pool, abi: poolAbi, functionName: "token0" as const },
+          { address: market.pool, abi: poolAbi, functionName: "token1" as const },
+          { address: market.pool, abi: poolAbi, functionName: "fee" as const },
+          { address: market.pool, abi: poolAbi, functionName: "slot0" as const },
+        ]
+      : [],
+    query: { enabled: Boolean(market) },
+  });
+
+  const tokenAddrs = useMemo(() => (raw ? [raw[2], raw[3]] : []), [raw]);
+  const tokenInfoQuery = useReadContracts({
+    contracts: tokenAddrs.flatMap((token) => [
+      { address: token, abi: erc20Abi, functionName: "symbol" as const },
+      { address: token, abi: erc20Abi, functionName: "decimals" as const },
+    ]),
+    query: { enabled: tokenAddrs.length > 0 },
+  });
+
+  const data = useMemo((): Position | undefined => {
+    if (!raw) return undefined;
+    const [, , token0, token1, fee, tickLower, tickUpper, liquidity, , , tokensOwed0, tokensOwed1] = raw;
+    const symbol0 = tokenInfoQuery.data?.[0]?.result as string | undefined;
+    const decimals0 = tokenInfoQuery.data?.[1]?.result as number | undefined;
+    const symbol1 = tokenInfoQuery.data?.[2]?.result as string | undefined;
+    const decimals1 = tokenInfoQuery.data?.[3]?.result as number | undefined;
+
+    const poolToken0 = poolInfo.data?.[0]?.result as Address | undefined;
+    const poolToken1 = poolInfo.data?.[1]?.result as Address | undefined;
+    const poolFee = poolInfo.data?.[2]?.result as number | undefined;
+    const slot0 = poolInfo.data?.[3]?.result as readonly [bigint, number, ...unknown[]] | undefined;
+    const matches =
+      poolToken0 !== undefined &&
+      poolToken1 !== undefined &&
+      poolFee !== undefined &&
+      poolKey(poolToken0, poolToken1, poolFee) === poolKey(token0, token1, fee);
+
+    let token0Amount: number | null = null;
+    let token1Amount: number | null = null;
+    if (matches && slot0 && decimals0 !== undefined && decimals1 !== undefined) {
+      const amounts = positionTokenAmounts(liquidity, tickLower, tickUpper, slot0[1]);
+      token0Amount = amounts.amount0 / 10 ** decimals0;
+      token1Amount = amounts.amount1 / 10 ** decimals1;
+    }
+
+    const poolLabel =
+      symbol0 && symbol1 ? `${symbol0} / ${symbol1}` : `${token0.slice(0, 6)}…/${token1.slice(0, 6)}…`;
+
+    return {
+      tokenId,
+      poolLabel,
+      poolFeeTier: `${(fee / 10_000).toFixed(2)}%`,
+      inRange: matches && slot0 ? isPositionInRange(tickLower, tickUpper, slot0[1]) : null,
+      // No price feed for testnet tokens (see E8) — real token amounts below instead.
+      rangeLowerUsdc: null,
+      rangeUpperUsdc: null,
+      feesEarnedUsdc: null,
+      valueUsdc: null,
+      hasVaultForPool: matches,
+      token0Symbol: symbol0 ?? null,
+      token1Symbol: symbol1 ?? null,
+      token0Amount,
+      token1Amount,
+      token0FeesOwed: decimals0 !== undefined ? Number(tokensOwed0) / 10 ** decimals0 : null,
+      token1FeesOwed: decimals1 !== undefined ? Number(tokensOwed1) / 10 ** decimals1 : null,
+    };
+  }, [raw, tokenId, tokenInfoQuery.data, poolInfo.data]);
+
+  return {
+    data,
+    owner: ownerQuery.data as Address | undefined,
+    isLoading: ownerQuery.isLoading || positionQuery.isLoading || poolInfo.isLoading || tokenInfoQuery.isLoading,
+    isError: ownerQuery.isError || positionQuery.isError || poolInfo.isError || tokenInfoQuery.isError,
+  };
 }
 
 export interface UseCoversByWalletResult {
