@@ -3,6 +3,7 @@
 import { resolveBaseline } from "@/lib/contracts/baseline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useState } from "react";
 import { formatUnits } from "viem";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
@@ -40,16 +41,22 @@ function scenarioTone(netUsdc: number) {
 }
 
 export function ActiveClient({ positionId }: { positionId: string }) {
-  const { data: policies, isLoading: policiesLoading } = usePoliciesByPosition(positionId);
+  // Right after buyCover the indexer can be a few blocks behind, so keep
+  // polling until the Active policy shows up instead of 404ing.
+  const [waitingForIndexer, setWaitingForIndexer] = useState(true);
+  const { data: policies, isLoading: policiesLoading } = usePoliciesByPosition(positionId, {
+    refetchInterval: waitingForIndexer ? 5_000 : false,
+  });
   const raw = policies?.find(isActivePolicy);
-  const vault = useVaultByAddress(raw?.vault ?? "").data;
+  if (raw && waitingForIndexer) setWaitingForIndexer(false);
+  const { data: vault, isLoading: vaultLoading } = useVaultByAddress(raw?.vault ?? "");
   const proof = useProof(raw?.vault ?? "").data;
   const { address, isConnected } = useWallet();
   const walletModal = useWalletModal();
   const { cancel, isPending: cancelling } = useCancel();
   const { collectFees, isPending: collectingFees } = useCollectFees();
 
-  if (policiesLoading) {
+  if (policiesLoading || (raw && vaultLoading)) {
     return (
       <div className="flex flex-col flex-1 bg-canvas text-foreground">
         <Header variant="app" navLinks={withActiveNavLink("/protect")} />
@@ -57,7 +64,20 @@ export function ActiveClient({ positionId }: { positionId: string }) {
       </div>
     );
   }
-  if (!raw || !vault) {
+  if (!raw) {
+    return (
+      <div className="flex flex-col flex-1 bg-canvas text-foreground">
+        <Header variant="app" navLinks={withActiveNavLink("/protect")} />
+        <div className="px-[24px] lg:px-[32px] pt-[32px] flex flex-col gap-[12px] text-[14px] text-foreground-muted">
+          <p>No active cover found for position #{positionId} yet. A cover bought a moment ago appears here once the indexer catches up; this page keeps checking.</p>
+          <Link href="/protect/covers" className="text-foreground underline">
+            See all my covers
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  if (!vault) {
     notFound();
   }
 

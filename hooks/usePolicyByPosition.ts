@@ -18,7 +18,10 @@ export interface UsePoliciesByPositionResult {
 // (Settlement). Returns the raw indexer shape (string-encoded bigints) so
 // callers can both run it through mapPolicyToCover for the summary fields
 // and read the raw fields for a page-specific breakdown.
-export function usePoliciesByPosition(positionTokenId: string): UsePoliciesByPositionResult {
+export function usePoliciesByPosition(
+  positionTokenId: string,
+  options: { refetchInterval?: number | false } = {},
+): UsePoliciesByPositionResult {
   const query = useQuery({
     queryKey: ["indexer", "policiesByPosition", positionTokenId],
     queryFn: () =>
@@ -28,6 +31,7 @@ export function usePoliciesByPosition(positionTokenId: string): UsePoliciesByPos
       ),
     select: (result) => result.policys.items,
     enabled: Boolean(positionTokenId),
+    refetchInterval: options.refetchInterval,
   });
   return { data: query.data, isLoading: query.isLoading, isError: query.isError };
 }
