@@ -1,3 +1,5 @@
+import { minPayoutFloor } from "@/lib/contracts/payout-floor";
+
 // The demo faucet: mint testnet tokens to the connected wallet and open a Uniswap
 // position in the vault's pool, so a visitor can protect a position right away.
 // Everything here is permissionless on the sandbox: TestToken.mint has no access
@@ -36,16 +38,11 @@ export interface PositionAmounts {
   amount1: bigint;
 }
 
-// buyCover's floor: capacity / policyCap, where capacity is
-// totalCapital * maxUtilizationBps / 10000 (CoverVault.buyCover, BelowMinPayout).
-export function minPayoutFloor(totalCapital: bigint, maxUtilizationBps: bigint, policyCap: bigint): bigint {
-  if (policyCap === 0n) return 0n;
-  return (totalCapital * maxUtilizationBps) / 10_000n / policyCap;
-}
-
 // Position size whose maxPayout clears `floor` with headroom; never below the
 // calibrated default. Operator capital per cohort is not fixed (a roll can land
 // on top of a deposit), so a fixed faucet size can fall under the floor.
+export { minPayoutFloor };
+
 export function positionAmounts(floor: bigint): PositionAmounts {
   const target = (floor * FAUCET.floorHeadroomBps) / 10_000n;
   if (target <= FAUCET.refMaxPayout) return { amount0: FAUCET.positionAmount0, amount1: FAUCET.positionAmount1 };

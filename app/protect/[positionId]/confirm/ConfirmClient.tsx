@@ -14,7 +14,10 @@ import { AcknowledgeCheckbox } from "@/components/aruna/AcknowledgeCheckbox";
 import { StepIndicator } from "@/components/aruna/StepIndicator";
 import { lpConfirmCopy, stepIndicatorCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
-import { formatSettlementDate, formatUsdcDecimal } from "@/lib/format";
+import { formatSettlementDate, formatUsdc, formatUsdcDecimal } from "@/lib/format";
+import { meetsPayoutFloor } from "@/lib/contracts/payout-floor";
+import { USDC_DECIMALS } from "@/lib/contracts/units";
+import { formatUnits } from "viem";
 import { arunaAddresses, arunaMarkets } from "@/lib/contracts/addresses";
 import { coverVaultAbi } from "@/lib/contracts/abis/coverVault";
 import { positionManagerAbi } from "@/lib/contracts/abis/positionManager";
@@ -49,9 +52,15 @@ export function ConfirmClient({ positionId, strikePercent }: { positionId: strin
   const walletModal = useWalletModal();
 
   const vaultReads = useReadContracts({
-    contracts: [{ address: market.vault, abi: coverVaultAbi, functionName: "currentCohortId" as const }],
+    contracts: [
+      { address: market.vault, abi: coverVaultAbi, functionName: "currentCohortId" as const },
+      { address: market.vault, abi: coverVaultAbi, functionName: "maxUtilizationBps" as const },
+      { address: market.vault, abi: coverVaultAbi, functionName: "policyCap" as const },
+    ],
   });
   const currentCohortId = vaultReads.data?.[0]?.result as number | undefined;
+  const maxUtilizationBps = vaultReads.data?.[1]?.result as number | undefined;
+  const policyCap = vaultReads.data?.[2]?.result as number | undefined;
 
   const cohortQuery = useReadContract({
     address: market.vault,
@@ -140,6 +149,14 @@ export function ConfirmClient({ positionId, strikePercent }: { positionId: strin
   const cap = formatUsdcDecimal(quote.data.maxPayoutUsdc);
   const needsTokenApproval = (allowanceQuery.data ?? 0n) < quote.data.premiumRaw;
   const busy = approvingToken || approvingNft || buying;
+  // The vault reverts buyCover below the cohort's floor, and the floor moves with
+  // capital, so it is checked against the cohort as it is now. Nothing is sent
+  // while this fails.
+  const floorCheck =
+    cohort && maxUtilizationBps !== undefined && policyCap !== undefined
+      ? meetsPayoutFloor(quote.data.maxPayoutRaw, cohort.totalCapital, BigInt(maxUtilizationBps), BigInt(policyCap))
+      : undefined;
+  const belowFloor = floorCheck !== undefined && !floorCheck.ok;
 
   const maxPremium = (quote.data.premiumRaw * (10_000n + MAX_PREMIUM_BUFFER_BPS)) / 10_000n;
   const strikeAnnualized = volPercentToStrikeAnnualized(strikePercent);
@@ -148,6 +165,7 @@ export function ConfirmClient({ positionId, strikePercent }: { positionId: strin
   const currentStep: Step = needsTokenApproval ? "approve-usdc" : !nftApproved ? "approve-nft" : "buy-cover";
 
   async function handlePrimaryAction() {
+    if (belowFloor) return;
     if (currentStep === "approve-usdc") {
       await approve({ token: arunaAddresses.settlementToken, spender: market.vault, amount: maxPremium, symbol: "USDC" });
       return;
@@ -286,7 +304,12 @@ export function ConfirmClient({ positionId, strikePercent }: { positionId: strin
               </div>
             </div>
 
-            <Button type="button" onClick={handlePrimaryAction} disabled={!acknowledged || busy || !isSellable}>
+            {belowFloor && floorCheck ? (
+              <p className="text-[13.5px] leading-[1.6] text-negative">
+                {lpConfirmCopy.txCard.belowFloorNote(formatUsdc(Number(formatUnits(floorCheck.floor, USDC_DECIMALS))))}
+              </p>
+            ) : null}
+            <Button type="button" onClick={handlePrimaryAction} disabled={!acknowledged || busy || !isSellable || belowFloor}>
               {primaryLabel}
             </Button>
             <Button variant="ghost" href={`/protect/${positionId}/quote`}>

@@ -18,6 +18,7 @@ import { formatTokenNumber, formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { closeAreaPath, roundedCornerPath } from "@/lib/chart-path";
 import { arunaMarkets } from "@/lib/contracts/addresses";
 import { coverVaultAbi } from "@/lib/contracts/abis/coverVault";
+import { meetsPayoutFloor } from "@/lib/contracts/payout-floor";
 import { derivePoolInfo } from "@/lib/contracts/pool-label";
 import { USDC_DECIMALS, formatDuration, secondsUntil } from "@/lib/contracts/units";
 import { usePosition } from "@/hooks/usePosition";
@@ -44,11 +45,13 @@ export function QuoteClient({ positionId }: { positionId: string }) {
       { address: market.vault, abi: coverVaultAbi, functionName: "currentCohortId" as const },
       { address: market.vault, abi: coverVaultAbi, functionName: "sampleInterval" as const },
       { address: market.vault, abi: coverVaultAbi, functionName: "maxUtilizationBps" as const },
+      { address: market.vault, abi: coverVaultAbi, functionName: "policyCap" as const },
     ],
   });
   const currentCohortId = vaultReads.data?.[0]?.result as number | undefined;
   const sampleIntervalSeconds = vaultReads.data?.[1]?.result as number | undefined;
   const maxUtilizationBps = vaultReads.data?.[2]?.result as number | undefined;
+  const policyCap = vaultReads.data?.[3]?.result as number | undefined;
 
   const cohortQuery = useReadContract({
     address: market.vault,
@@ -123,6 +126,14 @@ export function QuoteClient({ positionId }: { positionId: string }) {
   const totalCapacityUsdc = Number(formatUnits(availableCapacity, USDC_DECIMALS));
   const utilization = totalCapacityUsdc > 0 ? 1 - freeCapacityUsdc / totalCapacityUsdc : 0;
   const hasCapacity = quote.data ? quote.data.maxPayoutUsdc <= freeCapacityUsdc : true;
+  // buyCover reverts below this floor; checking here keeps the position from
+  // reaching the wallet. The floor moves with the cohort's capital, so it is
+  // read at the time of the quote, not when the position was sized.
+  const floorCheck =
+    quote.data && cohort && maxUtilizationBps !== undefined && policyCap !== undefined
+      ? meetsPayoutFloor(quote.data.maxPayoutRaw, cohort.totalCapital, BigInt(maxUtilizationBps), BigInt(policyCap))
+      : undefined;
+  const belowFloor = floorCheck !== undefined && !floorCheck.ok;
 
   // Flat at 0 to the strike, a straight ramp to the cap, flat at the cap
   // after - the real shape of min(maxPayout, varNotional × excess / WAD),
@@ -305,10 +316,19 @@ export function QuoteClient({ positionId }: { positionId: string }) {
               {lpQuoteCopy.capacityCheck.label}
             </div>
             <div className="flex items-center gap-[10px] pt-[12px]">
-              <span className={`w-[8px] h-[8px] rounded-full inline-block ${hasCapacity ? "bg-positive" : "bg-negative"}`} />
+              <span className={`w-[8px] h-[8px] rounded-full inline-block ${hasCapacity && !belowFloor ? "bg-positive" : "bg-negative"}`} />
               <span className="text-[14.5px] text-foreground">
-                {hasCapacity ? lpQuoteCopy.capacityCheck.statusOk : lpQuoteCopy.capacityCheck.statusNotEnough}
+                {belowFloor
+                  ? lpQuoteCopy.capacityCheck.statusTooSmall
+                  : hasCapacity
+                    ? lpQuoteCopy.capacityCheck.statusOk
+                    : lpQuoteCopy.capacityCheck.statusNotEnough}
               </span>
+              {belowFloor ? (
+                <p className="text-[13.5px] leading-[1.6] text-foreground-secondary pt-[10px]">
+                  {lpQuoteCopy.capacityCheck.tooSmallNote(formatUsdc(Number(formatUnits(floorCheck?.floor ?? 0n, USDC_DECIMALS))))}
+                </p>
+              ) : null}
             </div>
             <div className="pt-[14px]">
               <ProgressBar value={utilization} />

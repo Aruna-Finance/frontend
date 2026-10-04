@@ -301,6 +301,9 @@ export const lpQuoteCopy = {
     label: "CAPACITY CHECK",
     statusOk: "Vault can back this cover",
     statusNotEnough: "Not enough free capacity for this cover",
+    statusTooSmall: "Position too small for this cohort",
+    tooSmallNote: (floorUsdc: string) =>
+      `This cohort only accepts a maximum payout of at least ${floorUsdc} USDC per position. Pick a larger position, or wait for the next cohort.`,
     reservingCaption: (amount: string) => `reserving ${amount}`,
     freeCaption: (amount: string) => `${amount} free`,
     note: "Your maximum payout is locked out of the vault the moment you buy. No later buyer can claim it.",
@@ -339,6 +342,8 @@ export const lpConfirmCopy = {
     `I understand the premium is non-refundable, the payout is capped at ${cap} USDC, my position moves into the vault while covered, and settlement uses the pool's TWAP rather than spot price.`,
   txCard: {
     label: "THREE TRANSACTIONS",
+    belowFloorNote: (floorUsdc: string) =>
+      `The vault will reject this cover: its maximum payout is below the cohort's minimum of ${floorUsdc} USDC. Nothing is sent.`,
     approveUsdcTitle: (amount: string) => `Approve ${amount} USDC`,
     approveNftTitle: (tokenId: string) => `Approve position #${tokenId}`,
     approveNftBody: "Lets the vault pull this one position into escrow - nothing else.",
