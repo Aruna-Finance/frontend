@@ -81,3 +81,60 @@ export function formatTokenNumber(value: number): string {
   const fractionDigits = Math.abs(value) < 1 ? 6 : Math.abs(value) < 1000 ? 4 : 2;
   return value.toLocaleString("en-US", { maximumFractionDigits: fractionDigits });
 }
+
+const MISSING = "–";
+const COMPACT_UNITS = [
+  { value: 1e9, suffix: "B" },
+  { value: 1e6, suffix: "M" },
+  { value: 1e3, suffix: "K" },
+] as const;
+
+// Number.toString after toFixed drops trailing zeros: 1.0 -> "1", 4.90 -> "4.9".
+const trimmed = (value: number, digits: number) => Number(value.toFixed(digits)).toString();
+
+// A compact amount for stat tiles and table cells: 200439501.623 -> "200.4M",
+// 9800 -> "9.8K", 141.129 -> "141.13". Under 1,000 it keeps up to two decimals;
+// from 1,000 up it uses K/M/B with one. Rounding never leaves "1000" or "1000K":
+// a value that rounds up to the next unit is shown in that unit. The full figure
+// belongs in a tooltip (see formatUsdcDecimal).
+export function formatCompact(value: number | null | undefined, unit?: string): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return MISSING;
+  const abs = Math.abs(value);
+  let body: string;
+  let isZero = false;
+
+  let unitIndex = COMPACT_UNITS.findIndex((u) => abs >= u.value);
+  if (unitIndex === -1) {
+    const rounded = Number(abs.toFixed(2));
+    if (rounded < 1000) {
+      isZero = rounded === 0;
+      body = rounded.toString();
+    } else {
+      unitIndex = COMPACT_UNITS.length - 1; // 999.999 rounds up to 1K
+    }
+  }
+  if (unitIndex !== -1) {
+    let scaled = Number((abs / COMPACT_UNITS[unitIndex].value).toFixed(1));
+    if (scaled >= 1000 && unitIndex > 0) {
+      unitIndex -= 1; // 999.95K rounds up to 1M
+      scaled = Number((abs / COMPACT_UNITS[unitIndex].value).toFixed(1));
+    }
+    body = `${scaled}${COMPACT_UNITS[unitIndex].suffix}`;
+  }
+
+  const sign = value < 0 && !isZero ? "−" : "";
+  return `${sign}${body!}${unit ? ` ${unit}` : ""}`;
+}
+
+// A percentage with a readable precision: one decimal from 1% up (whole numbers
+// lose the ".0"), two below 1%, and "<0.01%" for a nonzero value that would
+// otherwise print as 0.00%. `signed` adds "+" to gains, for results and returns.
+export function formatPercent(value: number | null | undefined, options: { signed?: boolean } = {}): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return MISSING;
+  const abs = Math.abs(value);
+  if (abs === 0) return "0%";
+  if (Number(abs.toFixed(2)) === 0) return "<0.01%";
+  const body = trimmed(abs, abs < 1 ? 2 : 1);
+  const sign = value < 0 ? "−" : options.signed ? "+" : "";
+  return `${sign}${body}%`;
+}
