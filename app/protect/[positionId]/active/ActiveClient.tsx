@@ -101,7 +101,16 @@ export function ActiveClient({ positionId }: { positionId: string }) {
   const latest = points.at(-1);
   const currentSumSqCovered = latest?.sumSqCovered ?? 0n;
 
-  const currentPayout = previewPayout({ varNotional, maxPayout, sumSqCovered: currentSumSqCovered, strikeAnnualized, coveredSeconds });
+  // The mark extrapolates the variance accrued so far over the whole covered
+  // window ("current pace"). Settling on the accrued figure alone would compare
+  // a few minutes of variance against the strike for the full window and read
+  // as a loss until the very end, however far above the strike realized vol is.
+  const accruedSeconds = latest && points[0] ? BigInt(Math.max(0, latest.timestamp - points[0].timestamp)) : 0n;
+  const paceSumSqCovered =
+    accruedSeconds > 0n && accruedSeconds < coveredSeconds
+      ? (currentSumSqCovered * coveredSeconds) / accruedSeconds
+      : currentSumSqCovered;
+  const currentPayout = previewPayout({ varNotional, maxPayout, sumSqCovered: paceSumSqCovered, strikeAnnualized, coveredSeconds });
   const currentPayoutUsdc = Number(formatUnits(currentPayout, USDC_DECIMALS));
   const premiumUsdc = Number(formatUnits(premium, USDC_DECIMALS));
   const netUsdc = currentPayoutUsdc - premiumUsdc;
@@ -119,7 +128,16 @@ export function ActiveClient({ positionId }: { positionId: string }) {
   const samplesTotalForPolicy = proof?.sampleIntervalSeconds
     ? Math.max(1, Math.round(Number(coveredSeconds) / proof.sampleIntervalSeconds))
     : samplesTakenForPolicy;
-  const missedSamples = Math.max(0, Math.min(samplesTotalForPolicy, Math.floor(elapsedSinceBought / (proof?.sampleIntervalSeconds ?? 60))) - samplesTakenForPolicy);
+  // Same rule as the accumulator's gapStats: a sample counts as missed only
+  // when two consecutive samples are at least two intervals apart. Keepers
+  // poke a few seconds late every time, so counting elapsed / interval would
+  // report misses that never happened.
+  const sampleInterval = proof?.sampleIntervalSeconds ?? 60;
+  const missedSamples = relevantSamples.reduce((missed, row, i) => {
+    if (i === 0) return missed;
+    const gap = row.timestamp - relevantSamples[i - 1].timestamp;
+    return gap >= 2 * sampleInterval ? missed + Math.floor(gap / sampleInterval) - 1 : missed;
+  }, 0);
 
   // Four real, formula-derived reference points - not the mock's picked vol
   // levels, but the same shape: nothing owed, the point premium is covered,
