@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConfig, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { explorerTxUrl } from "@/lib/contracts/config";
+import { useChainGuard } from "@/hooks/useChainGuard";
+import { explorerTxUrl, supportedChain } from "@/lib/contracts/config";
 import { getContractErrorMessage } from "@/lib/contracts/errors";
 import { toast } from "@/lib/toast";
 import type { ToastAction } from "@/types/aruna";
@@ -27,15 +28,18 @@ export function useContractTx() {
   const config = useConfig();
   const queryClient = useQueryClient();
   const { writeContractAsync } = useWriteContract();
+  const { ensureSupportedChain } = useChainGuard();
   const [isPending, setIsPending] = useState(false);
 
   const send = useCallback(
     async (request: WriteRequest, labels: TxLabels): Promise<boolean> => {
+      // Wrong network: ask for a switch and send nothing from here.
+      if (!(await ensureSupportedChain())) return false;
       setIsPending(true);
       // Set once the wallet has signed, so later failures can link the tx.
       let action: ToastAction | undefined;
       try {
-        const hash = await writeContractAsync(request);
+        const hash = await writeContractAsync({ ...request, chainId: supportedChain.id });
         action = { label: "View on explorer", href: explorerTxUrl(hash) };
         toast.success(labels.submitted, {
           id: labels.id,
@@ -69,7 +73,7 @@ export function useContractTx() {
         setIsPending(false);
       }
     },
-    [config, queryClient, writeContractAsync],
+    [config, queryClient, writeContractAsync, ensureSupportedChain],
   );
 
   return { send, isPending };

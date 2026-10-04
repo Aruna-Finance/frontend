@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useChainGuard } from "@/hooks/useChainGuard";
 import { useWallet } from "@/hooks/useWallet";
 import { useWalletModal } from "@/hooks/useWalletModal";
 import { walletCopy } from "@/lib/content/copy";
@@ -21,6 +22,7 @@ export function WalletButton() {
   const hydrated = useHydrated();
   const { address, isConnected, isConnecting, isReconnecting, disconnect } = useWallet();
   const walletModal = useWalletModal();
+  const { isWrongNetwork, switchToSupported } = useChainGuard();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +57,18 @@ export function WalletButton() {
         className={`${chipClasses} bg-accent text-on-accent font-semibold hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed`}
       >
         {isConnecting ? walletCopy.connecting : walletCopy.connect}
+      </button>
+    );
+  }
+
+  if (isWrongNetwork) {
+    return (
+      <button
+        type="button"
+        onClick={switchToSupported}
+        className={`${chipClasses} bg-negative-soft text-negative font-semibold hover:opacity-80`}
+      >
+        {walletCopy.wrongNetworkChip}
       </button>
     );
   }
