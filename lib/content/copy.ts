@@ -358,6 +358,15 @@ export const lpSettlementCopy = {
   refundedBody:
     "The cohort could not be measured (no keeper samples covered it), so the vault returned your full premium instead of settling a payout. Nothing else was owed either way.",
   coverSettled: (coverId: string, date: string) => `Cover #${coverId} · settled ${date}`,
+  claim: {
+    label: "HELD FOR YOU",
+    balanceBody: (reason: "payout" | "refund" | "balance", amount: string) =>
+      `Sending your ${reason === "balance" ? "balance" : reason} to your wallet failed, so the vault is holding ${amount} USDC for you. Claim it to your wallet.`,
+    balanceCta: "Claim to wallet",
+    positionBody:
+      "Returning your Uniswap position NFT automatically failed, so the vault is holding it for you. Claim it back to your wallet.",
+    positionCta: "Claim position",
+  },
   netResultLabel: "Net result",
   unit: "USDC",
   paidOutBody: (volPercent: number, strikePercent: number, breakevenPercent: number) =>

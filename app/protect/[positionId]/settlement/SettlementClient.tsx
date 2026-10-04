@@ -13,13 +13,22 @@ import { USDC_DECIMALS, formatVarianceWad } from "@/lib/contracts/units";
 import { excessVariance, strikeAccumulated } from "@/lib/contracts/variance";
 import { isFinalPolicy, mapPolicyToCover } from "@/lib/indexer/mapPolicy";
 import { lpSettlementCopy } from "@/lib/content/copy";
+import { useClaimPosition } from "@/hooks/useClaimPosition";
+import { useClaimUnclaimed } from "@/hooks/useClaimUnclaimed";
 import { usePoliciesByPosition } from "@/hooks/usePolicyByPosition";
+import { useUnclaimed } from "@/hooks/useUnclaimed";
+import { useWallet } from "@/hooks/useWallet";
+import { claimActions } from "@/lib/indexer/claims";
 import { useVaultByAddress } from "@/hooks/useVaults";
 
 export function SettlementClient({ positionId }: { positionId: string }) {
   const { data: policies, isLoading } = usePoliciesByPosition(positionId);
   const raw = policies?.find(isFinalPolicy);
   const vault = useVaultByAddress(raw?.vault ?? "").data;
+  const { address } = useWallet();
+  const unclaimed = useUnclaimed(raw?.vault as `0x${string}` | undefined, address);
+  const { claimUnclaimed, isPending: claimingBalance } = useClaimUnclaimed();
+  const { claimPosition, isPending: claimingPosition } = useClaimPosition();
 
   if (isLoading) {
     return (
@@ -52,6 +61,7 @@ export function SettlementClient({ positionId }: { positionId: string }) {
   // No feed to read pool fees from for testnet tokens — this line in the
   // mock ("fees earned while covered") isn't reconstructable without a price
   // feed either, so it's left out rather than shown as a guessed number.
+  const actions = claimActions(raw, address, unclaimed.data ?? 0n);
   const nextCohortId = vault?.fundingCohortId ?? raw.cohortId + 1;
 
   return (
@@ -199,6 +209,46 @@ export function SettlementClient({ positionId }: { positionId: string }) {
               </div>
             </Card>
           )}
+
+          {actions.length > 0 ? (
+            <Card variant="raised" className="flex flex-col gap-[14px] mt-[18px]">
+              <span className="text-[11px] tracking-[0.07em] uppercase text-accent">{lpSettlementCopy.claim.label}</span>
+              {actions.map((action) =>
+                action.kind === "claimUnclaimed" ? (
+                  <div key="balance" className="flex flex-col gap-[10px]">
+                    <p className="text-[14.5px] leading-[1.6] text-foreground-secondary">
+                      {lpSettlementCopy.claim.balanceBody(
+                        action.reason,
+                        formatUsdcDecimal(Number(formatUnits(action.amount, USDC_DECIMALS))),
+                      )}
+                    </p>
+                    <Button
+                      type="button"
+                      disabled={claimingBalance}
+                      onClick={async () => {
+                        if (await claimUnclaimed({ vault: raw.vault as `0x${string}` })) await unclaimed.refetch();
+                      }}
+                    >
+                      {lpSettlementCopy.claim.balanceCta}
+                    </Button>
+                  </div>
+                ) : (
+                  <div key="position" className="flex flex-col gap-[10px]">
+                    <p className="text-[14.5px] leading-[1.6] text-foreground-secondary">
+                      {lpSettlementCopy.claim.positionBody}
+                    </p>
+                    <Button
+                      type="button"
+                      disabled={claimingPosition}
+                      onClick={() => claimPosition({ vault: raw.vault as `0x${string}`, policyId: action.policyId })}
+                    >
+                      {lpSettlementCopy.claim.positionCta}
+                    </Button>
+                  </div>
+                ),
+              )}
+            </Card>
+          ) : null}
         </div>
       </div>
     </div>
