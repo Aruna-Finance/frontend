@@ -4,6 +4,7 @@ import {
   deriveCohortStatus,
   deriveCohortWindow,
   fundingTarget,
+  isCohortSettled,
   type CohortWindow,
 } from "@/lib/contracts/cohort-id";
 import { chainLabel, derivePoolInfo } from "@/lib/contracts/pool-label";
@@ -36,7 +37,7 @@ function mapCohortRow(row: IndexerCohort, vaultId: string, now: Date): Cohort {
   return {
     id: row.cohortId,
     vaultId,
-    status: deriveCohortStatus(window, row.finalized, now),
+    status: deriveCohortStatus(window, isCohortSettled(row), now),
     startsAt: window.startsAt,
     endsAt: window.endsAt,
     ...EMPTY_COHORT_EXTRAS,

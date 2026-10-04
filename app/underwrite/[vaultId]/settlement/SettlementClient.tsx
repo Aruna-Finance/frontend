@@ -15,7 +15,11 @@ import { formatCohortDate, formatSettlementDate, formatUsdc, formatUsdcDecimal, 
 import { useCohortsByAddress, useVaultByAddress } from "@/hooks/useVaults";
 import { useCohort } from "@/hooks/useCohort";
 import { useCohortDetail } from "@/hooks/useCohortDetail";
+import { useUnderwriterPositionsByWallet } from "@/hooks/useUnderwriterPositions";
+import { useRollTarget } from "@/hooks/useRollTarget";
+import { useRollTo } from "@/hooks/useRollTo";
 import { useWallet } from "@/hooks/useWallet";
+import { useWithdraw } from "@/hooks/useWithdraw";
 import { useWalletModal } from "@/hooks/useWalletModal";
 import { USDC_DECIMALS, varianceWadToVolPercent } from "@/lib/contracts/units";
 import { realizedVarianceAnnualized } from "@/lib/contracts/variance";
@@ -35,22 +39,45 @@ function usdc(value: bigint): number {
 export function SettlementClient({ vaultId }: { vaultId: string }) {
   const { data: vault, isLoading: vaultLoading } = useVaultByAddress(vaultId);
   const { data: cohorts, isLoading: cohortsLoading } = useCohortsByAddress(vaultId);
-  const lastSettled = cohorts?.filter((item) => item.status === "SETTLED").sort((a, b) => b.id - a.id)[0];
+  const { address, isConnected } = useWallet();
+  const walletModal = useWalletModal();
+  const { data: myPositions, isLoading: positionsLoading } = useUnderwriterPositionsByWallet(address);
+  const settledCohorts = (cohorts ?? []).filter((item) => item.status === "SETTLED").sort((a, b) => b.id - a.id);
+  // The newest settled cohort this wallet actually has capital in; a settled
+  // cohort the wallet never joined (e.g. only the operator did) is not its settlement.
+  const myCohortIds = new Set(
+    (myPositions ?? [])
+      .filter((item) => item.vaultId.toLowerCase() === vaultId.toLowerCase() && item.capitalCommittedUsdc > 0)
+      .map((item) => item.cohortId),
+  );
+  const lastSettled = settledCohorts.find((item) => myCohortIds.has(item.id)) ?? (address ? undefined : settledCohorts[0]);
   const { data: cohort, isLoading: cohortLoading } = useCohortDetail(vaultId, lastSettled?.id);
   const fundingCohortId = vault?.fundingCohortId ?? (lastSettled?.id ?? 0) + 1;
   const fundingCohort = useCohort(vaultId, fundingCohortId).data;
-  const { address, isConnected } = useWallet();
-  const walletModal = useWalletModal();
+  const { rollTo, isPending: rolling } = useRollTo();
+  const { withdraw, isPending: withdrawing } = useWithdraw();
+  const { target: rollTargetId, resolve: resolveRollTarget } = useRollTarget(vaultId, lastSettled?.id);
 
   // Only wait on `cohortLoading` once there's a `lastSettled.id` to look up —
   // if `cohorts` resolves with no settled cohort at all, that query stays
   // disabled (pending) forever, and waiting on it would spin indefinitely
   // instead of ever reaching the real "no settlement" notFound below.
-  if (vaultLoading || cohortsLoading || (Boolean(lastSettled) && cohortLoading)) {
+  if (vaultLoading || cohortsLoading || (Boolean(address) && positionsLoading) || (Boolean(lastSettled) && cohortLoading)) {
     return (
       <div className="flex flex-col flex-1 bg-canvas text-foreground">
         <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
         <p className="px-[24px] lg:px-[32px] pt-[32px] text-[14px] text-foreground-muted">Loading settlement…</p>
+      </div>
+    );
+  }
+  if (vault && isConnected && address && !lastSettled) {
+    return (
+      <div className="flex flex-col flex-1 bg-canvas text-foreground">
+        <Header variant="app" navLinks={withActiveNavLink("/underwrite")} />
+        <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[80px] flex flex-col items-center gap-[16px] text-center">
+          <p className="text-[15px] text-foreground-secondary">{uwSettlementCopy.noSettledYet}</p>
+          <Button href={`/underwrite/${vaultId}/dashboard`}>{uwSettlementCopy.noSettledCta}</Button>
+        </div>
       </div>
     );
   }
@@ -114,6 +141,19 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
   const yourClaimsUsdc = -(yourShare * claimsUsdc);
   const yourNetUsdc = yourPremiumsUsdc + yourClaimsUsdc;
   const returnedToYouUsdc = yourCapitalUsdc + yourNetUsdc;
+  // Capital still in the cohort: neither withdrawn nor rolled out yet.
+  const hasCapitalInCohort = position.deposit > 0n;
+  const busy = rolling || withdrawing;
+  const vaultAddress = vault.id as `0x${string}`;
+
+  const onRoll = async () => {
+    const toCohort = resolveRollTarget();
+    if (toCohort === undefined) return;
+    await rollTo({ vault: vaultAddress, fromCohort: lastSettled.id, toCohort });
+  };
+  const onWithdraw = async () => {
+    await withdraw({ vault: vaultAddress, cohortId: lastSettled.id });
+  };
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
@@ -245,15 +285,18 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
               {uwSettlementCopy.nextCycleBody(fundingCohortId, fundingCohort ? formatCohortDate(fundingCohort.startsAt) : "soon")}
             </div>
             <div className="flex flex-col gap-[10px]">
-              <Button href={`/underwrite/${vaultId}/deposit`}>
-                {uwSettlementCopy.rollCta(formatUsdcDecimal(returnedToYouUsdc), fundingCohortId)}
+              <Button type="button" onClick={onRoll} disabled={!hasCapitalInCohort || busy || rollTargetId === undefined}>
+                {uwSettlementCopy.rollCta(formatUsdcDecimal(returnedToYouUsdc), rollTargetId ?? fundingCohortId)}
+              </Button>
+              <Button variant="ghost" type="button" onClick={onWithdraw} disabled={!hasCapitalInCohort || busy}>
+                {uwSettlementCopy.withdrawCta}
               </Button>
               <Button variant="ghost" href={`/underwrite/${vaultId}/deposit`}>
                 {uwSettlementCopy.rollDifferentCta}
               </Button>
-              <Button variant="ghost" href="/underwrite">
-                {uwSettlementCopy.withdrawCta}
-              </Button>
+              {!hasCapitalInCohort ? (
+                <p className="text-[13px] text-foreground-muted">{uwSettlementCopy.alreadyClosedNote}</p>
+              ) : null}
             </div>
           </Card>
         </div>

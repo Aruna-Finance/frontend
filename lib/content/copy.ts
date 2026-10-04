@@ -541,6 +541,9 @@ export const uwSettlementCopy = {
   rollCta: (amount: string, cohortId: number) => `Roll ${amount} into cohort ${cohortId}`,
   rollDifferentCta: "Roll a different amount",
   withdrawCta: "Withdraw and stop",
+  noSettledYet: "None of your underwriting has settled yet. It unlocks once the cohort you funded is finalized and settled.",
+  noSettledCta: "Back to your dashboard",
+  alreadyClosedNote: "You already withdrew or rolled this cohort's capital.",
 } as const;
 
 export const statesCopy = {

@@ -52,8 +52,16 @@ export function deriveCohortWindow(anchor: bigint, tenor: bigint, cohortId: numb
 // after the cohort's tenor ends but before it's fully settled (v2 design
 // §4.1/§4.6) — LPs are NOT protected during this window, even though the
 // next cohort may already be FUNDING.
-export function deriveCohortStatus(window: CohortWindow, finalized: boolean, now: Date = new Date()): CohortStatus {
+export function deriveCohortStatus(window: CohortWindow, settled: boolean, now: Date = new Date()): CohortStatus {
   if (now < new Date(window.startsAt)) return "FUNDING";
   if (now < new Date(window.endsAt)) return "ACTIVE";
-  return finalized ? "SETTLED" : "SETTLING";
+  return settled ? "SETTLED" : "SETTLING";
+}
+
+// The contract reaches SETTLED only once the cohort is finalized AND every live
+// policy has been settled (a finalized cohort with policies left is still
+// SETTLING; withdraw and roll revert until then). The indexer does not store
+// the status, so it is derived from these three mirrored columns.
+export function isCohortSettled(row: { finalized: boolean; settledCount: number; policyCount: number }): boolean {
+  return row.finalized && row.settledCount >= row.policyCount;
 }

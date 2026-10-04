@@ -19,6 +19,9 @@ export interface TxLabels {
   confirmedDescription?: string;
 }
 
+// Indexer lag after a confirmed write; see the refetch below.
+const INDEXER_REFETCH_DELAYS_MS = [0, 4_000, 12_000];
+
 type WriteRequest = Parameters<ReturnType<typeof useWriteContract>["writeContractAsync"]>[0];
 
 // One contract write, start to finish: wallet prompt, submitted, mined.
@@ -61,6 +64,11 @@ export function useContractTx() {
         toast.success(labels.confirmed, { id: labels.id, description: labels.confirmedDescription, action });
         // Balances and allowances just changed; refetch every on-chain read.
         await queryClient.invalidateQueries({ queryKey: ["readContract"] });
+        // The indexer trails the chain by a few seconds: refetch now and again
+        // once it has had time to catch up, so pages reflect the write.
+        for (const delay of INDEXER_REFETCH_DELAYS_MS) {
+          setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["indexer"] }), delay);
+        }
         return true;
       } catch (error) {
         // wagmi's receipt wait itself throws when the tx reverted, so this is

@@ -41,7 +41,7 @@ export function useVault(vaultId: string): UseVaultResult {
 
 // Shared by every "by address" hook below so they dedupe onto one fetch (same
 // query key) regardless of which one a page calls first.
-function useVaultRawByAddress(vaultId: string) {
+export function useVaultRawByAddress(vaultId: string) {
   return useQuery({
     queryKey: ["indexer", "vaultByAddress", vaultId.toLowerCase()],
     queryFn: () =>

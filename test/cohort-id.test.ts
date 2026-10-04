@@ -4,6 +4,7 @@ import {
   deriveCohortStatus,
   deriveCohortWindow,
   fundingTarget,
+  isCohortSettled,
   rollTarget,
 } from "@/lib/contracts/cohort-id";
 
@@ -72,5 +73,24 @@ describe("rollTarget (AE3)", () => {
 
   it("never rolls to the source cohort or behind it", () => {
     expect(rollTarget(9, anchor, tenor, at(5n, 100n), gap)).toBe(10);
+  });
+});
+
+describe("isCohortSettled", () => {
+  it("needs finalize and every live policy settled", () => {
+    expect(isCohortSettled({ finalized: true, settledCount: 3, policyCount: 3 })).toBe(true);
+    expect(isCohortSettled({ finalized: true, settledCount: 1, policyCount: 3 })).toBe(false);
+    expect(isCohortSettled({ finalized: false, settledCount: 0, policyCount: 0 })).toBe(false);
+  });
+
+  it("a finalized cohort with no live policies is settled", () => {
+    expect(isCohortSettled({ finalized: true, settledCount: 0, policyCount: 0 })).toBe(true);
+  });
+
+  it("keeps the cohort SETTLING after its window while policies are unsettled", () => {
+    const window = deriveCohortWindow(anchor, tenor, 5, gap);
+    const now = new Date(Number(at(5n, tenor + 100n)) * 1000);
+    const row = { finalized: true, settledCount: 1, policyCount: 3 };
+    expect(deriveCohortStatus(window, isCohortSettled(row), now)).toBe("SETTLING");
   });
 });
