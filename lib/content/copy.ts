@@ -463,38 +463,48 @@ export const lpSettlementCopy = {
 } as const;
 
 export const uwVaultsCopy = {
-  heading: "Underwrite a vault",
+  heading: "Underwrite",
   subtitle:
-    "You sell variance cover to every LP in one pool for one week. Premiums are yours; claims come out of your capital. Your exposure is bounded by the capacity the vault has already written.",
+    "Commit capital that backs cover for LPs in one pool. You keep the premiums and pay the claims, up to the capacity your deposit supports.",
   myUnderwritingCta: "My underwriting",
-  cohortOpenBadge: (cohortId: number) => `COHORT ${cohortId} OPEN`,
-  vaultMeta: (underwriterCount: number, date: string) =>
-    `${underwriterCount} underwriters · deposits fund the cycle starting ${date}`,
+  // Used by the underwriter dashboard, which shows the same cycle summary.
   historyCaption: (cumulativePercent: number, lossCount: number) =>
     `last 6 cycles · ${cumulativePercent >= 0 ? "+" : ""}${cumulativePercent}% cumulative, ${
       lossCount === 1 ? "1 loss" : `${lossCount} losses`
     }`,
-  correlatedPairMeta: "correlated pair, historically low variance and low premium",
-  statLabels: {
+  depositCta: "Deposit",
+  depositWindow: {
+    sectionTitle: "Open deposit windows",
+    open: (cohortId: number) => `Cohort ${cohortId} takes deposits`,
+    closesIn: (time: string) => `Closes in ${time}`,
+  },
+  stats: {
+    lastCycle: "LAST CYCLE",
     capital: "CAPITAL",
     utilization: "UTILIZATION",
-    premiumsCycle: (cohortId: number) => `PREMIUMS, CYCLE ${cohortId}`,
+    noCycleYet: "None yet",
   },
-  depositCta: "Deposit",
-  infoCards: [
-    {
-      title: "Your capital is pooled",
-      body: "It backs every policy the vault writes, proportionally. You are never the sole counterparty to one LP's bad week.",
-    },
-    {
-      title: "It is locked for the cycle",
-      body: "Policies were sold against it, so it cannot leave before settlement. Deposit only what you can leave until the cycle settles.",
-    },
-    {
-      title: "Losses are real",
-      body: "In a violent week claims can exceed premiums by a wide margin. The bound is the written capacity, not zero.",
-    },
-  ],
+  risks: {
+    label: "BEFORE YOU DEPOSIT",
+    items: [
+      "Capital is locked until the cohort settles. It cannot leave early.",
+      "Claims come out of your share of the capital, in proportion to it.",
+      "In a volatile week claims can exceed premiums. Your loss is bounded by the capacity written, not by zero.",
+    ],
+  },
+  positions: {
+    heading: "My positions",
+    connectTitle: "Connect a wallet to see your underwriting",
+    connectCta: "Connect wallet",
+    emptyTitle: "You have not underwritten any cohort yet",
+    emptyBody: "Deposit into an open cohort above. Your positions and their settlement will appear here.",
+    columns: { market: "Market", cohort: "Cohort", capital: "Capital", share: "Share" },
+    viewCta: "Open",
+    recentCohorts: "Recent cohorts",
+  },
+  noMarkets: "No market is listed yet.",
+  loading: "Loading markets…",
+  loadError: "Could not load markets from the indexer.",
 } as const;
 
 export const uwMyPositionsCopy = {

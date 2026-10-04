@@ -12,6 +12,7 @@ import { RoleCard } from "@/components/aruna/RoleCard";
 import { SectionHeader } from "@/components/aruna/SectionHeader";
 import { HowItWorks } from "@/components/aruna/HowItWorks";
 import { LineChart } from "@/components/aruna/charts/LineChart";
+import { CohortHistory } from "@/components/aruna/CohortHistory";
 import { AppFooter } from "@/components/aruna/AppFooter";
 import { marketDetailCopy, marketsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
@@ -229,30 +230,11 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
         <section>
           <SectionHeader title={marketDetailCopy.history.title} description={marketDetailCopy.history.description} />
           <Card padding="sm">
-            {yieldSummary && yieldSummary.recent.length > 0 ? (
-              <div className="flex flex-col">
-                <div className="grid grid-cols-5 gap-[8px] px-[4px] pb-[10px] text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-                  <span>{marketDetailCopy.history.columns.cohort}</span>
-                  <span className="text-right">{marketDetailCopy.history.columns.capital}</span>
-                  <span className="text-right">{marketDetailCopy.history.columns.premiums}</span>
-                  <span className="text-right">{marketDetailCopy.history.columns.claims}</span>
-                  <span className="text-right">{marketDetailCopy.history.columns.result}</span>
-                </div>
-                {yieldSummary.recent.map((row) => (
-                  <div key={row.cohortId} className="grid grid-cols-5 gap-[8px] px-[4px] py-[12px] border-t border-border font-mono text-[13px] items-center">
-                    <span>Cohort {row.cohortId}</span>
-                    <span className="text-right">{formatCompact(row.capitalUsdc)}</span>
-                    <span className="text-right">{formatCompact(row.premiumsUsdc)}</span>
-                    <span className="text-right">{formatCompact(row.claimsUsdc)}</span>
-                    <span className={["text-right", row.netUsdc >= 0 ? "text-positive" : "text-negative"].join(" ")}>
-                      {formatPercent(row.percent, { signed: true })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-[28px] text-center text-[14px] text-foreground-muted">{marketDetailCopy.history.empty}</div>
-            )}
+            <CohortHistory
+              rows={yieldSummary?.recent ?? []}
+              labels={marketDetailCopy.history.columns}
+              emptyText={marketDetailCopy.history.empty}
+            />
           </Card>
         </section>
       </div>
