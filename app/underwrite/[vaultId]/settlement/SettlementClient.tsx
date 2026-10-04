@@ -58,7 +58,7 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
   const { withdraw, isPending: withdrawing } = useWithdraw();
   const { target: rollTargetId, resolve: resolveRollTarget } = useRollTarget(vaultId, lastSettled?.id);
 
-  // Only wait on `cohortLoading` once there's a `lastSettled.id` to look up —
+  // Only wait on `cohortLoading` once there's a `lastSettled.id` to look up -
   // if `cohorts` resolves with no settled cohort at all, that query stays
   // disabled (pending) forever, and waiting on it would spin indefinitely
   // instead of ever reaching the real "no settlement" notFound below.

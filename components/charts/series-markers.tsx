@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { type ReactNode, useCallback, useMemo } from "react";
 import { clipRevealTransition } from "./animation";
@@ -183,7 +183,7 @@ export function SeriesMarkers({
     );
   }
 
-  // Stable base layer — its children come from the parent and stay
+  // Stable base layer - its children come from the parent and stay
   // referentially identical when the dim wrapper re-renders for hover.
   const baseMarkers = points.map((point) => (
     <StaticSeriesPointMarker

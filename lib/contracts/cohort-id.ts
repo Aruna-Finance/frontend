@@ -1,10 +1,10 @@
-import type { CohortStatus } from "@/types/domain";
+﻿import type { CohortStatus } from "@/types/domain";
 
 // A cohort row only exists in the vault/indexer once something has happened
 // in it (a deposit). The running/next cohort id is always derivable without
 // one, straight from the vault's own anchor, tenor, and gap (confirmed by the
 // SC team, v2 design §4.4): cohortId = floor((now - anchor) / (tenor + gap)).
-// Do not assume anchor = 0 — only the old v0 main vault happened to have that
+// Do not assume anchor = 0 - only the old v0 main vault happened to have that
 // value. `gap` is required on purpose: a caller that forgets it silently
 // targets the wrong cohort (the sandbox runs tenor 3600 + gap 600). Indexer v2
 // exposes it as `vault.gap`; on-chain it is `gap()`.
@@ -34,9 +34,9 @@ export interface CohortWindow {
   endsAt: string;
 }
 
-// ISO start/end for a cohort id, derived the same way — works even before the
+// ISO start/end for a cohort id, derived the same way - works even before the
 // cohort has a row (e.g. to show "next cohort opens <date>" while empty).
-// v2: endsAt(n) = startsAt(n) + tenor (NOT startsAt(n+1) — there's a gap
+// v2: endsAt(n) = startsAt(n) + tenor (NOT startsAt(n+1) - there's a gap
 // between them where the cohort settles and LPs are unprotected, design §4.6).
 export function deriveCohortWindow(anchor: bigint, tenor: bigint, cohortId: number, gap: bigint): CohortWindow {
   const start = anchor + BigInt(cohortId) * (tenor + gap);
@@ -47,10 +47,10 @@ export function deriveCohortWindow(anchor: bigint, tenor: bigint, cohortId: numb
   };
 }
 
-// Cohort status is not a stored column (indexer or contract) — derive it from
+// Cohort status is not a stored column (indexer or contract) - derive it from
 // time and `finalized`, per the indexer README. SETTLING is the gap window
 // after the cohort's tenor ends but before it's fully settled (v2 design
-// §4.1/§4.6) — LPs are NOT protected during this window, even though the
+// §4.1/§4.6) - LPs are NOT protected during this window, even though the
 // next cohort may already be FUNDING.
 export function deriveCohortStatus(window: CohortWindow, settled: boolean, now: Date = new Date()): CohortStatus {
   if (now < new Date(window.startsAt)) return "FUNDING";

@@ -25,7 +25,7 @@ function usdc(value: bigint): number {
 }
 
 // Total payout every policy in the cohort would owe if the whole cohort
-// experienced one uniform annualized realized vol — used for the two
+// experienced one uniform annualized realized vol - used for the two
 // hypothetical scenario rows (a real formula, not a mock-picked number).
 function simulateVaultClaimsUsdc(policies: CohortDetailPolicy[], varianceWad: bigint): number {
   return policies.reduce((sum, policy) => {
@@ -53,7 +53,7 @@ export function DashboardClient({ vaultId }: { vaultId: string }) {
   const { address, isConnected } = useWallet();
   const walletModal = useWalletModal();
 
-  // Only wait on `cohortLoading` once `activeCohortId` is known — if the
+  // Only wait on `cohortLoading` once `activeCohortId` is known - if the
   // vault never resolves one (no vault at all), that query stays disabled
   // (pending) forever, and waiting on it would spin indefinitely.
   if (vaultLoading || (activeCohortId !== undefined && cohortLoading)) {
@@ -236,7 +236,7 @@ export function DashboardClient({ vaultId }: { vaultId: string }) {
 
           {scenarioRows.length === 0 ? (
             <p className="text-[14px] text-foreground-muted pt-[16px]">
-              No policies have been written against this cohort yet — nothing to project.
+              No policies have been written against this cohort yet - nothing to project.
             </p>
           ) : (
             <div className="overflow-x-auto pt-[16px]">

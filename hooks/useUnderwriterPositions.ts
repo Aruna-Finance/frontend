@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { indexerRequest } from "@/lib/indexer/client";
@@ -13,7 +13,7 @@ export interface UseUnderwriterPositionsByWalletResult {
   isError: boolean;
 }
 
-// Every cohort a wallet has ever put capital into, across every vault — the
+// Every cohort a wallet has ever put capital into, across every vault - the
 // contract itself has no "all positions for this wallet" query.
 export function useUnderwriterPositionsByWallet(wallet: string | undefined): UseUnderwriterPositionsByWalletResult {
   const query = useQuery({

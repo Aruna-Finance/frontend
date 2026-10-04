@@ -1,4 +1,4 @@
-import { formatUnits } from "viem";
+﻿import { formatUnits } from "viem";
 import {
   deriveCohortId,
   deriveCohortStatus,
@@ -46,7 +46,7 @@ function mapCohortRow(row: IndexerCohort, vaultId: string, now: Date): Cohort {
 
 // A cohort only gets a row once someone has deposited into it. Before that
 // (or for a future cohort nobody has funded yet) it's still fully
-// describable from the vault's own schedule — this is what makes an empty
+// describable from the vault's own schedule - this is what makes an empty
 // "next cohort opens <date>" card possible instead of just hiding it.
 function synthesizeCohort(vaultId: string, anchor: bigint, tenor: bigint, gap: bigint, cohortId: number, now: Date): Cohort {
   const window = deriveCohortWindow(anchor, tenor, cohortId, gap);
@@ -92,7 +92,7 @@ export function mapVault(raw: IndexerVault, now: Date): Vault {
   const reservedCapacityUsdc = currentRow ? usdcToNumber(currentRow.reserved) : 0;
   // What buyCover can actually still reserve, per the contract's own rule
   // (confirmed by the SC team): reserved + maxPayout <= totalCapital *
-  // maxUtilizationBps / 10000 — not the whole uncommitted balance.
+  // maxUtilizationBps / 10000 - not the whole uncommitted balance.
   const capacityCeilingUsdc = (totalCapitalUsdc * raw.maxUtilizationBps) / 10_000;
   const freeCapacityUsdc = Math.max(0, capacityCeilingUsdc - reservedCapacityUsdc);
 
@@ -120,7 +120,7 @@ export function mapVault(raw: IndexerVault, now: Date): Vault {
     poolSymbols,
     chainLabel,
     poolAddress: raw.pool,
-    // No price feed yet (E8 unresolved) — null, not a guessed number.
+    // No price feed yet (E8 unresolved) - null, not a guessed number.
     currentSpotPrice: null,
     hasVault: true,
     currentCohortId,

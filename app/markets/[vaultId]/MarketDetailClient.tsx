@@ -68,8 +68,8 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
           </h1>
           <div className="font-mono text-[12px] text-foreground-muted pt-[6px]">
             {marketDetailCopy.meta(
-              vault.poolAddress ?? "—",
-              vault.currentSpotPrice !== null ? vault.currentSpotPrice.toFixed(2) : "—",
+              vault.poolAddress ?? "-",
+              vault.currentSpotPrice !== null ? vault.currentSpotPrice.toFixed(2) : "-",
             )}
           </div>
         </div>
@@ -147,15 +147,15 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
                 verticalMarkers={[{ x: 640 / 700, label: marketDetailCopy.axisNowLabel }]}
               />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-[16px] border-t border-border pt-[18px] mt-auto">
-                <StatCard label={marketDetailCopy.statLabels.lastTwapSample} value={cohort.lastSampleAt ? "08:31 UTC · 4 min ago" : "—"} />
+                <StatCard label={marketDetailCopy.statLabels.lastTwapSample} value={cohort.lastSampleAt ? "08:31 UTC · 4 min ago" : "-"} />
                 <StatCard
                   label={marketDetailCopy.statLabels.missedSamples}
-                  value={cohort.missedSamples !== null ? String(cohort.missedSamples) : "—"}
+                  value={cohort.missedSamples !== null ? String(cohort.missedSamples) : "-"}
                   valueTone="positive"
                 />
                 <StatCard
                   label={marketDetailCopy.statLabels.priorCohortsAvg}
-                  value={cohort.priorCohortsAvgVolPercent !== null ? `${cohort.priorCohortsAvgVolPercent}%` : "—"}
+                  value={cohort.priorCohortsAvgVolPercent !== null ? `${cohort.priorCohortsAvgVolPercent}%` : "-"}
                 />
               </div>
             </Card>
@@ -163,7 +163,7 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
             <Card className="flex-grow">
               <StatCard
                 label={marketsCopy.tableHeaders[2]}
-                value={cohort?.realizedVolPercent !== null && cohort?.realizedVolPercent !== undefined ? `${cohort.realizedVolPercent}%` : "—"}
+                value={cohort?.realizedVolPercent !== null && cohort?.realizedVolPercent !== undefined ? `${cohort.realizedVolPercent}%` : "-"}
                 size="lg"
                 valueTone="accent"
               />

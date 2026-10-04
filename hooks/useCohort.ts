@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { formatUnits } from "viem";
@@ -62,7 +62,7 @@ export interface UseCohortFinancialsResult {
 }
 
 // The money side of one specific cohort (not necessarily the vault's current
-// one — e.g. the FUNDING cohort taking deposits right now, one ahead of
+// one - e.g. the FUNDING cohort taking deposits right now, one ahead of
 // whatever's ACTIVE). All genuinely 0 when the cohort has no row yet, which
 // for a FUNDING cohort just means nobody has deposited into it yet.
 export function useCohortFinancials(vaultId: string, cohortId: number): UseCohortFinancialsResult {

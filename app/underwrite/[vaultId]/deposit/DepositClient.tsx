@@ -62,7 +62,7 @@ export function DepositClient({ vaultId }: { vaultId: string }) {
   const vaultAfterDeposit = existingCommittedCapitalUsdc + amount;
   const sharePercent = vaultAfterDeposit > 0 ? (amount / vaultAfterDeposit) * 100 : 0;
   const estPremiums = (vault.premiumsCurrentCycleUsdc ?? 0) * (sharePercent / 100);
-  // The contract's own ceiling — the most a deposit could ever be reserved
+  // The contract's own ceiling - the most a deposit could ever be reserved
   // against, not a projection from any one scenario.
   const worstCase = -(amount * vault.maxUtilizationBps) / 10_000;
 
@@ -128,20 +128,20 @@ export function DepositClient({ vaultId }: { vaultId: string }) {
               <button
                 type="button"
                 onClick={() => setAmountInput(String(Math.round(walletBalanceUsdc / 2)))}
-                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300"
+                className="h-[46px] px-[16px] rounded-button border border-border text-foreground text-[13px] transition-all duration-300 hover:bg-surface-row"
               >
                 {uwDepositCopy.quickHalf}
               </button>
               <button
                 type="button"
                 onClick={() => setAmountInput(String(walletBalanceUsdc))}
-                className="h-[46px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300"
+                className="h-[46px] px-[16px] rounded-button border border-border text-foreground text-[13px] transition-all duration-300 hover:bg-surface-row"
               >
                 {uwDepositCopy.quickMax}
               </button>
             </div>
             <div className="flex justify-between flex-wrap gap-[8px] pt-[10px] font-mono text-[12px] text-foreground-muted">
-              <span>{uwDepositCopy.walletBalance(address ? formatUsdcDecimal(walletBalanceUsdc) : "—")}</span>
+              <span>{uwDepositCopy.walletBalance(address ? formatUsdcDecimal(walletBalanceUsdc) : "-")}</span>
             </div>
             {address && amount > 0 && !hasEnoughBalance ? (
               <div className="text-[13px] text-negative pt-[10px]">{uwDepositCopy.insufficientBalance}</div>

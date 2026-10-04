@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -44,7 +44,7 @@ function poolKey(token0: Address, token1: Address, fee: number): string {
 }
 
 // Every Uniswap v3 position the connected wallet owns, straight from the
-// real NonfungiblePositionManager — reads directly from the chain, not the
+// real NonfungiblePositionManager - reads directly from the chain, not the
 // indexer, since a wallet's own NFTs need to be current the moment this page
 // is opened. A position "has a vault for its pool" when its own
 // token0/token1/fee (from `positions()`) matches a known v2 market's pool.
@@ -140,7 +140,7 @@ export function usePositions(): UsePositionsResult {
   const positionsQuery = useReadContracts({ contracts: positionContracts, query: { enabled: positionContracts.length > 0 } });
 
   // symbol() and decimals() for every distinct token across every owned
-  // position, deduped — this is what turns "0x3b91…/0x4A22…" into "USDC/WETH"
+  // position, deduped - this is what turns "0x3b91…/0x4A22…" into "USDC/WETH"
   // and what makes tokensOwed readable in its own units, with no price
   // needed for either.
   const uniqueTokens = useMemo(() => {
@@ -187,7 +187,7 @@ export function usePositions(): UsePositionsResult {
       const info1 = tokenInfoByAddress.get(token1.toLowerCase());
 
       // Current holdings need the pool's live tick, which is only fetched
-      // for real vault pools — not spent on the (potentially many) unrelated
+      // for real vault pools - not spent on the (potentially many) unrelated
       // pools a wallet's other positions happen to sit in.
       let token0Amount: number | null = null;
       let token1Amount: number | null = null;
@@ -207,7 +207,7 @@ export function usePositions(): UsePositionsResult {
         inRange: match ? isPositionInRange(tickLower, tickUpper, match.tick) : null,
         // No price feed for testnet tokens, and this pool's own price ratio
         // isn't calibrated to represent anything real either (checked: it
-        // implies a multi-trillion mUSDC/mWETH rate) — showing a number here
+        // implies a multi-trillion mUSDC/mWETH rate) - showing a number here
         // would look precise while being meaningless. See E8. Real token
         // amounts below instead.
         rangeLowerUsdc: null,
@@ -238,7 +238,7 @@ export function usePositions(): UsePositionsResult {
 
 export interface UsePositionResult {
   data: Position | undefined;
-  // The NFT's current owner — Quote/Confirm need this to pre-check "do you
+  // The NFT's current owner - Quote/Confirm need this to pre-check "do you
   // actually own this position" before the wallet prompt, same check the
   // contract itself makes (PositionNotOwned).
   owner: Address | undefined;
@@ -246,11 +246,11 @@ export interface UsePositionResult {
   isError: boolean;
 }
 
-// One specific Uniswap v3 position by its NFT token id — for Quote/Confirm,
+// One specific Uniswap v3 position by its NFT token id - for Quote/Confirm,
 // which land on a route param rather than a wallet-owned list. Reads
 // directly from the real NFPM, matched against the known v2 market pool (see
 // usePositions() above for why not the indexer). Works for ANY token id,
-// not just ones the connected wallet owns — Quote needs to 404 honestly on
+// not just ones the connected wallet owns - Quote needs to 404 honestly on
 // someone else's position, not just silently fail.
 export function usePosition(tokenId: string): UsePositionResult {
   let tokenIdBigInt: bigint | undefined;
@@ -333,7 +333,7 @@ export function usePosition(tokenId: string): UsePositionResult {
       poolLabel,
       poolFeeTier: `${(fee / 10_000).toFixed(2)}%`,
       inRange: matches && slot0 ? isPositionInRange(tickLower, tickUpper, slot0[1]) : null,
-      // No price feed for testnet tokens (see E8) — real token amounts below instead.
+      // No price feed for testnet tokens (see E8) - real token amounts below instead.
       rangeLowerUsdc: null,
       rangeUpperUsdc: null,
       feesEarnedUsdc: null,
@@ -362,7 +362,7 @@ export interface UseCoversByWalletResult {
   isError: boolean;
 }
 
-// Every cover a wallet has ever bought, from the indexer — closes the gap the
+// Every cover a wallet has ever bought, from the indexer - closes the gap the
 // contract itself can't answer ("all policies owned by X"). Addresses are
 // stored lowercase in the indexer; normalize before filtering.
 export function useCoversByWallet(owner: string | undefined): UseCoversByWalletResult {

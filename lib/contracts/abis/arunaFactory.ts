@@ -1,6 +1,6 @@
-// Generated via `forge inspect ArunaFactory abi` from smart-contract commit
+﻿// Generated via `forge inspect ArunaFactory abi` from smart-contract commit
 // 01dc2fbfe3a4f2c34e3ba8813a130ff7002ad928 (branch rc/sandbox-1, v2). Permissionless
-// createVault, no canonical per-(pool, tenor) slot — see contract-integration-
+// createVault, no canonical per-(pool, tenor) slot - see contract-integration-
 // requirements.md Lampiran A.4 for the full shape and VaultParams struct.
 export const arunaFactoryAbi = [
   {

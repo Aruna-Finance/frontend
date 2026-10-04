@@ -1,4 +1,4 @@
-import type { Position, PositionCover } from "@/types/domain";
+﻿import type { Position, PositionCover } from "@/types/domain";
 
 export const mockPositions: Position[] = [
   {
@@ -54,7 +54,7 @@ export const mockPositions: Position[] = [
   },
   {
     // Added so the "active, still running" cover (#7743 below) has a
-    // position of its own — #482911 and #479204 are both already settled.
+    // position of its own - #482911 and #479204 are both already settled.
     tokenId: "485550",
     poolLabel: "WETH / USDC",
     poolFeeTier: "0.05%",
@@ -73,7 +73,7 @@ export const mockPositions: Position[] = [
   },
 ];
 
-// Single source of truth for every cover in the demo — the "My covers" list
+// Single source of truth for every cover in the demo - the "My covers" list
 // and the active/settlement detail pages all resolve against this array
 // instead of each keeping their own copy, so a cover's status can't disagree
 // with itself depending on which page you're looking at.
@@ -95,7 +95,7 @@ export const mockPositionCovers: PositionCover[] = [
   },
   {
     id: "7742",
-    // The mockup never ties #7742 to a specific position number — attached
+    // The mockup never ties #7742 to a specific position number - attached
     // here to #479204 (our other WETH/USDC 0.05% demo position) so the
     // no-payout outcome has a real route to render at, instead of being
     // dead code only the paid-out branch could ever reach.

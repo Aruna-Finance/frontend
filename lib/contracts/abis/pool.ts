@@ -1,6 +1,6 @@
-// The pool reads the frontend needs: the current tick (to decide whether a
+﻿// The pool reads the frontend needs: the current tick (to decide whether a
 // position is in range) and token0/token1/fee (to tell which positions
-// belong to a vault's pool — `positions()` returns these per-position, so
+// belong to a vault's pool - `positions()` returns these per-position, so
 // matching against a pool's own values is how "has a vault for this pool"
 // is decided). Checked on-chain against the testnet pool.
 export const poolAbi = [

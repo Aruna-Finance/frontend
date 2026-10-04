@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -13,7 +13,7 @@ export interface DepositRequest {
   amount: bigint;
 }
 
-// CoverVault.deposit(cohortId, amount) — commits capital to a FUNDING
+// CoverVault.deposit(cohortId, amount) - commits capital to a FUNDING
 // cohort. Requires an mUSDC allowance for `vault` of at least `amount`
 // already in place (see useApprove).
 export function useDeposit() {

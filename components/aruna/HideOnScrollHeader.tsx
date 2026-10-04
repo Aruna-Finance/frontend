@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, type ReactNode } from "react";
 import { MotionConfig, motion, useMotionValueEvent, useScroll } from "motion/react";
@@ -9,7 +9,7 @@ interface HideOnScrollHeaderProps {
 }
 
 // Distance from the top within which the bar is always shown, and how far
-// the page must move in one direction before the bar reacts — without the
+// the page must move in one direction before the bar reacts - without the
 // second threshold a trackpad's tiny back-and-forth makes it flicker.
 const ALWAYS_VISIBLE_UNTIL = 80;
 const DIRECTION_THRESHOLD = 6;

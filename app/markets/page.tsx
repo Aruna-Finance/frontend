@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
@@ -49,10 +49,10 @@ function VaultRow({ vault, isPrimary }: { vault: Vault; isPrimary: boolean }) {
 
   const cohortCell = vault.currentCohortId ? (
     <span className="font-mono text-[14px]">
-      #{vault.currentCohortId} · day {cohort ? daysElapsedSince(cohort.startsAt) : "—"}
+      #{vault.currentCohortId} · day {cohort ? daysElapsedSince(cohort.startsAt) : "-"}
     </span>
   ) : (
-    <span className="font-mono text-[14px] text-foreground-muted">—</span>
+    <span className="font-mono text-[14px] text-foreground-muted">-</span>
   );
 
   const volCell = (
@@ -61,7 +61,7 @@ function VaultRow({ vault, isPrimary }: { vault: Vault; isPrimary: boolean }) {
         dimmed ? "text-foreground-muted" : realizedVol !== undefined && realizedVol >= 30 ? "text-accent" : "text-positive"
       }`}
     >
-      {realizedVol !== undefined ? `${realizedVol}%` : "—"}
+      {realizedVol !== undefined ? `${realizedVol}%` : "-"}
     </span>
   );
 
@@ -134,13 +134,13 @@ export default function MarketsPage() {
         <div className="flex gap-[8px]">
           <button
             type="button"
-            className="h-[40px] px-[16px] rounded-control border border-accent bg-accent-soft text-foreground text-[13px] transition-all duration-300"
+            className="h-[40px] px-[16px] rounded-button border border-accent bg-accent-soft text-foreground text-[13px] transition-all duration-300"
           >
             {marketsCopy.chainFilter.arbitrumOne}
           </button>
           <button
             type="button"
-            className="h-[40px] px-[16px] rounded-control border border-border text-foreground-muted text-[13px] transition-all duration-300"
+            className="h-[40px] px-[16px] rounded-button border border-border text-foreground-muted text-[13px] transition-all duration-300"
           >
             {marketsCopy.chainFilter.allChains}
           </button>

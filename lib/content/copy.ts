@@ -1,4 +1,4 @@
-export const brandCopy = {
+﻿export const brandCopy = {
   name: "Aruna",
   chainTag: "ARBITRUM ONE",
 } as const;
@@ -37,7 +37,7 @@ export const landingCopy = {
     calmDrift: {
       title: "Calm drift",
       volLabel: "realized vol 9.4%",
-      body: "Little variance accumulated. Little impermanent loss. No payout owed — and the premium reflected that up front.",
+      body: "Little variance accumulated. Little impermanent loss. No payout owed - and the premium reflected that up front.",
     },
     whipsaw: {
       title: "Whipsaw",
@@ -52,7 +52,7 @@ export const landingCopy = {
       headline: "Pay a premium. That premium is your maximum loss.",
       steps: [
         "Pick the Uniswap position you already own.",
-        "Choose a strike — the vol level above which cover starts paying.",
+        "Choose a strike - the vol level above which cover starts paying.",
         "Pay once. Your downside is locked at that number from that second.",
         "At the end of the cycle, realized variance above the strike pays out, up to a cap fixed at purchase.",
       ],
@@ -63,7 +63,7 @@ export const landingCopy = {
       headline: "Post capital for one cycle. Collect the premiums that cycle sells.",
       steps: [
         "Deposit into the vault of a single pool, for a single 7-day cycle.",
-        "Your capital backs every policy that vault writes — never one LP's fate alone.",
+        "Your capital backs every policy that vault writes - never one LP's fate alone.",
         "Premiums and claims split proportionally to your share.",
         "At settlement you take back capital plus premiums, less claims paid.",
       ],
@@ -83,7 +83,7 @@ export const landingCopy = {
       },
       {
         title: "No surprise liability",
-        body: "LPs can never owe more than the premium — not at settlement, not on early exit. That bound is the product, not a setting.",
+        body: "LPs can never owe more than the premium - not at settlement, not on early exit. That bound is the product, not a setting.",
       },
     ],
   },
@@ -123,7 +123,7 @@ export const marketDetailCopy = {
   timeLeftLabel: (timeLeft: string, taken: number, total: number) =>
     `${timeLeft} left · ${taken} of ${total} samples taken`,
   chartTitle: "Realized volatility, cohort to date",
-  chartLegendRealized: (volPercent: number) => `— realized ${volPercent}%`,
+  chartLegendRealized: (volPercent: number) => `- realized ${volPercent}%`,
   chartLegendStrikesOnOffer: "-- strikes on offer",
   axisNowLabel: "now",
   statLabels: {
@@ -150,7 +150,7 @@ export const lpSelectPositionCopy = {
   subtitle: "Cover attaches to one position NFT and stays with its owner. Co-ownership is not supported.",
   badgeInRange: "IN RANGE",
   badgeCovered: "COVERED",
-  badgeHeld: "HELD — CLAIM",
+  badgeHeld: "HELD - CLAIM",
   viewCoverCta: "View cover",
   claimHeldCta: "Claim position",
   badgeOutOfRange: "OUT OF RANGE",
@@ -175,7 +175,7 @@ export const lpSelectPositionCopy = {
     p1: "Cover does not move, lock or wrap your position. Your NFT stays in your wallet and your trading fees stay entirely yours.",
     p2: "A position that sits out of range earns no fees but still carries variance risk, so it can still be covered.",
     p3: (timeLeft: string) =>
-      `Cover runs to the end of the current cohort — ${timeLeft} from now — not for a fixed seven days from purchase.`,
+      `Cover runs to the end of the current cohort - ${timeLeft} from now - not for a fixed seven days from purchase.`,
     seeMarketLink: "See the market state first →",
   },
   myCoversCta: "My covers",
@@ -204,11 +204,11 @@ export const lpMyCoversCopy = {
 
 export const lpQuoteCopy = {
   heading: "Set your cover",
-  // v2: no USD figure here — real positions have no price feed (see E8), and
+  // v2: no USD figure here - real positions have no price feed (see E8), and
   // there's no coverage amount to choose (cover is the whole position).
   headerMeta: (positionId: string, pool: string, cohortId: number, timeLeft: string) =>
     `Position #${positionId} · ${pool} · cohort ${cohortId} ends in ${timeLeft}`,
-  strikeSectionLabel: "STRIKE — THE VOL LEVEL WHERE COVER STARTS PAYING",
+  strikeSectionLabel: "STRIKE - THE VOL LEVEL WHERE COVER STARTS PAYING",
   strikeSectionHint: "Lower strike, earlier payout, higher premium",
   premiumWord: "premium",
   strikeFootnote: (sampleInterval: string, timeLeft: string) =>
@@ -228,7 +228,7 @@ export const lpQuoteCopy = {
     label: "YOUR QUOTE",
     youPayNow: "You pay now",
     unit: "USDC",
-    disclaimer: "This is also the most you can lose. It cannot grow — not at settlement, not if you exit early.",
+    disclaimer: "This is also the most you can lose. It cannot grow - not at settlement, not if you exit early.",
     rows: {
       strike: "Strike",
       maxPayout: "Maximum payout",
@@ -251,7 +251,7 @@ export const lpConfirmCopy = {
   heading: "Confirm and sign",
   plainTermsLabel: "IN PLAIN TERMS",
   plainTerms: (premium: string, pool: string, breakevenPercent: number, cap: string) =>
-    `You pay ${premium} USDC today. You can never lose more than that. If ${pool} ends the cohort above ${breakevenPercent}% realized volatility, you get paid — up to ${cap} USDC.`,
+    `You pay ${premium} USDC today. You can never lose more than that. If ${pool} ends the cohort above ${breakevenPercent}% realized volatility, you get paid - up to ${cap} USDC.`,
   termsLabel: "TERMS BEING WRITTEN ON CHAIN",
   termsRows: {
     position: "Position",
@@ -263,16 +263,16 @@ export const lpConfirmCopy = {
   },
   oracleValue: "Pool TWAP",
   // v2: the position NFT moves into the vault's escrow for the cover's
-  // duration — not a detail to bury, since it's the biggest behavior change
+  // duration - not a detail to bury, since it's the biggest behavior change
   // from "just pay a premium".
   escrowNotice: {
     title: "Your position moves into the vault while covered",
-    body: "Its liquidity can't be withdrawn or changed until the cover ends, is cancelled, or settles. Your trading fees stay 100% yours — collect them anytime from the Active page. Never send this NFT to the vault address any other way: outside this exact flow, it can never be recovered.",
+    body: "Its liquidity can't be withdrawn or changed until the cover ends, is cancelled, or settles. Your trading fees stay 100% yours - collect them anytime from the Active page. Never send this NFT to the vault address any other way: outside this exact flow, it can never be recovered.",
   },
   warning: {
     title: "Read this before signing",
     body: (strikePercent: number, premium: string) =>
-      `If realized volatility finishes at or below ${strikePercent}%, you receive nothing and the ${premium} USDC premium is gone. That is the expected outcome in a quiet week — it is what you are paying for in a violent one.`,
+      `If realized volatility finishes at or below ${strikePercent}%, you receive nothing and the ${premium} USDC premium is gone. That is the expected outcome in a quiet week - it is what you are paying for in a violent one.`,
   },
   acknowledge: (cap: string) =>
     `I understand the premium is non-refundable, the payout is capped at ${cap} USDC, my position moves into the vault while covered, and settlement uses the pool's TWAP rather than spot price.`,
@@ -280,7 +280,7 @@ export const lpConfirmCopy = {
     label: "THREE TRANSACTIONS",
     approveUsdcTitle: (amount: string) => `Approve ${amount} USDC`,
     approveNftTitle: (tokenId: string) => `Approve position #${tokenId}`,
-    approveNftBody: "Lets the vault pull this one position into escrow — nothing else.",
+    approveNftBody: "Lets the vault pull this one position into escrow - nothing else.",
     buyCoverTitle: "Buy cover",
     buyCoverBody: (cap: string) => `Pays the premium, escrows your position, reserves ${cap} USDC of vault capacity, and mints your policy.`,
     rows: {
@@ -295,7 +295,7 @@ export const lpConfirmCopy = {
   },
   liveQuote: {
     label: "LIVE QUOTE",
-    note: "This premium is read live from the vault each time you open this page — it isn't locked in until your buyCover transaction confirms. If realized volatility moved a lot in between, go back and re-quote.",
+    note: "This premium is read live from the vault each time you open this page - it isn't locked in until your buyCover transaction confirms. If realized volatility moved a lot in between, go back and re-quote.",
   },
 } as const;
 
@@ -306,7 +306,7 @@ export const lpActiveCopy = {
     `Position #${positionId} · ${pool} · strike ${strikePercent}% · cap ${cap} USDC`,
   settlesInLabel: "SETTLES IN",
   chartTitle: "Realized volatility vs your strike",
-  legendRealized: "— realized",
+  legendRealized: "- realized",
   legendStrike: (strikePercent: number) => `-- strike ${strikePercent}%`,
   legendBreakeven: (breakevenPercent: number) => `-- breakeven ${breakevenPercent}%`,
   axisNowLabel: (dayNumber: number) => `now · day ${dayNumber}`,
@@ -314,7 +314,7 @@ export const lpActiveCopy = {
   payoutCapLabel: "payout cap",
   scenarioLabel: "WHAT SETTLEMENT PAYS AT DIFFERENT FINISHES",
   scenarioFootnote:
-    "Net of the premium already paid. The last column is the cap — it does not rise beyond it, however violent the week gets.",
+    "Net of the premium already paid. The last column is the cap - it does not rise beyond it, however violent the week gets.",
   statLabels: {
     realizedVol: "REALIZED VOL",
     aboveStrikeBy: "ABOVE STRIKE BY",
@@ -337,14 +337,14 @@ export const lpActiveCopy = {
     fullRecordLink: "Full sample record →",
   },
   // v2: the position NFT sits in escrow for the cover's duration (design
-  // §5.5) — these are the only two actions the vault exposes on it before
+  // §5.5) - these are the only two actions the vault exposes on it before
   // settlement.
   manageCover: {
     label: "MANAGE THIS COVER",
     note: "Your position is held in escrow while this cover is active. You can still collect its trading fees anytime, or cancel the cover early.",
     collectFeesCta: "Collect fees",
     cancelCta: "Cancel cover",
-    cancelWarning: "Cancelling returns your position now, but the premium stays with the cohort — it is not refunded.",
+    cancelWarning: "Cancelling returns your position now, but the premium stays with the cohort - it is not refunded.",
   },
   atSettlement: {
     label: "AT SETTLEMENT",
@@ -377,7 +377,7 @@ export const lpSettlementCopy = {
   paidOutBody: (volPercent: number, strikePercent: number, breakevenPercent: number) =>
     `Realized volatility finished at ${volPercent}%, above your ${strikePercent}% strike and above your ${breakevenPercent}% breakeven. The payout was transferred to your wallet automatically.`,
   noPayoutBody: (volPercent: number, strikePercent: number) =>
-    `Realized volatility finished at ${volPercent}%, below your ${strikePercent}% strike. Nothing was owed. Your loss is the premium and not one cent more — the number you saw before you signed.`,
+    `Realized volatility finished at ${volPercent}%, below your ${strikePercent}% strike. Nothing was owed. Your loss is the premium and not one cent more - the number you saw before you signed.`,
   paidOutRows: {
     finalRealizedVariance: "Final realized variance",
     strikeVariance: "Strike variance",
@@ -486,7 +486,7 @@ export const uwDepositCopy = {
   worstCase: {
     label: "WORST CASE, STATED PLAINLY",
     unit: "USDC",
-    body: "If every policy the vault writes this cycle pays its full cap, your share of the claims is this. It is the floor of your outcome, not a forecast — and it is the number the payout cap exists to make finite.",
+    body: "If every policy the vault writes this cycle pays its full cap, your share of the claims is this. It is the floor of your outcome, not a forecast - and it is the number the payout cap exists to make finite.",
   },
   acknowledge: "I understand my capital is locked for the cycle and can be reduced by claims.",
 } as const;
@@ -551,7 +551,7 @@ export const uwSettlementCopy = {
   rows: { capital: "Capital", premiums: "Premiums", claims: "Claims", net: "Net" },
   nextCycleLabel: "NEXT CYCLE",
   nextCycleBody: (cohortId: number, dateLabel: string) =>
-    `Cohort ${cohortId} opens ${dateLabel}. Your capital is free until you commit it again — rolling is a choice, never a default.`,
+    `Cohort ${cohortId} opens ${dateLabel}. Your capital is free until you commit it again - rolling is a choice, never a default.`,
   rollCta: (amount: string, cohortId: number) => `Roll ${amount} into cohort ${cohortId}`,
   rollDifferentCta: "Roll a different amount",
   withdrawCta: "Withdraw and stop",
@@ -593,7 +593,7 @@ export const statesCopy = {
       title: "Cohort nearly over",
       tag: "WARNING",
       message:
-        "Only 4h 12m of cohort 12 remain. Cover bought now measures variance over those four hours only — the premium is small because the window is small.",
+        "Only 4h 12m of cohort 12 remain. Cover bought now measures variance over those four hours only - the premium is small because the window is small.",
       actions: ["Buy for 4h · 12.40 USDC", "Wait for cohort 13"],
       footnote: "Cheap is not the same as good value. Say what the money actually buys.",
     },
@@ -659,12 +659,12 @@ export const proofCopy = {
     "Ticks are already log prices, so no price conversion enters the computation. Nothing here reads spot price at any point.",
   placeholderFootnote: "Sample figures shown for layout. Contract references below are placeholders until deployment.",
   resultLabel: "SETTLEMENT RESULT",
-  // Shown instead of resultLabel while the cohort hasn't finalized — the
+  // Shown instead of resultLabel while the cohort hasn't finalized - the
   // number above it is real, but it's a running extrapolation, not a
   // decided payout, and a short sample window makes it noisy.
   resultLabelInProgress: "REALIZED VOL SO FAR",
   inProgressCaption: (sampleCount: number, window: string) =>
-    `Based on ${sampleCount} sample${sampleCount === 1 ? "" : "s"} over ${window} — narrows as more accumulate.`,
+    `Based on ${sampleCount} sample${sampleCount === 1 ? "" : "s"} over ${window} - narrows as more accumulate.`,
   unit: "realized vol",
   rows: {
     policiesSettled: "Policies settled",
@@ -675,7 +675,7 @@ export const proofCopy = {
   contractsLabel: "CONTRACTS",
   whyTwap: {
     label: "WHY TWAP AND NOT SPOT",
-    body: "A spot price can be pushed for a single block with borrowed capital. That would fabricate variance, trigger payouts and drain the vault without any real volatility occurring. Reading the pool's own time-weighted observations makes that attack cost real money for a sustained period — which is no longer manipulation, it is volatility.",
+    body: "A spot price can be pushed for a single block with borrowed capital. That would fabricate variance, trigger payouts and drain the vault without any real volatility occurring. Reading the pool's own time-weighted observations makes that attack cost real money for a sustained period - which is no longer manipulation, it is volatility.",
   },
 } as const;
 

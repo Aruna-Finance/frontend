@@ -31,7 +31,7 @@ import { useBuyCover } from "@/hooks/useBuyCover";
 
 const COHORT_STATUS_NAMES = ["FUNDING", "ACTIVE", "SETTLING", "SETTLED"] as const;
 // A buyer-side slippage buffer on top of the live premium, and a window to
-// sign before the quote is re-read — neither is decided product-wide yet
+// sign before the quote is re-read - neither is decided product-wide yet
 // (open question in the SC integration guide); 2% / 10 minutes are
 // placeholders chosen here, not contract-mandated values.
 const MAX_PREMIUM_BUFFER_BPS = 200n;

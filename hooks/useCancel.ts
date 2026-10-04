@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -10,7 +10,7 @@ export interface CancelRequest {
   policyId: bigint;
 }
 
-// CoverVault.cancel(policyId) (v2) — only the policy owner, only before the
+// CoverVault.cancel(policyId) (v2) - only the policy owner, only before the
 // cohort's endsAt. The premium stays with the cohort (not refunded), the
 // escrowed position NFT is returned, and the freed capacity can be sold
 // again to someone else.

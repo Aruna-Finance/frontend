@@ -101,7 +101,7 @@ export function ActiveClient({ positionId }: { positionId: string }) {
     : samplesTakenForPolicy;
   const missedSamples = Math.max(0, Math.min(samplesTotalForPolicy, Math.floor(elapsedSinceBought / (proof?.sampleIntervalSeconds ?? 60))) - samplesTakenForPolicy);
 
-  // Four real, formula-derived reference points — not the mock's picked vol
+  // Four real, formula-derived reference points - not the mock's picked vol
   // levels, but the same shape: nothing owed, the point premium is covered,
   // where things stand today, and the payout cap.
   const breakevenExcess = varNotional > 0n ? (premium * 10n ** 18n) / varNotional : 0n;
@@ -118,7 +118,7 @@ export function ActiveClient({ positionId }: { positionId: string }) {
       return { ...point, netUsdc: payoutUsdc - premiumUsdc };
     })
     // "Now" can coincide with another point early on (e.g. still at/under
-    // strike) — keep it, drop an exact duplicate elsewhere instead of
+    // strike) - keep it, drop an exact duplicate elsewhere instead of
     // showing the same number twice.
     .filter((point, index, all) => point.isNow || !all.some((other, j) => j !== index && other.isNow && other.sumSqCovered === point.sumSqCovered));
 

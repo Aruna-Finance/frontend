@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -11,7 +11,7 @@ export interface CollectFeesRequest {
   recipient: Address;
 }
 
-// CoverVault.collectFees(policyId, recipient) (v2) — while a position is
+// CoverVault.collectFees(policyId, recipient) (v2) - while a position is
 // escrowed for an active cover, only the policy owner can pull its accrued
 // Uniswap trading fees, to any recipient they choose, at any time. The fees
 // were always 100% theirs; this is the only NFPM call the vault exposes on

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
@@ -22,7 +22,7 @@ export default function MyCoversPage() {
   // covers can come from more than one vault at once.
   const vault = useVault(covers?.[0]?.vaultId ?? "").data;
 
-  // Active covers first — what's still running is what you'd check most often.
+  // Active covers first - what's still running is what you'd check most often.
   const sortedCovers = [...(covers ?? [])].sort((a, b) =>
     a.status === "active" && b.status !== "active" ? -1 : b.status === "active" && a.status !== "active" ? 1 : 0,
   );
@@ -92,7 +92,7 @@ export default function MyCoversPage() {
                     {cover.status === "cancelled"
                       ? lpMyCoversCopy.cancelledCaption
                       : isSettled
-                        ? lpMyCoversCopy.settledCaption(cover.settledAt ? formatSettlementDate(cover.settledAt) : "—")
+                        ? lpMyCoversCopy.settledCaption(cover.settledAt ? formatSettlementDate(cover.settledAt) : "-")
                         : lpMyCoversCopy.pendingSettlement}
                   </div>
                 </div>

@@ -45,7 +45,7 @@ export function SettlementClient({ positionId }: { positionId: string }) {
   const cover = mapPolicyToCover(raw);
   const isPaidOut = cover.status === "paid_out";
   const isRefunded = cover.status === "refunded";
-  const settledDate = cover.settledAt ? formatSettlementDate(cover.settledAt) : "—";
+  const settledDate = cover.settledAt ? formatSettlementDate(cover.settledAt) : "-";
 
   const strikeAnnualized = BigInt(raw.strikeAnnualized);
   const startSumSq = raw.startSumSq !== null ? BigInt(raw.startSumSq) : 0n;
@@ -58,7 +58,7 @@ export function SettlementClient({ positionId }: { positionId: string }) {
   const rawPayoutUsdc = Number(formatUnits((BigInt(raw.varNotional) * excess) / 10n ** 18n, USDC_DECIMALS));
   const capApplied = rawPayoutUsdc > payoutUsdc + 0.005;
 
-  // No feed to read pool fees from for testnet tokens — this line in the
+  // No feed to read pool fees from for testnet tokens - this line in the
   // mock ("fees earned while covered") isn't reconstructable without a price
   // feed either, so it's left out rather than shown as a guessed number.
   const actions = claimActions(raw, address, unclaimed.data ?? 0n);

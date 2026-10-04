@@ -1,4 +1,4 @@
-// GraphQL documents against the indexer schema (indexer/ponder.schema.ts).
+﻿// GraphQL documents against the indexer schema (indexer/ponder.schema.ts).
 // Kept as plain strings (no codegen) to match the indexer README's own
 // examples one-to-one, so a schema diff is easy to spot by eye.
 
@@ -51,7 +51,7 @@ export const VAULTS_QUERY = /* GraphQL */ `
   }
 `;
 
-// Singular `vault(address)` — unlike `vaults(where: { isTest: false })`, this
+// Singular `vault(address)` - unlike `vaults(where: { isTest: false })`, this
 // is NOT filtered by isTest, because a page reached by address (a wallet's
 // own underwriting position, a policy's own vault) must resolve regardless of
 // whether that vault is publicly listed on /markets.
@@ -228,7 +228,7 @@ export const UNDERWRITER_POSITIONS_BY_WALLET_QUERY = /* GraphQL */ `
   }
 `;
 
-// Singular `cohort(vault, cohortId)` — one specific cohort's own aggregates
+// Singular `cohort(vault, cohortId)` - one specific cohort's own aggregates
 // plus its strike-bucket book and underwriter positions, per the indexer
 // README's own documented example for the UW dashboard/settlement pages.
 export const COHORT_DETAIL_QUERY = /* GraphQL */ `

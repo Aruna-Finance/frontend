@@ -1,4 +1,4 @@
-export function computeSeriesBarWidth(input: {
+﻿export function computeSeriesBarWidth(input: {
   innerWidth: number;
   dataLength: number;
   columnWidth: number;
@@ -43,7 +43,7 @@ export function computeSeriesBarWidth(input: {
   return Math.max(2, width);
 }
 
-/** Half-width of the bar group at each x — used to pad reveal clips. */
+/** Half-width of the bar group at each x - used to pad reveal clips. */
 export function computeSeriesBarRevealClipPadding(input: {
   barWidth: number;
   seriesCount: number;

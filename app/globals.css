@@ -35,26 +35,26 @@
   --radius-progress: 4px;
   --radius-badge: 6px;
   --radius-control: 8px;
-  --radius-button: 10px;
+  --radius-button: 4px;
   --radius-card: 14px;
   --radius-card-lg: 16px;
 
-  /* Landing — dark surfaces */
+  /* Landing - dark surfaces */
   --color-pitch: #101010;
   --color-pitch-raised: #121212;
 
-  /* Landing — cream (light) surfaces */
+  /* Landing - cream (light) surfaces */
   --color-cream: #f0ece3;
   --color-cream-border: #ddd8d0;
   --color-cream-border-soft: #c8c3bb;
   --color-cream-track: #a09890;
 
-  /* Landing — ink (dark text on cream) */
+  /* Landing - ink (dark text on cream) */
   --color-ink: #1a1814;
   --color-ink-muted: #6b6560;
   --color-ink-subtle: #9c9690;
 
-  /* Accent dim — slightly darker warm orange */
+  /* Accent dim - slightly darker warm orange */
   --color-accent-dim: #c97d3e;
 }
 
@@ -183,6 +183,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @layer base {
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="email"]:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--color-accent);
+  }
+
   body {
     background: #000000;
     color: var(--color-foreground);

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { Address } from "viem";
 import { Button } from "@/components/aruna/Button";
@@ -52,7 +52,7 @@ export function KeeperPanel({
             ? readiness.pokeDue
               ? demoCopy.keeper.pokeReady
               : demoCopy.keeper.pokeIn(formatCountdown(readiness.secondsToPoke))
-            : "—"}
+            : "-"}
         </span>
 
         {readiness?.finalizeCohort != null ? (
@@ -86,7 +86,7 @@ export function KeeperPanel({
               className="font-mono text-[12px] text-foreground-secondary hover:text-foreground flex justify-between gap-[8px]"
             >
               <span>{event.kind}</span>
-              <span className="text-foreground-muted">{event.actor ? shortenAddress(event.actor) : "—"}</span>
+              <span className="text-foreground-muted">{event.actor ? shortenAddress(event.actor) : "-"}</span>
             </a>
           ))
         )}

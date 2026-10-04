@@ -1,4 +1,4 @@
-import type { StepIndicatorProps } from "@/types/aruna";
+﻿import type { StepIndicatorProps } from "@/types/aruna";
 
 export function StepIndicator({ steps, currentIndex }: StepIndicatorProps) {
   return (
@@ -8,7 +8,7 @@ export function StepIndicator({ steps, currentIndex }: StepIndicatorProps) {
           <span className={index === currentIndex ? "text-accent" : undefined}>
             {index + 1} · {step}
           </span>
-          {index < steps.length - 1 ? <span>—</span> : null}
+          {index < steps.length - 1 ? <span>-</span> : null}
         </span>
       ))}
     </div>

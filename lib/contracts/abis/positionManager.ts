@@ -1,5 +1,5 @@
-// Read/write surface of Uniswap v3's own NonfungiblePositionManager on
-// Arbitrum Sepolia — confirmed on-chain (`name() = "Uniswap V3 Positions
+﻿// Read/write surface of Uniswap v3's own NonfungiblePositionManager on
+// Arbitrum Sepolia - confirmed on-chain (`name() = "Uniswap V3 Positions
 // NFT-V1"`), NOT an Aruna mock. It holds every Uniswap user's positions on
 // this pool, so callers must filter by token0/token1/fee for the vault's
 // pool. `positions()` decodes with the canonical 12-field tuple.

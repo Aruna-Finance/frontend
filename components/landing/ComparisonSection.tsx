@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 
@@ -60,7 +60,7 @@ export function ComparisonSection({
               <span ref={calmBarText} className="font-mono text-[11px] text-ink shrink-0">0.0000</span>
             </div>
             <p className="mt-[20px] text-[13px] text-ink-muted leading-[1.6]">
-              Little variance accumulated. Little impermanent loss. No payout owed — and the premium reflected that up front.
+              Little variance accumulated. Little impermanent loss. No payout owed - and the premium reflected that up front.
             </p>
           </div>
 

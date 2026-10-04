@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ParentSize } from "@visx/responsive";
 import type { Transition } from "motion/react";
@@ -43,7 +43,7 @@ export interface LineChartProps {
   aspectRatio?: string;
   /** Additional class name for the container */
   className?: string;
-  /** Loading vs ready — drives chart phase and loading chrome. Default: `"ready"`. */
+  /** Loading vs ready - drives chart phase and loading chrome. Default: `"ready"`. */
   status?: ChartStatus;
   /** Centered shimmer label while loading. */
   loadingLabel?: string;

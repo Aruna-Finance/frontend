@@ -1,6 +1,6 @@
-// Raw GraphQL response shapes, matching indexer/ponder.schema.ts field names
+﻿// Raw GraphQL response shapes, matching indexer/ponder.schema.ts field names
 // exactly. Every bigint/money field comes back as a string (see indexer
-// README) — callers must parse with BigInt, never Number, to keep precision.
+// README) - callers must parse with BigInt, never Number, to keep precision.
 
 export interface IndexerCohort {
   cohortId: number;
@@ -138,7 +138,7 @@ export interface IndexerCohortPolicy {
   refund: string | null;
 }
 
-// One specific cohort's own row plus its sub-relations — the singular
+// One specific cohort's own row plus its sub-relations - the singular
 // `cohort(vault, cohortId)` query, not the `vault.cohorts` history list.
 export interface IndexerCohortDetail {
   startsAt: string;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useReadContract } from "wagmi";
@@ -15,11 +15,11 @@ export interface UseQuoteResult {
   isLoading: boolean;
   isError: boolean;
   // A decoded CoverVault revert reason (e.g. "too little time left"), when
-  // the view call itself reverted — distinct from a generic network error.
+  // the view call itself reverted - distinct from a generic network error.
   errorMessage: string | undefined;
 }
 
-// CoverVault.quote(cohortId, positionTokenId, strikeAnnualized) — a live view
+// CoverVault.quote(cohortId, positionTokenId, strikeAnnualized) - a live view
 // call, re-run whenever the strike changes. No indexer involved. v2 has no
 // coverage-amount input: varNotional and maxPayout are entirely derived from
 // the position itself (see CoverVault.sol / design §6.0), so there is

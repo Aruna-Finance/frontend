@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +20,7 @@ export interface ProofSampleRow {
   // Formatted engineering notation (e.g. "2.400e-5"), or null for the first
   // row, which has nothing to take a return against yet.
   squaredLogReturn: string | null;
-  // Raw running total (WAD) — for a page that needs to re-slice this against
+  // Raw running total (WAD) - for a page that needs to re-slice this against
   // a specific policy's own startSumSq/startIndex, not just display it.
   cumulativeSumSq: bigint;
 }
@@ -33,17 +33,17 @@ export interface ProofData {
   samplesTotal: number | null;
   sampleIntervalSeconds: number | null;
   gapCount: number | null;
-  // Annualized over whatever the accumulator has actually observed so far —
+  // Annualized over whatever the accumulator has actually observed so far -
   // not tied to a settled cohort, since none has settled yet.
   sumSquaredLogReturn: bigint;
   annualizedVariance: bigint;
   annualizedVolPercent: number;
   // The vault's current cohort, for the settlement-style summary card. All
-  // genuinely 0 until a cohort has policies and finalizes — not a loading
+  // genuinely 0 until a cohort has policies and finalizes - not a loading
   // artifact.
   currentCohortId: number;
   // False whenever there's no row yet (a cohort with zero activity can't be
-  // finalized) — the annualized figure above is then a live, in-progress
+  // finalized) - the annualized figure above is then a live, in-progress
   // extrapolation, not a settlement result, and should be labeled as such.
   finalized: boolean;
   policyCount: number;
@@ -51,7 +51,7 @@ export interface ProofData {
   paidCount: number;
   hitCapCount: number;
   claimsPaidRaw: bigint;
-  // The actual span the annualized figure was extrapolated from — short
+  // The actual span the annualized figure was extrapolated from - short
   // spans make that number noisy, and the UI says so rather than implying
   // precision it doesn't have.
   sampleWindowSeconds: number;

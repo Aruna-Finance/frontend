@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -10,7 +10,7 @@ export interface WithdrawRequest {
   cohortId: number;
 }
 
-// CoverVault.withdraw(cohortId) — only valid in FUNDING (returns the raw
+// CoverVault.withdraw(cohortId) - only valid in FUNDING (returns the raw
 // deposit) or SETTLED (returns net = deposit + premium share - claim share).
 export function useWithdraw() {
   const { send, isPending } = useContractTx();

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import Lenis from "lenis";
@@ -8,7 +8,7 @@ import { cancelFrame, frame, useReducedMotion } from "motion/react";
 // Mounted only on the landing page: inertial scrolling via Lenis, driven by
 // Motion's own frame loop so scroll-linked animations (the navbar's
 // hide/show, whileInView reveals) stay in step with the smoothed position.
-// Motion has no wheel-smoothing engine of its own — it animates values, not
+// Motion has no wheel-smoothing engine of its own - it animates values, not
 // the browser's scroll physics.
 export function SmoothScroll() {
   const reducedMotion = useReducedMotion();

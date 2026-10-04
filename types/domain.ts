@@ -1,4 +1,4 @@
-export type CohortStatus = "FUNDING" | "ACTIVE" | "SETTLING" | "SETTLED";
+﻿export type CohortStatus = "FUNDING" | "ACTIVE" | "SETTLING" | "SETTLED";
 
 export interface Cohort {
   id: number;
@@ -51,11 +51,11 @@ export interface Vault {
   cumulativeReturnPercent: number | null;
   lossCount: number | null;
   // The contract's own ceiling on reserved capacity, as a fraction of total
-  // capital (e.g. 8000 = 80%) — the real, worst-case bound on how much of a
+  // capital (e.g. 8000 = 80%) - the real, worst-case bound on how much of a
   // deposit could ever be claimed against, independent of what's happened so
   // far in any one cohort.
   maxUtilizationBps: number;
-  // Cycle length in seconds — the production design is 7 days, but a test
+  // Cycle length in seconds - the production design is 7 days, but a test
   // vault can run a much shorter tenor, so pages showing "day X of N" derive
   // N from this instead of assuming 7.
   tenorSeconds: number;
@@ -67,7 +67,7 @@ export interface Position {
   poolFeeTier: string;
   inRange: boolean | null;
   // null where a USD figure would need a price feed that doesn't exist for
-  // testnet tokens (see E8) — never a guessed number. Populated by the mock
+  // testnet tokens (see E8) - never a guessed number. Populated by the mock
   // data (lib/mock/positions.ts, used by the still-fully-mock Quote/Confirm
   // flow); the real usePositions() leaves all four null and reports raw
   // token amounts below instead.
@@ -76,7 +76,7 @@ export interface Position {
   feesEarnedUsdc: number | null;
   valueUsdc: number | null;
   hasVaultForPool: boolean;
-  // Real, on-chain, no price attached — what's actually in the position.
+  // Real, on-chain, no price attached - what's actually in the position.
   // token0/1Amount (current split of the liquidity) need the pool's current
   // tick, so they're only set for positions matched to a real vault; fees
   // owed don't need a tick and are set whenever the token symbols are known.
@@ -118,7 +118,7 @@ export interface QuoteRequest {
 
 // v2: no partial cover (varNotional is derived entirely from the position,
 // not a chosen amount), so there's no coveredAmountUsdc/fullCyclePremiumUsdc
-// here — quote() itself already prices exactly the remaining cohort window.
+// here - quote() itself already prices exactly the remaining cohort window.
 // Raw (bigint) fields are kept alongside the formatted ones because Confirm
 // needs exact units for buyCover's maxPremium, not a rounded display number.
 export interface QuoteResult {

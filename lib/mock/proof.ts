@@ -1,7 +1,7 @@
-export const mockProofSummary = {
+﻿export const mockProofSummary = {
   cohortId: 12,
   vaultId: "weth-usdc-005",
-  poolAddress: "0xc31e…54a1",
+  poolAddress: "0xc31eâ€¦54a1",
   samplesRecorded: 336,
   samplesTotal: 336,
   gapCount: 0,
@@ -29,9 +29,9 @@ export const mockProofLastRow = {
 };
 
 export const mockProofDerivation = {
-  logReturnFormula: "log return per step = Δ tick × ln(1.0001)",
-  varianceFormula: "realized variance = Σ (log return)² × (periods per year ÷ steps)",
-  sumSquaredLogReturn: "4.1930e−3",
+  logReturnFormula: "log return per step = Î” tick Ã- ln(1.0001)",
+  varianceFormula: "realized variance = Î£ (log return)Â² Ã- (periods per year Ã· steps)",
+  sumSquaredLogReturn: "4.1930eâˆ’3",
   sumSquaredLogReturnSteps: 335,
   annualizedVariance: 0.219,
   annualizedVolPercent: 46.8,
@@ -42,5 +42,5 @@ export const mockProofContracts = [
   { name: "VarianceAccumulator", address: "[ADDRESS]" },
   { name: "CoverVault", address: "[ADDRESS]" },
   { name: "IPremiumPricer", address: "[ADDRESS]" },
-  { name: "Uniswap v3 pool", address: "0xc31e…54a1" },
+  { name: "Uniswap v3 pool", address: "0xc31eâ€¦54a1" },
 ];

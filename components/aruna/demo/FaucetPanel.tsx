@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { formatEther, formatUnits } from "viem";
 import { Button } from "@/components/aruna/Button";
@@ -32,9 +32,9 @@ export function FaucetPanel() {
 
       {isConnected ? (
         <div className="font-mono text-[12.5px] text-foreground-muted flex flex-col gap-[2px]">
-          <span>mUSDC {faucet.usdcBalance !== undefined ? formatTokenNumber(Number(formatUnits(faucet.usdcBalance, USDC_DECIMALS))) : "—"}</span>
-          <span>mWETH {faucet.wethBalance !== undefined ? formatTokenNumber(Number(formatUnits(faucet.wethBalance, 18))) : "—"}</span>
-          <span>ETH {faucet.ethBalance !== undefined ? Number(formatEther(faucet.ethBalance)).toFixed(4) : "—"}</span>
+          <span>mUSDC {faucet.usdcBalance !== undefined ? formatTokenNumber(Number(formatUnits(faucet.usdcBalance, USDC_DECIMALS))) : "-"}</span>
+          <span>mWETH {faucet.wethBalance !== undefined ? formatTokenNumber(Number(formatUnits(faucet.wethBalance, 18))) : "-"}</span>
+          <span>ETH {faucet.ethBalance !== undefined ? Number(formatEther(faucet.ethBalance)).toFixed(4) : "-"}</span>
         </div>
       ) : null}
 

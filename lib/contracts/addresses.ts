@@ -1,6 +1,6 @@
-import type { Address } from "viem";
+﻿import type { Address } from "viem";
 
-// Arbitrum Sepolia testnet (chain ID 421614) — unchanged by the v2 release.
+// Arbitrum Sepolia testnet (chain ID 421614) - unchanged by the v2 release.
 export const arunaChainId = 421614;
 
 // v2 sandbox/RC deployment (market 0: mWETH/mUSDC, tenor 3600s). Source:
@@ -9,15 +9,15 @@ export const arunaChainId = 421614;
 // live on-chain (currentCohortId/allVaultsLength/tenor all read back correctly).
 //
 // No committed manifest exists yet (`smart-contract/deployments/421614/` has
-// no JSON file as of 2026-10-03) — this is a direct copy of that doc's
+// no JSON file as of 2026-10-03) - this is a direct copy of that doc's
 // address table, not a manifest loader. These addresses WILL change once more
 // when the "release" deployment happens (ABI is frozen, per the same doc
-// §2 — only addresses and calibration move). Once a real manifest is
+// §2 - only addresses and calibration move). Once a real manifest is
 // committed, replace this object with a loader that reads
 // `deployments/421614/<label>.json`, keyed by an env var
-// (e.g. NEXT_PUBLIC_ARUNA_DEPLOYMENT_LABEL) — see that doc's open question §6.1.
+// (e.g. NEXT_PUBLIC_ARUNA_DEPLOYMENT_LABEL) - see that doc's open question §6.1.
 //
-// Data on this vault is NOT clean (shared with SC's own RC test scenarios) —
+// Data on this vault is NOT clean (shared with SC's own RC test scenarios) -
 // don't treat any number read from it as a "real" demo figure (doc §4.2).
 export const arunaAddresses = {
   arunaFactory: "0xA3547B68205794969e8A5229Ab55c2212F6eA472",
@@ -36,16 +36,16 @@ export type ArunaContractName = keyof typeof arunaAddresses;
 
 // The one v2 market known today, readable without the indexer. Used by
 // hooks that need to recognize "does this pool have an Aruna vault" without
-// going through useVaults()/the indexer — e.g. matching a wallet's Uniswap
+// going through useVaults()/the indexer - e.g. matching a wallet's Uniswap
 // positions against a coverable pool (the indexer also watches this vault now). Extend this array (or replace it with
 // a real ArunaFactory.allVaults() enumeration) once more than one market
 // exists worth curating as "official".
 export const arunaMarkets = [{ vault: arunaAddresses.coverVault, pool: arunaAddresses.pool }] as const;
 
-// v0 deployment — known-bug (SC-01: withdraw during FUNDING doesn't reduce
+// v0 deployment - known-bug (SC-01: withdraw during FUNDING doesn't reduce
 // totalCapital), kept only so already-indexed v0 data (the indexer still
 // watches this factory) can still resolve a pool label. Never used for a
-// live read/write — see arunaAddresses above for that.
+// live read/write - see arunaAddresses above for that.
 export const arunaV0Addresses = {
   arunaFactory: "0xcbd7D8bDCe3c8D1e9605A647607505e1F88bE7F5",
   varianceAccumulator: "0xc373585Fd3f8d033DA37A2496eB721F990982aa0",

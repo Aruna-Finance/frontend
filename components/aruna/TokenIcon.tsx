@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import { tokenIconPath } from "@/lib/contracts/token-icons";
 
 interface TokenIconProps {
@@ -8,7 +8,7 @@ interface TokenIconProps {
 }
 
 // A known token's real logo, or a lettered circle for anything this testnet
-// made up that doesn't stand in for a token we have an icon for — same
+// made up that doesn't stand in for a token we have an icon for - same
 // fallback style as the unrecognized-wallet tiles in WalletModal.
 export function TokenIcon({ symbol, size = 24, className = "" }: TokenIconProps) {
   const path = tokenIconPath(symbol);

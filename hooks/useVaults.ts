@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ export interface UseVaultsResult {
 export function useVaults(): UseVaultsResult {
   const query = useVaultsQuery();
   // Recomputed whenever the query's data changes (poll or refetch), not every
-  // render — "now" here is "as of the last successful fetch", which is
+  // render - "now" here is "as of the last successful fetch", which is
   // precise enough for a list/history view.
   const data = useMemo(() => query.data?.map((raw) => mapVault(raw, new Date())), [query.data]);
   return { data, isLoading: query.isLoading, isError: query.isError };
@@ -59,7 +59,7 @@ export interface UseVaultByAddressResult {
   isError: boolean;
 }
 
-// Like `useVault`, but not filtered by isTest — for pages reached by a vault
+// Like `useVault`, but not filtered by isTest - for pages reached by a vault
 // address a wallet actually holds a policy or underwriting position in (my
 // covers, my underwriting, a specific policy's own vault), which must resolve
 // even for a vault that isn't publicly listed on /markets.
@@ -90,7 +90,7 @@ export interface UseVaultRealizedVolResult {
 }
 
 // Realized vol needs a separate accumulator-samples read (see the Proof page
-// hook), which this hook intentionally doesn't do — returns "not available"
+// hook), which this hook intentionally doesn't do - returns "not available"
 // rather than a stale or guessed number. Takes vaultId to keep the same call
 // shape as every other per-vault hook here, ready for when it's implemented.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

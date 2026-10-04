@@ -28,7 +28,16 @@ export function Header({
               {brandCopy.chainTag}
             </span>
           </div>
-          <div className="flex items-center gap-[10px] sm:gap-[12px]">
+          <div className="flex items-center gap-[16px] sm:gap-[20px]">
+            <a
+              href="https://docs-arunafi.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center h-[48px] px-[16px] border border-border text-[13px] text-foreground hover:bg-surface-row transition-all duration-300 shrink-0"
+            >
+              <span className="hidden sm:inline">Documentation</span>
+              <span className="sm:hidden">Docs</span>
+            </a>
             <Button variant="primary" size="sm" href="/markets" newTab className="!rounded-none">
               {landingCopy.nav.useAruna}
               <ArrowUpRightIcon aria-hidden className="w-[16px] h-[16px]" />

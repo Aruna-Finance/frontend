@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Header } from "@/components/aruna/Header";
 import { Card } from "@/components/aruna/Card";
@@ -22,7 +22,7 @@ const sampleColumns: TableColumn[] = [
   { key: "squaredLogReturn", header: proofCopy.tableHeaders[3], width: "minmax(180px, 1fr)" },
 ];
 
-// Every real contract this page's numbers come from — no ABIs here, just the
+// Every real contract this page's numbers come from - no ABIs here, just the
 // addresses so anyone can look them up on the explorer themselves.
 function contractsList(poolAddress: string | undefined) {
   return [
@@ -62,7 +62,7 @@ export default function ProofPage() {
             href={`https://sepolia.arbiscan.io/address/${proof?.accumulator ?? arunaAddresses.varianceAccumulator}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300 inline-flex items-center"
+            className="h-[44px] px-[16px] rounded-button border border-border text-foreground text-[13px] transition-all duration-300 inline-flex items-center"
           >
             {proofCopy.viewExplorerCta}
           </a>
@@ -78,14 +78,14 @@ export default function ProofPage() {
                 ? "Loading…"
                 : proof
                   ? proofCopy.sampleTableMeta(proof.samplesRecorded, proof.samplesTotal ?? proof.samplesRecorded, proof.gapCount ?? 0)
-                  : "—"}
+                  : "-"}
             </span>
           </div>
 
           {isError ? <p className="text-[13px] text-negative px-[4px] pt-[8px]">Could not load samples from the indexer.</p> : null}
           {!isLoading && rows.length === 0 ? (
             <p className="text-[13px] text-foreground-muted px-[4px] pt-[8px]">
-              No samples recorded yet — nobody has called poke() on this pool&apos;s accumulator.
+              No samples recorded yet - nobody has called poke() on this pool&apos;s accumulator.
             </p>
           ) : null}
 
@@ -103,10 +103,10 @@ export default function ProofPage() {
                       {row.meanTick.toLocaleString("en-US")}
                     </span>,
                     <span key="d" className="font-mono text-[13px] text-foreground-muted">
-                      {row.deltaTick === null ? "—" : row.deltaTick > 0 ? `+${row.deltaTick}` : row.deltaTick}
+                      {row.deltaTick === null ? "-" : row.deltaTick > 0 ? `+${row.deltaTick}` : row.deltaTick}
                     </span>,
                     <span key="s" className="font-mono text-[13px] text-foreground-muted">
-                      {row.squaredLogReturn ?? "—"}
+                      {row.squaredLogReturn ?? "-"}
                     </span>,
                   ]}
                 />
@@ -144,7 +144,7 @@ export default function ProofPage() {
                       {lastRow.deltaTick !== null && lastRow.deltaTick > 0 ? `+${lastRow.deltaTick}` : lastRow.deltaTick}
                     </span>,
                     <span key="s" className="font-mono text-[13px] text-foreground-muted">
-                      {lastRow.squaredLogReturn ?? "—"}
+                      {lastRow.squaredLogReturn ?? "-"}
                     </span>,
                   ]}
                 />
@@ -179,7 +179,7 @@ export default function ProofPage() {
               {proof?.finalized ? proofCopy.resultLabel : proofCopy.resultLabelInProgress}
             </span>
             <div className="flex items-baseline gap-[8px] pt-[10px]">
-              <span className="font-mono text-[38px]">{proof ? proof.annualizedVolPercent : "—"}%</span>
+              <span className="font-mono text-[38px]">{proof ? proof.annualizedVolPercent : "-"}%</span>
               <span className="text-[13px] text-foreground-muted">{proofCopy.unit}</span>
             </div>
             {proof && !proof.finalized && rows.length > 0 ? (

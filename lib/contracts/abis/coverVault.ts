@@ -1,5 +1,5 @@
-// Generated via `forge inspect CoverVault abi` from smart-contract commit
-// 01dc2fbfe3a4f2c34e3ba8813a130ff7002ad928 (branch rc/sandbox-1, v2). ABI is frozen —
+﻿// Generated via `forge inspect CoverVault abi` from smart-contract commit
+// 01dc2fbfe3a4f2c34e3ba8813a130ff7002ad928 (branch rc/sandbox-1, v2). ABI is frozen -
 // the release deploy must match this bytecode exactly (ReleaseGuard checks init-code
 // hashes), so this will not change again before release, only the deployed address will.
 export const coverVaultAbi = [

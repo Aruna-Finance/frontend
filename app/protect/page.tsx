@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
@@ -100,7 +100,7 @@ export default function ProtectSelectPositionPage() {
                             formatTokenNumber(position.token1FeesOwed),
                             position.token1Symbol ?? "",
                           )
-                        : "—"}
+                        : "-"}
                   </div>
                 </div>
                 <div className="flex items-center gap-[28px]">
@@ -120,7 +120,7 @@ export default function ProtectSelectPositionPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="font-mono text-[22px] pt-[4px]">—</div>
+                      <div className="font-mono text-[22px] pt-[4px]">-</div>
                     )}
                   </div>
                   {position.hold ? (
@@ -152,7 +152,7 @@ export default function ProtectSelectPositionPage() {
                 id="tokenid"
                 type="text"
                 placeholder={lpSelectPositionCopy.manualEntry.placeholder}
-                className="h-[44px] w-[160px] px-[12px] rounded-control border border-border bg-canvas text-foreground font-mono text-[14px]"
+                className="h-[44px] w-[160px] px-[12px] rounded-button border border-border bg-canvas text-foreground font-mono text-[14px] focus:outline-none"
               />
               <Button variant="ghost" size="sm">
                 {lpSelectPositionCopy.manualEntry.loadCta}

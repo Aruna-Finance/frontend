@@ -8,7 +8,7 @@ const sizeClasses = {
 
 const variantClasses = {
   primary: "bg-accent text-on-accent font-semibold hover:bg-accent-hover",
-  ghost: "border border-border text-foreground",
+  ghost: "border border-border text-foreground hover:bg-surface-row",
 };
 
 const disabledClasses =

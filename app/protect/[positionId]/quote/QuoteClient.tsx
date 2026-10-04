@@ -124,7 +124,7 @@ export function QuoteClient({ positionId }: { positionId: string }) {
   const hasCapacity = quote.data ? quote.data.maxPayoutUsdc <= freeCapacityUsdc : true;
 
   // Flat at 0 to the strike, a straight ramp to the cap, flat at the cap
-  // after — the real shape of min(maxPayout, varNotional × excess / WAD),
+  // after - the real shape of min(maxPayout, varNotional × excess / WAD),
   // scaled dynamically from this quote's own strike/cap instead of a
   // hardcoded per-strike lookup table.
   const axisMax = quote.data ? Math.max(quote.data.capReachedAtPercent * 1.08, strikePercent * 1.2) : strikePercent * 2;
@@ -189,7 +189,7 @@ export function QuoteClient({ positionId }: { positionId: string }) {
                     <span className="font-mono text-[22px] text-foreground">{option}%</span>
                     <span className="text-[12px] text-foreground-muted pt-[6px]">{lpQuoteCopy.premiumWord}</span>
                     <span className="font-mono text-[17px] text-foreground pt-[2px]">
-                      {active && quote.data ? formatUsdcDecimal(quote.data.premiumUsdc) : "—"}
+                      {active && quote.data ? formatUsdcDecimal(quote.data.premiumUsdc) : "-"}
                     </span>
                   </button>
                 );

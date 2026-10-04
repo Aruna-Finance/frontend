@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -14,11 +14,11 @@ export interface BuyCoverRequest {
   deadline: bigint;
 }
 
-// CoverVault.buyCover(...) (v2) — pulls the position NFT into the vault's
+// CoverVault.buyCover(...) (v2) - pulls the position NFT into the vault's
 // escrow for the cover's duration (transferFrom inside this same tx), so the
 // position's own NFPM approval for `vault` must already be in place (see
 // useApproveNft). Returns the new policyId on-chain, but writeContractAsync
-// only surfaces the tx hash — callers route by positionId, not policyId, so
+// only surfaces the tx hash - callers route by positionId, not policyId, so
 // that's not needed here.
 export function useBuyCover() {
   const { send, isPending } = useContractTx();

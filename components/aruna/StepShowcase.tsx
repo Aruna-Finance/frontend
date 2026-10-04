@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -15,7 +15,7 @@ const toneBorderClasses = {
   positive: "border-positive",
 };
 
-// Soft radial glow behind the floating screenshot, tinted per side —
+// Soft radial glow behind the floating screenshot, tinted per side -
 // color-mix keeps it a translucent tint over the canvas rather than a flat
 // opaque fill, echoing the glowing product-panel look from the reference.
 function glowStyle(tone: "accent" | "positive", originX: number) {

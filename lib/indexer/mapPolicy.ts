@@ -1,4 +1,4 @@
-import { formatUnits } from "viem";
+﻿import { formatUnits } from "viem";
 import { breakevenVolPercent, realizedVarianceAnnualized } from "@/lib/contracts/variance";
 import { USDC_DECIMALS, varianceWadToVolPercent } from "@/lib/contracts/units";
 import type { PositionCover } from "@/types/domain";
@@ -13,7 +13,7 @@ function round1(value: number): number {
 }
 
 // Indexer v2 mirrors the contract's PolicyStatus. Anything else means the
-// schema moved under us — fail loudly rather than render it as "active".
+// schema moved under us - fail loudly rather than render it as "active".
 export function coverStatusOf(raw: Pick<IndexerPolicy, "status" | "payout">): PositionCover["status"] {
   switch (raw.status) {
     case "Active":
@@ -36,7 +36,7 @@ export const isSettledPolicy = (raw: Pick<IndexerPolicy, "status">) => raw.statu
 export const isFinalPolicy = (raw: Pick<IndexerPolicy, "status">) =>
   raw.status === "Settled" || raw.status === "Refunded";
 
-// varNotional is "base token units paid per unit of excess variance (WAD)" —
+// varNotional is "base token units paid per unit of excess variance (WAD)" -
 // the same rate the payout formula (§7.2) multiplies against, which is what
 // this field has always meant here.
 export function mapPolicyToCover(raw: IndexerPolicy): PositionCover {

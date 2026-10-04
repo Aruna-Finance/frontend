@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -16,8 +16,8 @@ export interface XAxisProps {
   /** Width of the date ticker box for fade calculation. Default: 50 */
   tickerHalfWidth?: number;
   /**
-   * `"data"` — tick labels snap to data rows so crosshair and tooltip stay aligned (default).
-   * `"domain"` — evenly spaced ticks across the time domain (may not align with hover).
+   * `"data"` - tick labels snap to data rows so crosshair and tooltip stay aligned (default).
+   * `"domain"` - evenly spaced ticks across the time domain (may not align with hover).
    */
   tickMode?: "domain" | "data";
 }

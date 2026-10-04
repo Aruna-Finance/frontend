@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -9,7 +9,7 @@ export interface ClaimUnclaimedRequest {
   vault: Address;
 }
 
-// CoverVault.claimUnclaimed() — pull fallback (design §7.3) for a payout or
+// CoverVault.claimUnclaimed() - pull fallback (design §7.3) for a payout or
 // refund that failed to push (e.g. the recipient's address reverts on
 // receive). Read the pending amount first with CoverVault.unclaimed(address).
 export function useClaimUnclaimed() {

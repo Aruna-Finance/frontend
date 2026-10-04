@@ -1,4 +1,4 @@
-import { formatUnits, parseUnits } from "viem";
+﻿import { formatUnits, parseUnits } from "viem";
 
 export const WAD = 10n ** 18n;
 export const USDC_DECIMALS = 6;
@@ -22,7 +22,7 @@ export function varianceWadToVolPercent(variance: bigint): number {
   return Math.sqrt(Number(variance) / Number(WAD)) * 100;
 }
 
-// A raw variance/sumSq figure (WAD), for a settlement breakdown — these can
+// A raw variance/sumSq figure (WAD), for a settlement breakdown - these can
 // be anywhere from ~1e-7 (a short test policy) to ~0.2 (a full 7-day cohort),
 // so a fixed decimal count would print "0.0000" for the small end. Uses
 // scientific notation below 0.01, plain decimals above it.

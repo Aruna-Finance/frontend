@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { formatEther } from "viem";
 import { Button } from "@/components/aruna/Button";
@@ -42,8 +42,8 @@ export function StormPanel({ sampleInterval }: { sampleInterval: number | undefi
       <div className="border-t border-border pt-[14px] flex flex-col gap-[8px]">
         <div className="text-[12px] text-foreground-muted">{demoCopy.storm.burnerLabel}</div>
         <div className="font-mono text-[12.5px] text-foreground-secondary">
-          {storm.burnerAddress ? shortenAddress(storm.burnerAddress) : "—"} ·{" "}
-          {storm.ethBalance !== undefined ? `${Number(formatEther(storm.ethBalance)).toFixed(4)} ETH` : "—"}
+          {storm.burnerAddress ? shortenAddress(storm.burnerAddress) : "-"} ·{" "}
+          {storm.ethBalance !== undefined ? `${Number(formatEther(storm.ethBalance)).toFixed(4)} ETH` : "-"}
         </div>
         <p className="text-[12.5px] leading-[1.55] text-foreground-muted">{demoCopy.storm.burnerHelp}</p>
         <div className="flex flex-col sm:flex-row gap-[8px]">

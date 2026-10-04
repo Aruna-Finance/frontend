@@ -1,4 +1,4 @@
-import type { Vault } from "@/types/domain";
+﻿import type { Vault } from "@/types/domain";
 
 export const mockVaults: Vault[] = [
   {
@@ -83,7 +83,7 @@ export const mockVaults: Vault[] = [
     premiumsCurrentCycleUsdc: 940,
     premiumIndication: null,
     // Mockup only gives relative bar heights for this vault (no dollar
-    // labels, unlike weth-usdc-005's history) — netResultPercent below is
+    // labels, unlike weth-usdc-005's history) - netResultPercent below is
     // those heights (14/11/16/12/9/15px) scaled so they sum to the known
     // +1.18% cumulative, not a claimed precise per-cycle dollar return.
     cycleHistory: [

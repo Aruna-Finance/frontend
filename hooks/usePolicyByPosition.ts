@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { indexerRequest } from "@/lib/indexer/client";
@@ -11,7 +11,7 @@ export interface UsePoliciesByPositionResult {
   isError: boolean;
 }
 
-// Every policy ever bought against one Uniswap position — closes the gap the
+// Every policy ever bought against one Uniswap position - closes the gap the
 // contract can't answer directly (it only stores policy -> position, not the
 // reverse). A position can have more than one policy across cohorts, so this
 // is a list; callers pick the unsettled one (Active) or a settled one

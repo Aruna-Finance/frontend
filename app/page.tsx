@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/aruna/Header";
@@ -9,7 +9,7 @@ import { VaultSection } from "@/components/landing/VaultSection";
 import { RefuseSection } from "@/components/landing/RefuseSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
-// ── canvas color constants (kept as JS for canvas 2D — mirror of CSS tokens) ─
+// ── canvas color constants (kept as JS for canvas 2D - mirror of CSS tokens) ─
 const INK = '#0e0f12';    // --color-canvas
 const PAPER = '#eceae5';  // --color-foreground
 const O1 = '#e08a4a';     // --color-accent
@@ -136,7 +136,7 @@ export default function LandingPage() {
   const scrubThumb = useRef<HTMLDivElement>(null);
   const cmpTOut = useRef<HTMLOutputElement>(null);
 
-  // mutable RAF state — no re-renders
+  // mutable RAF state - no re-renders
   const st = useRef({
     yaw: -2.45, pitch: 0.50, vyaw: 0, drag3d: false, drag3dLx: 0, drag3dLy: 0,
     priceMove: 78, rangeTightness: 65,

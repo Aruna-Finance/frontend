@@ -1,4 +1,4 @@
-export function formatCohortDate(iso: string): string {
+﻿export function formatCohortDate(iso: string): string {
   const date = new Date(iso);
   const weekday = date.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
   const day = date.toLocaleDateString("en-US", { day: "numeric", timeZone: "UTC" });
@@ -51,7 +51,7 @@ export function formatSettlementDate(iso: string): string {
   return `${day} ${month} ${time} UTC`;
 }
 
-// Unix seconds -> "21 Sep 08:00" — for tables where the column header already
+// Unix seconds -> "21 Sep 08:00" - for tables where the column header already
 // says UTC, so repeating it per row would be noise.
 export function formatSampleTime(unixSeconds: number): string {
   const date = new Date(unixSeconds * 1000);
@@ -73,7 +73,7 @@ export function shortenAddress(address: string, head = 6, tail = 4): string {
 }
 
 // A plain token amount (already in human units, any decimals), with no
-// currency attached — for showing real on-chain quantities where there's no
+// currency attached - for showing real on-chain quantities where there's no
 // price feed to turn them into a dollar figure. 0.00031 -> "0.00031",
 // 1234.5 -> "1,234.5", 0 -> "0".
 export function formatTokenNumber(value: number): string {

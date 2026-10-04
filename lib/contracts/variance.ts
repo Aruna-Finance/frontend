@@ -1,4 +1,4 @@
-import { SECONDS_PER_YEAR, WAD, varianceWadToVolPercent } from "./units";
+﻿import { SECONDS_PER_YEAR, WAD, varianceWadToVolPercent } from "./units";
 
 // Mirrors the settlement maths in the contract design (§3.3, §6.1, §7.2).
 // All integer, all rounding down, exactly as the contract does it, so a
@@ -17,7 +17,7 @@ export function sumSqCovered(endCumulativeSumSq: bigint, startSumSq: bigint): bi
 }
 
 // The strike is time-scaled: a 3-day cover owes 3/365 of the annual strike.
-// Rounded UP (mulDivUp), matching CoverVault.sol exactly — the contract rounds
+// Rounded UP (mulDivUp), matching CoverVault.sol exactly - the contract rounds
 // this up so the strike threshold is a touch harder to cross (design §9.2).
 export function strikeAccumulated(strikeAnnualized: bigint, coveredSeconds: bigint): bigint {
   const numerator = strikeAnnualized * coveredSeconds;
@@ -44,12 +44,12 @@ export function previewPayout(input: PayoutInput): bigint {
 }
 
 // The realized vol (annualized, %) at which payout would exactly equal what
-// was paid for the policy — the inverse of previewPayout at payout = premium.
+// was paid for the policy - the inverse of previewPayout at payout = premium.
 // Display only, and only meaningful below the cap (maxPayout > premium);
 // callers should treat a result at/above the strike's own vol as "never
 // breaks even below the cap" rather than trusting the number blindly.
 // The realized vol (annualized, %) at which the payout saturates at
-// `maxPayout` — purely a function of the quote's own output, no live
+// `maxPayout` - purely a function of the quote's own output, no live
 // accumulator read needed. Display only.
 export function capReachedVolPercent(input: {
   varNotional: bigint;

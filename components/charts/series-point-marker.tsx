@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { Variants } from "motion/react";
 import { motion } from "motion/react";
@@ -129,7 +129,7 @@ export interface SeriesPointMarkerProps extends SeriesPointMarkerStyle {
   enterDuration: number;
 }
 
-/** Motion enter marker — used only while the chart reveal is running. */
+/** Motion enter marker - used only while the chart reveal is running. */
 export function SeriesPointMarker({
   dataKey,
   index,

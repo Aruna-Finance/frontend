@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback } from "react";
 import type { Address } from "viem";
@@ -11,7 +11,7 @@ export interface RollToRequest {
   toCohort: number;
 }
 
-// CoverVault.rollTo(fromCohort, toCohort) — moves fromCohort's net (deposit +
+// CoverVault.rollTo(fromCohort, toCohort) - moves fromCohort's net (deposit +
 // premium share - claim share) straight into toCohort, no token transfer.
 // fromCohort must be SETTLED and toCohort must be FUNDING. During the
 // settlement gap toCohort is usually fromCohort + 1; a late roll (after

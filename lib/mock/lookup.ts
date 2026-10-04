@@ -1,6 +1,6 @@
-// Plain mock lookups for the pages that intentionally still run on full mock
+﻿// Plain mock lookups for the pages that intentionally still run on full mock
 // data end to end (Quote, Confirm, Active, Settlement, UW Dashboard, UW
-// Settlement, UW Deposit — wiring them to the indexer/contracts is later,
+// Settlement, UW Deposit - wiring them to the indexer/contracts is later,
 // separate work). hooks/useVaults.ts, hooks/useCohort.ts and
 // hooks/usePosition.ts now read real data and are "use client", so importing
 // them from these still-async Server Component pages would either crash the

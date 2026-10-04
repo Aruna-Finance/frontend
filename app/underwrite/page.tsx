@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
@@ -18,7 +18,7 @@ import type { BarHistoryBar } from "@/types/aruna";
 export default function UnderwritePage() {
   const { data: allVaults, isLoading, isError } = useVaults();
   // Vaults with no settled cycle yet have nothing to show here (no track
-  // record) — this vault list is about "here's how underwriting has gone so
+  // record) - this vault list is about "here's how underwriting has gone so
   // far", not a full market list (that's /markets). A brand new real vault
   // is genuinely empty here until its first cohort settles.
   const vaults = (allVaults ?? []).filter((vault) => vault.cycleHistory.length > 0);
@@ -45,7 +45,7 @@ export default function UnderwritePage() {
         {isLoading ? <p className="text-[14px] text-foreground-muted">Loading vaults…</p> : null}
         {!isLoading && !isError && vaults.length === 0 ? (
           <p className="text-[14px] text-foreground-muted">
-            No vault has completed a cycle yet — check back once the current cohort settles.
+            No vault has completed a cycle yet - check back once the current cohort settles.
           </p>
         ) : null}
 

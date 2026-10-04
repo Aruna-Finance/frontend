@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ export interface CohortDetailPosition {
   rolledIn: bigint;
   rolledOut: bigint;
   withdrawnNet: bigint;
-  // principal / cohort.totalCapital — never `deposit` (see indexer README).
+  // principal / cohort.totalCapital - never `deposit` (see indexer README).
   sharePercent: number;
 }
 
@@ -73,7 +73,7 @@ export interface UseCohortDetailResult {
 }
 
 // The book (strike buckets + underwriter positions + policies) for one
-// specific cohort — the singular `cohort(vault, cohortId)` query, distinct
+// specific cohort - the singular `cohort(vault, cohortId)` query, distinct
 // from `useCohort`'s per-vault history list. Undefined when nobody has
 // deposited into this cohort yet (it has no row at all, same rule as every
 // other cohort lookup here).
@@ -152,7 +152,7 @@ export function useCohortDetail(vaultId: string, cohortId: number | undefined): 
 
   // `isPending` (not `isLoading`): stays true for the whole stretch where
   // `cohortId` is still undefined and this query is disabled, not just while
-  // actively fetching — so a caller gating on it never reads a one-render gap
+  // actively fetching - so a caller gating on it never reads a one-render gap
   // between "cohortId just resolved" and "fetch actually started" as done.
   return { data, isLoading: query.isPending, isError: query.isError };
 }

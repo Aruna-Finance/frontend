@@ -1,4 +1,4 @@
-import { BaseError, ContractFunctionRevertedError, formatUnits } from "viem";
+﻿import { BaseError, ContractFunctionRevertedError, formatUnits } from "viem";
 import { USDC_DECIMALS } from "./units";
 
 // Friendly copy for every CoverVault custom error, confirmed against the real
@@ -27,17 +27,17 @@ const messages: Record<string, (args: readonly unknown[]) => string> = {
   Reentrancy: () => "That request conflicted with another one in progress. Please retry.",
   TransferFailed: () => "The token transfer failed. Check your balance and allowance.",
   // v2 additions (buyCover / policy escrow / keeper paths).
-  TooLateToBuy: () => "Too little time is left in this cohort to buy cover — try the next one.",
+  TooLateToBuy: () => "Too little time is left in this cohort to buy cover - try the next one.",
   ZeroLiquidity: () => "This position has no liquidity, so there's nothing to cover.",
   ZeroCapital: () => "This cohort has no underwriter capital yet, so it isn't selling cover.",
   BelowMinPayout: (args) => {
     const [, minPayout] = args as [bigint, bigint];
-    return `This position is too small for this cohort — it needs a minimum payout of ${formatUnits(minPayout, USDC_DECIMALS)} USDC.`;
+    return `This position is too small for this cohort - it needs a minimum payout of ${formatUnits(minPayout, USDC_DECIMALS)} USDC.`;
   },
   PolicyCapReached: () => "This cohort has hit its limit on live policies. Try again next cohort.",
   UnsolicitedPosition: () => "This position was never covered by this vault.",
   NotPolicyOwner: () => "This policy isn't owned by the connected wallet.",
-  PolicyNotActive: () => "This cover isn't active anymore — it may already be cancelled or settled.",
+  PolicyNotActive: () => "This cover isn't active anymore - it may already be cancelled or settled.",
   PositionNotHeld: () => "This vault isn't holding that position (it's already been returned or claimed).",
   NotParked: () => "There's no parked position to claim for this policy.",
   ZeroRecipient: () => "Pick a wallet address to receive this, not the zero address.",
