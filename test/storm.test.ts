@@ -6,6 +6,7 @@ import {
   needsTokenTopUp,
   pokeDue,
   stormStep,
+  swapAmount,
   type StormDeps,
   type SwapDirection,
 } from "@/lib/demo/storm";
@@ -97,5 +98,22 @@ describe("pokeDue / budget checks", () => {
   it("tops up tokens when fewer than four swaps remain", () => {
     expect(needsTokenTopUp(STORM.swapIn * 4n)).toBe(false);
     expect(needsTokenTopUp(STORM.swapIn * 4n - 1n)).toBe(true);
+  });
+
+  it("measures the top-up against the swap actually about to be sent", () => {
+    expect(needsTokenTopUp(STORM.swapIn * 4n, STORM.swapIn * 2n)).toBe(true);
+  });
+});
+
+describe("swapAmount", () => {
+  it("uses the calibrated swing at or below the calibration liquidity", () => {
+    expect(swapAmount(STORM.refLiquidity)).toBe(STORM.swapIn);
+    expect(swapAmount(STORM.refLiquidity / 2n)).toBe(STORM.swapIn);
+    expect(swapAmount(0n)).toBe(STORM.swapIn);
+  });
+
+  it("grows in proportion once visitors add liquidity", () => {
+    expect(swapAmount(STORM.refLiquidity * 2n)).toBe(STORM.swapIn * 2n);
+    expect(swapAmount((STORM.refLiquidity * 3n) / 2n)).toBe((STORM.swapIn * 3n) / 2n);
   });
 });

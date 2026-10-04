@@ -14,7 +14,7 @@ import { varianceAccumulatorAbi } from "@/lib/contracts/abis/varianceAccumulator
 import { arunaAddresses } from "@/lib/contracts/addresses";
 import { rpcUrl } from "@/lib/contracts/config";
 import { burnerAccount, loadOrCreateBurnerKey } from "@/lib/demo/burner";
-import { STORM, canContinue, needsTokenTopUp, stormStep, type SwapDirection } from "@/lib/demo/storm";
+import { STORM, canContinue, needsTokenTopUp, stormStep, swapAmount, type SwapDirection } from "@/lib/demo/storm";
 import { toast } from "@/lib/toast";
 import { useChainGuard } from "./useChainGuard";
 import { useWallet } from "./useWallet";
@@ -171,13 +171,17 @@ export function useStorm(sampleInterval: number | undefined) {
                 confirm(await walletClient.writeContract({ address: VAULT, abi: coverVaultAbi, functionName: "keeperPoke", args: [] })),
               swap: async (direction) => {
                 const { tokenIn, tokenOut } = tokens[direction];
-                const balance = await publicClient.readContract({
-                  address: tokenIn,
-                  abi: mintableErc20Abi,
-                  functionName: "balanceOf",
-                  args: [burner],
-                });
-                if (needsTokenTopUp(balance)) {
+                const [balance, liquidity] = await Promise.all([
+                  publicClient.readContract({
+                    address: tokenIn,
+                    abi: mintableErc20Abi,
+                    functionName: "balanceOf",
+                    args: [burner],
+                  }),
+                  publicClient.readContract({ address: POOL, abi: poolAbi, functionName: "liquidity" }),
+                ]);
+                const amountIn = swapAmount(liquidity);
+                if (needsTokenTopUp(balance, amountIn)) {
                   await confirm(
                     await walletClient.writeContract({
                       address: tokenIn,
@@ -192,7 +196,7 @@ export function useStorm(sampleInterval: number | undefined) {
                     address: ROUTER,
                     abi: swapRouterAbi,
                     functionName: "exactInputSingle",
-                    args: [{ tokenIn, tokenOut, fee, recipient: burner, amountIn: STORM.swapIn, amountOutMinimum: 0n, sqrtPriceLimitX96: 0n }],
+                    args: [{ tokenIn, tokenOut, fee, recipient: burner, amountIn, amountOutMinimum: 0n, sqrtPriceLimitX96: 0n }],
                   }),
                 );
               },

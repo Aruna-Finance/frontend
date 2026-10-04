@@ -3,19 +3,22 @@
 // Everything here is permissionless on the sandbox: TestToken.mint has no access
 // control and the Uniswap NonfungiblePositionManager is the real one.
 
-// Position size and width copy the `pay` run (ScenarioSetup defaults): 1e11 raw
-// of each token, +/-1000 ticks. That yields a per-policy maxPayout around
-// 3.9e12 raw, small enough that policyCap (20) policies fit a funded cohort.
+// buyCover rejects a policy whose maxPayout is below capacity / policyCap
+// (BelowMinPayout). The operator funds each cohort with 1e14, so that floor is
+// 1e14 * 80% / 20 = 4e12. The `pay` run's 1e11 per token lands at ~3.87e12 and
+// reverts; 1.25e11 per token, +/-1000 ticks, gives ~4.83e12 (measured on a fork
+// of the sandbox, cohort 24), leaving room for visitor deposits that raise the
+// floor. 16 such policies fill one cohort.
 // mUSDC is token0 (6 decimals) and mWETH token1 (18), and the pool price is a
 // placeholder ratio, so the raw amounts are roughly equal on purpose.
 export const FAUCET = {
-  positionAmount0: 100_000_000_000n,
-  positionAmount1: 100_000_000_000n,
+  positionAmount0: 125_000_000_000n,
+  positionAmount1: 125_000_000_000n,
   halfWidthTicks: 1000,
   // mUSDC kept in the wallet for deposits and premiums (1,000,000 mUSDC).
   usdcTarget: 1_000_000_000_000n,
   // mWETH is only needed for the position; keep headroom for a second one.
-  wethTarget: 200_000_000_000n,
+  wethTarget: 300_000_000_000n,
   // Below this the wallet cannot pay gas for the faucet itself.
   minGasWei: 200_000_000_000_000n,
   deadlineSeconds: 600,

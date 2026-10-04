@@ -21,6 +21,13 @@ export const poolAbi = [
   },
   {
     type: "function",
+    name: "liquidity",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint128" }],
+  },
+  {
+    type: "function",
     name: "token0",
     stateMutability: "view",
     inputs: [],

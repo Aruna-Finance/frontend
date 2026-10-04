@@ -8,6 +8,10 @@
 // swing barely moves the tick at today's liquidity.
 export const STORM = {
   swapIn: 20_000_000_000n,
+  // Pool liquidity swapIn was calibrated at. Every faucet position adds ~2.6e12
+  // in range, and the tick move per swap shrinks as 1/L, so swapAmount scales
+  // the swing back up to keep the variance per sample where it was measured.
+  refLiquidity: 26_000_000_000_000n,
   // Tokens the burner mints itself (mint is permissionless) when it runs low.
   tokenTopUp: 1_000_000_000_000n,
   // Burner ETH: stop below minGasWei, and ask the user to fund fundWei.
@@ -62,6 +66,13 @@ export function canContinue(ethWei: bigint): boolean {
   return ethWei >= STORM.minGasWei;
 }
 
-export function needsTokenTopUp(balance: bigint): boolean {
-  return balance < STORM.swapIn * 4n;
+export function needsTokenTopUp(balance: bigint, swapIn: bigint = STORM.swapIn): boolean {
+  return balance < swapIn * 4n;
+}
+
+// Swap size for the pool's current in-range liquidity: never below the
+// calibrated swapIn, growing proportionally once visitors add liquidity.
+export function swapAmount(liquidity: bigint): bigint {
+  const scaled = (STORM.swapIn * liquidity) / STORM.refLiquidity;
+  return scaled > STORM.swapIn ? scaled : STORM.swapIn;
 }
