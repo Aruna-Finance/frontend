@@ -34,6 +34,19 @@ export function pokeDue(lastSampleAt: number, sampleInterval: number, now: numbe
   return lastSampleAt === 0 || now >= lastSampleAt + sampleInterval;
 }
 
+// Each sample is the TWAP over the interval before it, so a swap only counts in
+// full if the price sits at its new level for the whole interval. Swapping right
+// after a sample lands does that; a swap mid-interval averages the old and new
+// levels and roughly quarters the variance (measured on the live sandbox, where
+// the operator also pokes every interval). So wake just after the next sample
+// is due, with a small margin for clock skew against block time.
+export const SAMPLE_ALIGN_MARGIN_MS = 1_500;
+
+export function msUntilNextSample(lastSampleAt: number, sampleInterval: number, nowMs: number): number {
+  if (lastSampleAt === 0) return 0;
+  return Math.max(0, (lastSampleAt + sampleInterval) * 1000 - nowMs + SAMPLE_ALIGN_MARGIN_MS);
+}
+
 export interface StormDeps {
   now(): number;
   sampleInterval: number;

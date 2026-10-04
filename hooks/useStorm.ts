@@ -14,7 +14,7 @@ import { varianceAccumulatorAbi } from "@/lib/contracts/abis/varianceAccumulator
 import { arunaAddresses } from "@/lib/contracts/addresses";
 import { rpcUrl } from "@/lib/contracts/config";
 import { burnerAccount, loadOrCreateBurnerKey } from "@/lib/demo/burner";
-import { STORM, canContinue, needsTokenTopUp, stormStep, swapAmount, type SwapDirection } from "@/lib/demo/storm";
+import { STORM, canContinue, msUntilNextSample, needsTokenTopUp, stormStep, swapAmount, type SwapDirection } from "@/lib/demo/storm";
 import { toast } from "@/lib/toast";
 import { useChainGuard } from "./useChainGuard";
 import { useWallet } from "./useWallet";
@@ -214,7 +214,16 @@ export function useStorm(sampleInterval: number | undefined) {
               return;
             }
           }
-          await sleep(Math.max(1_000, sampleInterval * 1000 - (Date.now() - started)), abort.signal);
+          // Sleep until the next sample is due, so the next poke and swap land at
+          // the start of an interval (see msUntilNextSample).
+          const lastSampleAt = await publicClient
+            .readContract({ address: ACCUMULATOR, abi: varianceAccumulatorAbi, functionName: "lastSampleAt" })
+            .catch(() => undefined);
+          const wait =
+            lastSampleAt === undefined
+              ? sampleInterval * 1000 - (Date.now() - started)
+              : msUntilNextSample(lastSampleAt, sampleInterval, Date.now());
+          await sleep(Math.max(1_000, wait), abort.signal);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message.split("\n")[0] : "Unknown error";

@@ -4,7 +4,9 @@ import {
   canContinue,
   chooseDirection,
   needsTokenTopUp,
+  msUntilNextSample,
   pokeDue,
+  SAMPLE_ALIGN_MARGIN_MS,
   stormStep,
   swapAmount,
   type StormDeps,
@@ -115,5 +117,16 @@ describe("swapAmount", () => {
   it("grows in proportion once visitors add liquidity", () => {
     expect(swapAmount(STORM.refLiquidity * 2n)).toBe(STORM.swapIn * 2n);
     expect(swapAmount((STORM.refLiquidity * 3n) / 2n)).toBe((STORM.swapIn * 3n) / 2n);
+  });
+});
+
+describe("msUntilNextSample", () => {
+  it("wakes just after the next sample is due", () => {
+    expect(msUntilNextSample(1_000, 60, 1_030_000)).toBe(30_000 + SAMPLE_ALIGN_MARGIN_MS);
+  });
+
+  it("does not wait when a sample is already due or none exists yet", () => {
+    expect(msUntilNextSample(1_000, 60, 1_100_000)).toBe(0);
+    expect(msUntilNextSample(0, 60, 1_100_000)).toBe(0);
   });
 });
