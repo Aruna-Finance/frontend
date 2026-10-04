@@ -32,6 +32,8 @@ export interface IndexerVault {
   settlementToken: string;
   tenor: number;
   gap: number;
+  sampleInterval: number;
+  policyCap: number;
   anchor: string;
   maxUtilizationBps: number;
   maxExcessVariance: string;
@@ -65,6 +67,16 @@ export interface IndexerPolicy {
   boughtAt: string;
   settledAt: string | null;
   cohortRef: { startsAt: string; endsAt: string; finalized: boolean; finalSumSq: string | null } | null;
+}
+
+export interface IndexerKeeperEvent {
+  id: string;
+  kind: string;
+  actor: string | null;
+  cohortId: number | null;
+  amount: string;
+  timestamp: string;
+  txHash: string;
 }
 
 export interface IndexerEscrow {

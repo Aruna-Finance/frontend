@@ -16,6 +16,8 @@ export const VAULTS_QUERY = /* GraphQL */ `
         settlementToken
         tenor
         gap
+        sampleInterval
+        policyCap
         anchor
         maxUtilizationBps
         maxExcessVariance
@@ -62,6 +64,8 @@ export const VAULT_BY_ADDRESS_QUERY = /* GraphQL */ `
       settlementToken
       tenor
       gap
+      sampleInterval
+      policyCap
       anchor
       maxUtilizationBps
       maxExcessVariance
@@ -89,6 +93,22 @@ export const VAULT_BY_ADDRESS_QUERY = /* GraphQL */ `
           finalSumSq
           finalizedAt
         }
+      }
+    }
+  }
+`;
+
+export const KEEPER_EVENTS_QUERY = /* GraphQL */ `
+  query KeeperEvents($vault: String!, $limit: Int) {
+    keeperEvents(where: { vault: $vault }, orderBy: "timestamp", orderDirection: "desc", limit: $limit) {
+      items {
+        id
+        kind
+        actor
+        cohortId
+        amount
+        timestamp
+        txHash
       }
     }
   }

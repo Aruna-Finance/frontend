@@ -11,6 +11,7 @@ export const primaryNavLinks: NavLinkItem[] = [
   { label: sharedNavCopy.protect, href: "/protect" },
   { label: sharedNavCopy.underwrite, href: "/underwrite" },
   { label: sharedNavCopy.proof, href: "/proof" },
+  { label: sharedNavCopy.demo, href: "/demo" },
 ];
 
 export function withActiveNavLink(href: string): NavLinkItem[] {

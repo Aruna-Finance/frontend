@@ -8,6 +8,7 @@ export const sharedNavCopy = {
   protect: "Protect",
   underwrite: "Underwrite",
   proof: "Proof",
+  demo: "Demo",
   cohortChip: (cohortId: number, timeLeft: string) => `Cohort ${cohortId} · settles in ${timeLeft}`,
 } as const;
 
@@ -710,4 +711,40 @@ export const walletCopy = {
   ],
   helpBack: "Back to wallets",
   closeLabel: "Close",
+} as const;
+
+export const demoCopy = {
+  heading: "Demo console",
+  subtitle:
+    "Everything you need to run a full Aruna cycle yourself on Arbitrum Sepolia. Every action is a normal transaction from your own wallet.",
+  sharedMarketWarning:
+    "This is a shared testnet market. Prices, storms and keeper actions are visible to, and affect, every visitor.",
+  timeline: {
+    label: "COHORT TIMELINE",
+    status: { FUNDING: "FUNDING", ACTIVE: "ACTIVE", SETTLING: "SETTLING", SETTLED: "SETTLED" },
+    cohort: (id: number) => `Cohort ${id}`,
+    policies: (count: number, cap: number | undefined) => (cap ? `${count} / ${cap} covers` : `${count} covers`),
+    capital: (amount: string) => `${amount} USDC capital`,
+    boundary: {
+      starts: "Opens in",
+      buyCutoff: "Last moment to buy cover in",
+      ends: "Ends in",
+    },
+    needsKeeper: "Waiting for a keeper to settle it",
+    settledNote: "Settled. Withdraw or roll from the underwriter settlement page.",
+    fundingNote: "Deposit now to underwrite this cohort.",
+  },
+  keeper: {
+    label: "KEEPER",
+    body: "Anyone can move a cohort forward. A keeper bot also does this automatically, so these buttons are for the demo.",
+    poke: "Record a sample",
+    pokeIn: (countdown: string) => `Next sample in ${countdown}`,
+    pokeReady: "A sample is due",
+    finalize: (cohortId: number) => `Finalize cohort ${cohortId}`,
+    settle: (cohortId: number, count: number) => `Settle ${count} ${count === 1 ? "cover" : "covers"} in cohort ${cohortId}`,
+    nothing: "Nothing to finalize or settle right now.",
+    recent: "RECENT KEEPER ACTIVITY",
+    noEvents: "No keeper activity yet.",
+  },
+  comingSoon: "Coming up next",
 } as const;
