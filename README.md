@@ -6,10 +6,6 @@ Aruna settles on realized variance read from a pool's own TWAP oracle, instead o
 
 This repository is the frontend for Aruna — a Next.js application built for a buildathon submission. It does not contain the smart contracts.
 
-## Preview
-
-![Aruna landing page](public/screenshots/landing.png)
-
 ## How it works
 
 - **LP side.** Pick the Uniswap v3 position you already own, choose a strike (the realized-volatility level above which cover starts paying), and pay a premium once. That premium is locked in as your maximum loss from that second — it cannot grow, not at settlement, not on early exit. Your pool trading fees stay entirely yours.
