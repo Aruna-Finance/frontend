@@ -72,6 +72,12 @@ export default function ProtectSelectPositionPage() {
                       {position.poolLabel} {position.poolFeeTier}
                     </span>
                     <span className="font-mono text-[12px] text-foreground-muted">#{position.tokenId}</span>
+                    {position.hold ? (
+                      <Badge
+                        label={position.hold === "covered" ? lpSelectPositionCopy.badgeCovered : lpSelectPositionCopy.badgeHeld}
+                        tone="accent"
+                      />
+                    ) : null}
                     {position.inRange !== null ? (
                       <Badge
                         label={position.inRange ? lpSelectPositionCopy.badgeInRange : lpSelectPositionCopy.badgeOutOfRange}
@@ -116,7 +122,14 @@ export default function ProtectSelectPositionPage() {
                       <div className="font-mono text-[22px] pt-[4px]">—</div>
                     )}
                   </div>
-                  {position.hasVaultForPool ? (
+                  {position.hold ? (
+                    <Button
+                      href={`/protect/${position.tokenId}/${position.hold === "covered" ? "active" : "settlement"}`}
+                      variant="ghost"
+                    >
+                      {position.hold === "covered" ? lpSelectPositionCopy.viewCoverCta : lpSelectPositionCopy.claimHeldCta}
+                    </Button>
+                  ) : position.hasVaultForPool ? (
                     <Button href={quoteHref} variant={highlighted ? "primary" : "ghost"}>
                       {lpSelectPositionCopy.selectCta}
                     </Button>

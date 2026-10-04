@@ -130,6 +130,19 @@ export const POLICIES_BY_OWNER_QUERY = /* GraphQL */ `
   }
 `;
 
+export const ESCROWS_BY_OWNER_QUERY = /* GraphQL */ `
+  query EscrowsByOwner($owner: String!) {
+    positionEscrows(where: { owner: $owner }) {
+      items {
+        vault
+        policyId
+        tokenId
+        state
+      }
+    }
+  }
+`;
+
 export const POLICIES_BY_POSITION_QUERY = /* GraphQL */ `
   query PoliciesByPosition($positionTokenId: BigInt!) {
     policys(

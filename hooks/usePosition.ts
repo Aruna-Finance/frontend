@@ -9,11 +9,12 @@ import { erc20Abi } from "@/lib/contracts/abis/erc20";
 import { positionManagerAbi } from "@/lib/contracts/abis/positionManager";
 import { poolAbi } from "@/lib/contracts/abis/pool";
 import { positionTokenAmounts } from "@/lib/contracts/position-math";
+import { mergeEscrowedTokenIds } from "@/lib/contracts/position-escrow";
 import { isPositionInRange } from "@/lib/contracts/uniswap";
 import { indexerRequest } from "@/lib/indexer/client";
 import { mapPolicyToCover } from "@/lib/indexer/mapPolicy";
-import { POLICIES_BY_OWNER_QUERY } from "@/lib/indexer/queries";
-import type { IndexerPolicy } from "@/lib/indexer/types";
+import { ESCROWS_BY_OWNER_QUERY, POLICIES_BY_OWNER_QUERY } from "@/lib/indexer/queries";
+import type { IndexerEscrow, IndexerPolicy } from "@/lib/indexer/types";
 import type { Position, PositionCover } from "@/types/domain";
 import { useWallet } from "./useWallet";
 
@@ -105,9 +106,25 @@ export function usePositions(): UsePositionsResult {
     [address, balance],
   );
   const tokenIdsQuery = useReadContracts({ contracts: tokenIdContracts, query: { enabled: tokenIdContracts.length > 0 } });
-  const tokenIds = useMemo(
+  const ownedTokenIds = useMemo(
     () => (tokenIdsQuery.data ?? []).map((r) => r.result as bigint | undefined).filter((v): v is bigint => v !== undefined),
     [tokenIdsQuery.data],
+  );
+
+  // Positions the vault is holding for a cover are not in the wallet's NFT
+  // list; the indexer's escrow rows bring them back, flagged as held.
+  const escrowQuery = useQuery({
+    queryKey: ["indexer", "escrowsByOwner", address?.toLowerCase()],
+    queryFn: () =>
+      indexerRequest<{ positionEscrows: { items: IndexerEscrow[] } }, { owner: string }>(ESCROWS_BY_OWNER_QUERY, {
+        owner: address!.toLowerCase(),
+      }),
+    select: (result) => result.positionEscrows.items,
+    enabled: Boolean(address),
+  });
+  const { tokenIds, holdByTokenId } = useMemo(
+    () => mergeEscrowedTokenIds(ownedTokenIds, escrowQuery.data ?? []),
+    [ownedTokenIds, escrowQuery.data],
   );
 
   const positionContracts = useMemo(
@@ -204,16 +221,17 @@ export function usePositions(): UsePositionsResult {
         token1Amount,
         token0FeesOwed: info0 ? Number(tokensOwed0) / 10 ** info0.decimals : null,
         token1FeesOwed: info1 ? Number(tokensOwed1) / 10 ** info1.decimals : null,
+        hold: holdByTokenId.get(tokenIds[i].toString()),
       });
     });
     return positions;
-  }, [address, positionsQuery.data, tokenIds, poolByKey, tokenInfoByAddress]);
+  }, [address, positionsQuery.data, tokenIds, holdByTokenId, poolByKey, tokenInfoByAddress]);
 
   return {
     data,
     isLoading:
       Boolean(address) &&
-      (balanceQuery.isLoading || tokenIdsQuery.isLoading || positionsQuery.isLoading || poolInfo.isLoading || tokenInfoQuery.isLoading),
+      (balanceQuery.isLoading || tokenIdsQuery.isLoading || escrowQuery.isLoading || positionsQuery.isLoading || poolInfo.isLoading || tokenInfoQuery.isLoading),
     isError: balanceQuery.isError || tokenIdsQuery.isError || positionsQuery.isError || poolInfo.isError || tokenInfoQuery.isError,
   };
 }

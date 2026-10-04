@@ -67,6 +67,13 @@ export interface IndexerPolicy {
   cohortRef: { startsAt: string; endsAt: string; finalized: boolean; finalSumSq: string | null } | null;
 }
 
+export interface IndexerEscrow {
+  vault: string;
+  policyId: string;
+  tokenId: string;
+  state: "escrowed" | "returned" | "parked" | "claimed";
+}
+
 export interface IndexerUnderwriterPosition {
   vault: string;
   cohortId: number;

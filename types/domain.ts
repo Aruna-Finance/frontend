@@ -86,6 +86,10 @@ export interface Position {
   token1Amount: number | null;
   token0FeesOwed: number | null;
   token1FeesOwed: number | null;
+  // Set while the vault holds this position's NFT for a cover (it then leaves
+  // the wallet's own NFT list); "parked" means the return failed and the owner
+  // must claim it.
+  hold?: "covered" | "parked";
 }
 
 export interface PositionCover {
