@@ -3,8 +3,8 @@
 import { Header } from "@/components/aruna/Header";
 import { CohortTimeline } from "@/components/aruna/demo/CohortTimeline";
 import { FaucetPanel } from "@/components/aruna/demo/FaucetPanel";
+import { StormPanel } from "@/components/aruna/demo/StormPanel";
 import { KeeperPanel } from "@/components/aruna/demo/KeeperPanel";
-import { Card } from "@/components/aruna/Card";
 import { demoCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { demoVault, useDemoMarket } from "@/hooks/useDemoMarket";
@@ -40,10 +40,7 @@ export default function DemoConsolePage() {
             onChanged={() => void market.refetchLastSample()}
           />
           <FaucetPanel />
-          <Card className="flex flex-col gap-[8px]">
-            <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{demoCopy.comingSoon}</div>
-            <p className="text-[14px] text-foreground-secondary">Storm / Calm price controls.</p>
-          </Card>
+          <StormPanel sampleInterval={market.sampleInterval} />
         </div>
       </div>
     </div>

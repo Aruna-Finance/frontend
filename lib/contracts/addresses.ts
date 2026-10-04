@@ -28,6 +28,8 @@ export const arunaAddresses = {
   pool: "0x0ae57A2751E50597c8a3C183AEbCF115F057d408",
   settlementToken: "0x29Fccf6C04D4d02c9ea4336c75F84145299c82cA",
   positionManager: "0x6b2937Bde17889EDCf8fbD8dE31C3C2a70Bc4d65",
+  // Uniswap SwapRouter02; the demo console's Storm mode swaps through it.
+  swapRouter: "0x101F443B4d1b059569D643917553c771E1b9663E",
 } as const satisfies Record<string, Address>;
 
 export type ArunaContractName = keyof typeof arunaAddresses;

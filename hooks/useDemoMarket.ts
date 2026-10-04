@@ -65,6 +65,7 @@ export function useDemoMarket() {
   return {
     now,
     policyCap: raw?.policyCap,
+    sampleInterval: raw?.sampleInterval,
     timeline,
     readiness,
     events: events.data ?? [],

@@ -5,7 +5,7 @@ import { arunaChainId } from "./addresses";
 
 // Public RPC is enough for development but is rate-limited; set
 // NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL (see .env.example) for anything shared.
-const RPC_URL = process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL || arbitrumSepolia.rpcUrls.default.http[0];
+export const rpcUrl = process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC_URL || arbitrumSepolia.rpcUrls.default.http[0];
 
 export const supportedChain = arbitrumSepolia;
 
@@ -17,7 +17,7 @@ export const wagmiConfig = createConfig({
   chains: [arbitrumSepolia],
   connectors: [injected()],
   transports: {
-    [arbitrumSepolia.id]: http(RPC_URL),
+    [arbitrumSepolia.id]: http(rpcUrl),
   },
   // Server render always sees "disconnected"; wagmi reconnects after mount
   // instead of hydrating with a stale account.
