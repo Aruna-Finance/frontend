@@ -52,7 +52,7 @@ export function SettlementClient({ positionId }: { positionId: string }) {
   // No feed to read pool fees from for testnet tokens — this line in the
   // mock ("fees earned while covered") isn't reconstructable without a price
   // feed either, so it's left out rather than shown as a guessed number.
-  const nextCohortId = (vault?.currentCohortId ?? raw.cohortId) + 1;
+  const nextCohortId = vault?.fundingCohortId ?? raw.cohortId + 1;
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">

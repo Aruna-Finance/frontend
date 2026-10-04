@@ -125,7 +125,12 @@ export function useProof(vaultId: string): UseProofResult {
     const gapStats = liveStats.data?.[1]?.result as readonly [number, number] | undefined;
     const sampleInterval = liveStats.data?.[2]?.result as number | undefined;
 
-    const currentCohortId = deriveCohortId(BigInt(vault.anchor), BigInt(vault.tenor), BigInt(Math.floor(new Date().getTime() / 1000)));
+    const currentCohortId = deriveCohortId(
+      BigInt(vault.anchor),
+      BigInt(vault.tenor),
+      BigInt(Math.floor(new Date().getTime() / 1000)),
+      BigInt(vault.gap),
+    );
     const currentRow = vault.cohorts.items.find((item) => item.cohortId === currentCohortId);
 
     return {

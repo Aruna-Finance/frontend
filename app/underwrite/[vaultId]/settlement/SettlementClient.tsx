@@ -37,7 +37,7 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
   const { data: cohorts, isLoading: cohortsLoading } = useCohortsByAddress(vaultId);
   const lastSettled = cohorts?.filter((item) => item.status === "SETTLED").sort((a, b) => b.id - a.id)[0];
   const { data: cohort, isLoading: cohortLoading } = useCohortDetail(vaultId, lastSettled?.id);
-  const fundingCohortId = (vault?.currentCohortId ?? lastSettled?.id ?? 0) + 1;
+  const fundingCohortId = vault?.fundingCohortId ?? (lastSettled?.id ?? 0) + 1;
   const fundingCohort = useCohort(vaultId, fundingCohortId).data;
   const { address, isConnected } = useWallet();
   const walletModal = useWalletModal();

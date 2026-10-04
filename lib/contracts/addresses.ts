@@ -32,11 +32,10 @@ export const arunaAddresses = {
 
 export type ArunaContractName = keyof typeof arunaAddresses;
 
-// The one v2 market known today, independent of the indexer (which still
-// only watches the v0 factory and has never heard of this vault). Used by
+// The one v2 market known today, readable without the indexer. Used by
 // hooks that need to recognize "does this pool have an Aruna vault" without
 // going through useVaults()/the indexer — e.g. matching a wallet's Uniswap
-// positions against a coverable pool. Extend this array (or replace it with
+// positions against a coverable pool (the indexer also watches this vault now). Extend this array (or replace it with
 // a real ArunaFactory.allVaults() enumeration) once more than one market
 // exists worth curating as "official".
 export const arunaMarkets = [{ vault: arunaAddresses.coverVault, pool: arunaAddresses.pool }] as const;

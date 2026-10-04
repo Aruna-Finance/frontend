@@ -37,6 +37,8 @@ export interface Vault {
   currentSpotPrice: number | null;
   hasVault: boolean;
   currentCohortId: number | null;
+  // The cohort a deposit must target: the first one that has not started yet.
+  fundingCohortId: number | null;
   totalCapitalUsdc: number;
   freeCapacityUsdc: number;
   reservedCapacityUsdc: number;

@@ -28,8 +28,7 @@ const BASELINE_DEPOSIT = 200_000;
 
 export function DepositClient({ vaultId }: { vaultId: string }) {
   const { data: vault, isLoading: vaultLoading } = useVault(vaultId);
-  const activeCohortId = vault?.currentCohortId ?? 0;
-  const fundingCohortId = activeCohortId + 1;
+  const fundingCohortId = vault?.fundingCohortId ?? 0;
   const fundingCohort = useCohort(vaultId, fundingCohortId).data;
   const { data: fundingFinancials } = useCohortFinancials(vaultId, fundingCohortId);
 
@@ -202,7 +201,7 @@ export function DepositClient({ vaultId }: { vaultId: string }) {
               <DetailRow label={uwDepositCopy.positionCard.rows.vaultAfterDeposit} value={formatUsdcDecimal(vaultAfterDeposit)} />
               <DetailRow label={uwDepositCopy.positionCard.rows.lockedUntil} value={lockedUntil} />
               <DetailRow
-                label={uwDepositCopy.positionCard.rows.estPremiums(activeCohortId)}
+                label={uwDepositCopy.positionCard.rows.estPremiums(vault?.currentCohortId ?? 0)}
                 value={formatUsdcDecimal(estPremiums)}
                 valueTone="positive"
                 divider={false}

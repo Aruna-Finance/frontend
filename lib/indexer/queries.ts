@@ -15,6 +15,7 @@ export const VAULTS_QUERY = /* GraphQL */ `
         accumulator
         settlementToken
         tenor
+        gap
         anchor
         maxUtilizationBps
         maxExcessVariance
@@ -60,6 +61,7 @@ export const VAULT_BY_ADDRESS_QUERY = /* GraphQL */ `
       accumulator
       settlementToken
       tenor
+      gap
       anchor
       maxUtilizationBps
       maxExcessVariance

@@ -25,7 +25,8 @@ export function useCohort(vaultId: string, cohortId?: number): UseCohortResult {
     if (!raw) return undefined;
     const now = new Date();
     const targetId =
-      cohortId ?? deriveCohortId(BigInt(raw.anchor), BigInt(raw.tenor), BigInt(Math.floor(now.getTime() / 1000)));
+      cohortId ??
+      deriveCohortId(BigInt(raw.anchor), BigInt(raw.tenor), BigInt(Math.floor(now.getTime() / 1000)), BigInt(raw.gap));
     return findOrSynthesizeCohort(raw, targetId, now);
   }, [query.data, vaultId, cohortId]);
   return { data, isLoading: query.isLoading, isError: query.isError };

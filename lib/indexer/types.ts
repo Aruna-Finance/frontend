@@ -31,6 +31,7 @@ export interface IndexerVault {
   accumulator: string;
   settlementToken: string;
   tenor: number;
+  gap: number;
   anchor: string;
   maxUtilizationBps: number;
   maxExcessVariance: string;

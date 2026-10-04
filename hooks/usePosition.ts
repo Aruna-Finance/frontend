@@ -47,9 +47,8 @@ function poolKey(token0: Address, token1: Address, fee: number): string {
 // indexer, since a wallet's own NFTs need to be current the moment this page
 // is opened. A position "has a vault for its pool" when its own
 // token0/token1/fee (from `positions()`) matches a known v2 market's pool.
-// Matched against `arunaMarkets` (direct contract addresses), not the
-// indexer's vault list — the indexer still only watches the v0 factory and
-// has never heard of the v2 sandbox vault.
+// Matched against `arunaMarkets` (direct contract addresses) rather than the
+// indexer's vault list, so it works before the indexer has caught up.
 export function usePositions(): UsePositionsResult {
   const { address } = useWallet();
   const vaultPools = useMemo(
