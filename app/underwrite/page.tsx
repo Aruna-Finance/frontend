@@ -7,6 +7,7 @@ import { Badge } from "@/components/aruna/Badge";
 import { PairIcon } from "@/components/aruna/PairIcon";
 import { StatCard } from "@/components/aruna/StatCard";
 import { BarHistoryChart } from "@/components/aruna/charts/BarHistoryChart";
+import { AppFooter } from "@/components/aruna/AppFooter";
 import { uwVaultsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDateInline, formatUsdc } from "@/lib/format";
@@ -107,6 +108,7 @@ export default function UnderwritePage() {
           ))}
         </div>
       </div>
+      <AppFooter />
     </div>
   );
 }

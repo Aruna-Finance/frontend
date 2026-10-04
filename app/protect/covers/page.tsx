@@ -6,6 +6,7 @@ import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { Badge } from "@/components/aruna/Badge";
 import { PairIcon } from "@/components/aruna/PairIcon";
+import { AppFooter } from "@/components/aruna/AppFooter";
 import { lpMyCoversCopy, lpSettlementCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatSettlementDate, formatUsdcDecimal } from "@/lib/format";
@@ -129,6 +130,7 @@ export default function MyCoversPage() {
           {lpMyCoversCopy.backLink}
         </Link>
       </div>
+      <AppFooter />
     </div>
   );
 }

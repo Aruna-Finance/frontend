@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-canvas: #0e0f12;
+  --color-canvas: #000000;
   --color-header: #121419;
   --color-surface: #16181d;
   --color-surface-raised: #1c2027;
@@ -38,6 +38,24 @@
   --radius-button: 10px;
   --radius-card: 14px;
   --radius-card-lg: 16px;
+
+  /* Landing — dark surfaces */
+  --color-pitch: #101010;
+  --color-pitch-raised: #121212;
+
+  /* Landing — cream (light) surfaces */
+  --color-cream: #f0ece3;
+  --color-cream-border: #ddd8d0;
+  --color-cream-border-soft: #c8c3bb;
+  --color-cream-track: #a09890;
+
+  /* Landing — ink (dark text on cream) */
+  --color-ink: #1a1814;
+  --color-ink-muted: #6b6560;
+  --color-ink-subtle: #9c9690;
+
+  /* Accent dim — slightly darker warm orange */
+  --color-accent-dim: #c97d3e;
 }
 
 @theme inline {
@@ -124,6 +142,44 @@ html,
 html::-webkit-scrollbar,
 *::-webkit-scrollbar {
   display: none;
+}
+
+@keyframes wildPulse {
+  0%, 100% { color: var(--color-accent); }
+  50% { color: var(--color-accent-hover); transform: translateY(-2px); }
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -6px;
+  background: var(--color-accent);
+  border: 0;
+  transform: rotate(45deg);
+}
+input[type="range"]::-moz-range-track {
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: 0;
+  transform: rotate(45deg);
 }
 
 @layer base {

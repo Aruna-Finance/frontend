@@ -16,7 +16,7 @@ export function SmoothScroll() {
   useEffect(() => {
     if (reducedMotion) return;
 
-    const lenis = new Lenis({ autoRaf: false, lerp: 0.09, wheelMultiplier: 0.9 });
+    const lenis = new Lenis({ autoRaf: false, lerp: 0.13, wheelMultiplier: 1.0 });
     const update = ({ timestamp }: { timestamp: number }) => lenis.raf(timestamp);
     frame.update(update, true);
 

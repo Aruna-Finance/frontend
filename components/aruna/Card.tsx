@@ -1,10 +1,10 @@
 import type { CardProps } from "@/types/aruna";
 
 const variantClasses = {
-  default: "border border-border bg-surface",
-  raised: "border-[1.5px] border-accent bg-surface-raised",
+  default: "bg-pitch-raised",
+  raised: "border border-accent bg-pitch-raised",
   danger: "border border-border-danger bg-negative-soft",
-  success: "border border-border-success bg-surface",
+  success: "border border-border-success bg-pitch-raised",
 };
 
 const paddingClasses = {
@@ -16,7 +16,7 @@ const paddingClasses = {
 export function Card({ children, variant = "default", padding = "default", className = "" }: CardProps) {
   return (
     <div
-      className={["rounded-card", variantClasses[variant], paddingClasses[padding], className]
+      className={[variantClasses[variant], paddingClasses[padding], className]
         .filter(Boolean)
         .join(" ")}
     >

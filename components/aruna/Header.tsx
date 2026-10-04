@@ -4,6 +4,7 @@ import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import { Button } from "./Button";
 import { HideOnScrollHeader } from "./HideOnScrollHeader";
 import { WalletButton } from "./WalletButton";
+import { Sidebar } from "./Sidebar";
 import { brandCopy, landingCopy } from "@/lib/content/copy";
 import { primaryNavLinks } from "@/lib/nav";
 import type { HeaderProps } from "@/types/aruna";
@@ -39,14 +40,14 @@ export function Header({
   }
 
   return (
-    <header className="border-b border-border bg-header">
-      <div className="flex flex-wrap items-center justify-between gap-[12px] w-full max-w-[1440px] mx-auto px-[20px] sm:px-[32px] py-[12px] sm:py-0 sm:h-[64px]">
+    <header className="bg-pitch-raised">
+      <div className="flex items-center justify-between w-full max-w-[1440px] mx-auto px-[20px] sm:px-[32px] py-[12px] sm:py-0 sm:h-[64px]">
         <div className="flex items-center gap-[18px] sm:gap-[30px]">
           <div className="flex items-center gap-[8px] font-display text-[24px] text-foreground">
             <Image src="/images/logo.png" alt="" width={24} height={24} />
             {brandCopy.name}
           </div>
-          <nav className="flex flex-wrap gap-[14px] sm:gap-[22px] text-[14px]">
+          <nav className="hidden md:flex gap-[22px] text-[14px]">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -63,13 +64,18 @@ export function Header({
           </nav>
         </div>
         <div className="flex items-center gap-[10px]">
-          {extra}
-          {secondaryAction ? (
-            <Button variant="ghost" size="sm" href={secondaryAction.href}>
-              {secondaryAction.label}
-            </Button>
-          ) : null}
+          <div className="hidden md:flex items-center gap-[10px]">
+            {extra}
+            {secondaryAction ? (
+              <Button variant="ghost" size="sm" href={secondaryAction.href}>
+                {secondaryAction.label}
+              </Button>
+            ) : null}
+          </div>
           <WalletButton />
+          <div className="md:hidden">
+            <Sidebar navLinks={navLinks} extra={extra} secondaryAction={secondaryAction ?? undefined} />
+          </div>
         </div>
       </div>
     </header>

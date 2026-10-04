@@ -7,6 +7,7 @@ import { Card } from "@/components/aruna/Card";
 import { Badge } from "@/components/aruna/Badge";
 import { PairIcon } from "@/components/aruna/PairIcon";
 import { StepIndicator } from "@/components/aruna/StepIndicator";
+import { AppFooter } from "@/components/aruna/AppFooter";
 import { lpSelectPositionCopy, stepIndicatorCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatDuration, secondsUntil } from "@/lib/contracts/units";
@@ -178,6 +179,7 @@ export default function ProtectSelectPositionPage() {
           ) : null}
         </Card>
       </div>
+      <AppFooter />
     </div>
   );
 }

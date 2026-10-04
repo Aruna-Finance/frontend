@@ -7,9 +7,9 @@ function gridTemplate(columns: TableColumn[]) {
 export function Table({ columns, children }: TableProps) {
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-max rounded-card border border-border bg-surface overflow-hidden">
+      <div className="min-w-max bg-pitch-raised overflow-hidden">
         <div
-          className="grid px-[20px] py-[14px] border-b border-border text-[11px] tracking-[0.07em] uppercase text-foreground-muted"
+          className="grid px-[20px] py-[14px] text-[11px] tracking-[0.07em] uppercase text-foreground-muted"
           style={{ gridTemplateColumns: gridTemplate(columns) }}
         >
           {columns.map((column) => (
@@ -26,7 +26,7 @@ export function TableRow({ columns, cells, highlighted = false }: TableRowProps)
   return (
     <div
       className={[
-        "grid items-center px-[20px] py-[14px] border-b border-border-subtle last:border-b-0",
+        "grid items-center px-[20px] py-[14px]",
         highlighted ? "bg-surface-row" : "",
       ]
         .filter(Boolean)

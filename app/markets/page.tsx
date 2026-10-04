@@ -6,6 +6,7 @@ import { Card } from "@/components/aruna/Card";
 import { PairIcon } from "@/components/aruna/PairIcon";
 import { ProgressBar } from "@/components/aruna/ProgressBar";
 import { Table, TableRow } from "@/components/aruna/Table";
+import { AppFooter } from "@/components/aruna/AppFooter";
 import { marketsCopy, sharedNavCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDate, formatUsdc } from "@/lib/format";
@@ -118,7 +119,7 @@ export default function MarketsPage() {
         navLinks={withActiveNavLink("/markets")}
         extra={
           featuredCohort ? (
-            <span className="inline-flex items-center h-[36px] px-[12px] rounded-control border border-border font-mono text-[12px] text-foreground-secondary">
+            <span className="inline-flex items-center h-[36px] px-[12px] border border-border font-mono text-[12px] text-foreground-secondary">
               {sharedNavCopy.cohortChip(featuredCohort.id, formatDuration(secondsUntil(featuredCohort.endsAt)))}
             </span>
           ) : null
@@ -182,6 +183,7 @@ export default function MarketsPage() {
           ) : null}
         </div>
       </div>
+      <AppFooter />
     </div>
   );
 }

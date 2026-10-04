@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/aruna/Header";
-import { Button } from "@/components/aruna/Button";
-import { GradientWordmark } from "@/components/aruna/GradientWordmark";
 import { SmoothScroll } from "@/components/aruna/SmoothScroll";
-import { brandCopy } from "@/lib/content/copy";
-import { primaryNavLinks } from "@/lib/nav";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { ComparisonSection } from "@/components/landing/ComparisonSection";
+import { VaultSection } from "@/components/landing/VaultSection";
+import { RefuseSection } from "@/components/landing/RefuseSection";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 
-// ── canvas color constants (mapped from design tokens) ──────────────────────
-const INK = '#0e0f12';
-const INK2 = '#16181d';
-const PAPER = '#eceae5';
-const O1 = '#e08a4a';
-const O2 = '#efa469';
-const MUTED = '#98a0ab';
+// ── canvas color constants (kept as JS for canvas 2D — mirror of CSS tokens) ─
+const INK = '#0e0f12';    // --color-canvas
+const PAPER = '#eceae5';  // --color-foreground
+const O1 = '#e08a4a';     // --color-accent
+const O2 = '#efa469';     // --color-accent-hover
+const MUTED = '#98a0ab';  // --color-foreground-muted
 const MONO_FONT = "IBM Plex Mono, ui-monospace, Menlo, monospace";
 
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
@@ -24,7 +22,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const fmt = (n: number, d = 0) => n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 const sgn = (n: number, d = 0) => (n >= 0 ? '+' : '−') + fmt(Math.abs(n), d);
 
-// ── spring physics ───────────────────────────────────────────────────────────
+// ── spring physics ────────────────────────────────────────────────────────────
 class Spring {
   x: number; v = 0; t: number;
   constructor(x = 0, readonly k = 170, readonly d = 18) { this.x = x; this.t = x; }
@@ -35,7 +33,7 @@ class Spring {
   }
 }
 
-// ── seeded random / gaussian ─────────────────────────────────────────────────
+// ── seeded random / gaussian ──────────────────────────────────────────────────
 function makeRng(seed: number) {
   return () => {
     seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
@@ -49,7 +47,7 @@ function gauss(r: () => number) {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r());
 }
 
-// ── price path simulation ────────────────────────────────────────────────────
+// ── price path simulation ─────────────────────────────────────────────────────
 const N = 336, PPY = 17520;
 function makePath(seed: number, target: number, clustered: boolean) {
   const r = makeRng(seed), z = new Float64Array(N); let env = 1;
@@ -82,37 +80,25 @@ let Y0 = 9, Y1 = 0;
 for (const S of [calmPath, whipPath]) for (const v of S.p) { Y0 = Math.min(Y0, v); Y1 = Math.max(Y1, v); }
 Y0 = Math.min(Y0, 0.98) - 0.015; Y1 = Math.max(Y1, 1.045) + 0.015;
 
-// ── Bklit chart data ─────────────────────────────────────────────────────────
-const CMP_BASE_MS = new Date('2024-01-08T00:00:00Z').getTime();
-const CMP_STEP_MS = 30 * 60 * 1000; // 30 min per step, 336 steps = 7 days
-const calmChartData = Array.from({ length: N + 1 }, (_, i) => ({
-  date: new Date(CMP_BASE_MS + i * CMP_STEP_MS),
-  value: calmPath.p[i],
-}));
-const whipChartData = Array.from({ length: N + 1 }, (_, i) => ({
-  date: new Date(CMP_BASE_MS + i * CMP_STEP_MS),
-  value: whipPath.p[i],
-}));
-
-// ── IL surface math ──────────────────────────────────────────────────────────
+// ── IL surface math ───────────────────────────────────────────────────────────
 const LNR = 0.916;
 const ILf = (r: number) => 1 - 2 * Math.sqrt(r) / (1 + r);
 const Lf = (r: number, k: number) => Math.min(1, k * ILf(r));
 const ilRamp = (t: number) => {
   t = clamp(t, 0, 1);
-  const C0 = [34,26,19], C1 = [224,138,74], C2 = [239,164,105];
+  const C0 = [34, 26, 19], C1 = [224, 138, 74], C2 = [239, 164, 105];
   const a = t < 0.55 ? C0 : C1, b = t < 0.55 ? C1 : C2, u = t < 0.55 ? t / 0.55 : (t - 0.55) / 0.45;
   return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], u))).join(',')})`;
 };
 
-// ── vault math ───────────────────────────────────────────────────────────────
+// ── vault math ────────────────────────────────────────────────────────────────
 const VC = 1000, VP = 120, VN = 2400, VK = 0.30;
 const calcVault = (v: number) => {
   const pay = Math.min(VC, VN * Math.max(0, v * v - VK * VK));
   return { pay, lp: pay - VP, uw: VP - pay };
 };
 
-// ── TWAP data ────────────────────────────────────────────────────────────────
+// ── TWAP data ─────────────────────────────────────────────────────────────────
 const BN = 3600, BS = 150;
 function buildTwapData(wickIdx: number) {
   const r = makeRng(99), x = new Float64Array(BN); let v2 = 0;
@@ -142,6 +128,14 @@ export default function LandingPage() {
   const cLiaRef = useRef<HTMLCanvasElement>(null);
   const cCapRef = useRef<HTMLCanvasElement>(null);
 
+  // DOM refs for per-frame readouts (mutated directly to skip React re-renders)
+  const calmBarFill = useRef<HTMLDivElement>(null);
+  const calmBarText = useRef<HTMLSpanElement>(null);
+  const whipBarFill = useRef<HTMLDivElement>(null);
+  const whipBarText = useRef<HTMLSpanElement>(null);
+  const scrubThumb = useRef<HTMLDivElement>(null);
+  const cmpTOut = useRef<HTMLOutputElement>(null);
+
   // mutable RAF state — no re-renders
   const st = useRef({
     yaw: -2.45, pitch: 0.50, vyaw: 0, drag3d: false, drag3dLx: 0, drag3dLy: 0,
@@ -167,28 +161,13 @@ export default function LandingPage() {
     capNextEvent: 160,
   });
 
-  // DOM refs for per-frame readouts — mutated directly to avoid React re-renders every RAF tick
-  const calmBarFill = useRef<HTMLDivElement>(null);
-  const calmBarText = useRef<HTMLSpanElement>(null);
-  const whipBarFill = useRef<HTMLDivElement>(null);
-  const whipBarText = useRef<HTMLSpanElement>(null);
-  const scrubThumb = useRef<HTMLDivElement>(null);
-  const cmpTOut = useRef<HTMLOutputElement>(null);
-
-  // display state for readouts
-  const [il3d, setIl3d] = useState({ move: '+0%', k: '3.0×', il: '0.00%', ilk: '0.0%' });
+  // display state
   const [vault, setVault] = useState({ vol: '63.7%', pay: '0', lp: '+0', uw: '+0', note: '' });
-  const [refuseA, setRefuseA] = useState({ left: '1,000 capacity left', msg: 'Choose a size and try to buy it.', bad: false });
-  const [refuseB, setRefuseB] = useState({ spot: '—', twap: '—', btnLabel: 'Fire a flash-loan wick' });
-  const [refuseC, setRefuseC] = useState({ msg: '' });
-  const [liaReadout, setLiaReadout] = useState({ vol: 64, exit: 3 });
 
   useEffect(() => {
     const s = st.current;
     let rafId = 0, last = 0;
 
-
-    // canvas size helper
     function cvSize(el: HTMLCanvasElement) {
       const r = el.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
       const w = r.width, h = r.height;
@@ -228,8 +207,8 @@ export default function LandingPage() {
       }
       const faces: { q: typeof g[0]; d: number; L: number }[] = [];
       for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) {
-        const a = g[j][i], b = g[j][i+1], c2 = g[j+1][i+1], d2 = g[j+1][i];
-        faces.push({ q: [a,b,c2,d2], d: (a.d+b.d+c2.d+d2.d)/4, L: (a.L+b.L+c2.L+d2.L)/4 });
+        const a = g[j][i], b = g[j][i + 1], c2 = g[j + 1][i + 1], d2 = g[j + 1][i];
+        faces.push({ q: [a, b, c2, d2], d: (a.d + b.d + c2.d + d2.d) / 4, L: (a.L + b.L + c2.L + d2.L) / 4 });
       }
       faces.sort((a, b) => b.d - a.d);
       ctx.lineJoin = 'round';
@@ -240,13 +219,13 @@ export default function LandingPage() {
         ctx.strokeStyle = 'rgba(20,16,12,.55)'; ctx.lineWidth = 0.6; ctx.stroke();
       }
       ctx.strokeStyle = 'rgba(236,234,229,.22)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.beginPath();
-      [[-1,-1],[1,-1],[1,1],[-1,1]].forEach((p2, i) => {
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach((p2, i) => {
         const q = P(p2[0], p2[1], 0); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]);
       });
       ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
       ctx.font = '10px ' + MONO_FONT; ctx.fillStyle = 'rgba(236,234,229,.55)'; ctx.textAlign = 'center';
-      const lab = (s2: string, x: number, y: number, z: number) => { const q = P(x,y,z); ctx.fillText(s2, q[0], q[1]); };
-      lab('−60%',-1,-1.22,0); lab('+150%',1,-1.22,0); lab('full',1.3,-1,0); lab('tight',1.3,1,0); lab('loss',-1.15,-1.15,1.25);
+      const lab = (s2: string, x: number, y: number, z: number) => { const q = P(x, y, z); ctx.fillText(s2, q[0], q[1]); };
+      lab('−60%', -1, -1.22, 0); lab('+150%', 1, -1.22, 0); lab('full', 1.3, -1, 0); lab('tight', 1.3, 1, 0); lab('loss', -1.15, -1.15, 1.25);
       const u2 = s.priceMove / 100, k2 = s.rangeTightness / 10, v2 = (k2 - 1) / 7;
       const r3 = Math.exp(lerp(-LNR, LNR, u2)), L2 = Lf(r3, k2);
       const mx = (u2 - 0.5) * 2, my = (v2 - 0.5) * 2;
@@ -255,18 +234,6 @@ export default function LandingPage() {
       ctx.fillStyle = INK; ctx.strokeStyle = O2; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(top[0], top[1], 5, 0, 7); ctx.fill(); ctx.stroke();
       const pr = (ts * 0.0016) % 1;
       ctx.globalAlpha = 1 - pr; ctx.beginPath(); ctx.arc(top[0], top[1], 5 + pr * 16, 0, 7); ctx.stroke(); ctx.globalAlpha = 1;
-    }
-
-    function update3dReadout() {
-      const u = s.priceMove / 100, k = s.rangeTightness / 10;
-      const r2 = Math.exp(lerp(-LNR, LNR, u));
-      const il = ILf(r2), ilk = Math.min(1, k * il);
-      setIl3d({
-        move: (r2 >= 1 ? '+' : '−') + ((Math.abs(r2 - 1)) * 100).toFixed(0) + '%',
-        k: k.toFixed(1) + '×',
-        il: (il * 100).toFixed(2) + '%',
-        ilk: (ilk * 100).toFixed(1) + '%',
-      });
     }
 
     function drawChart(ctx: CanvasRenderingContext2D, w: number, h: number, S: typeof calmPath, col: string) {
@@ -298,8 +265,8 @@ export default function LandingPage() {
 
     function drawComparison() {
       const elC = chCalmRef.current, elW = chWhipRef.current;
-      if (elC) { const { w, h, dpr } = cvSize(elC); const ctx = elC.getContext('2d')!; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); drawChart(ctx,w,h,calmPath,INK); }
-      if (elW) { const { w, h, dpr } = cvSize(elW); const ctx = elW.getContext('2d')!; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); drawChart(ctx,w,h,whipPath,O1); }
+      if (elC) { const { w, h, dpr } = cvSize(elC); const ctx = elC.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); drawChart(ctx, w, h, calmPath, INK); }
+      if (elW) { const { w, h, dpr } = cvSize(elW); const ctx = elW.getContext('2d')!; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); drawChart(ctx, w, h, whipPath, O1); }
       const i = Math.round(s.pathT * N);
       if (cmpTOut.current) cmpTOut.current.textContent = 'day ' + (s.pathT * 7).toFixed(1) + ' / 7';
       if (scrubThumb.current) scrubThumb.current.style.left = `calc(${s.pathT * 100}% - 5px)`;
@@ -341,14 +308,13 @@ export default function LandingPage() {
       ctx.strokeStyle = 'rgba(236,234,229,0.25)'; ctx.lineWidth = 1; ctx.strokeRect(vx + 0.5, vy, vw - 1, vh);
       ctx.fillStyle = 'rgba(236,234,229,.5)'; ctx.textAlign = 'center'; ctx.fillText('capital 1,000', w / 2, base - 14);
       if (pl < preH - 18) { ctx.fillStyle = INK; ctx.fillText('premium +120', w / 2, top + preH - 14); }
-      ctx.setLineDash([3,4]); ctx.strokeStyle = 'rgba(236,234,229,.25)'; ctx.beginPath(); ctx.moveTo(vx - 14, base - capH); ctx.lineTo(vx + vw + 14, base - capH); ctx.stroke(); ctx.setLineDash([]);
-      // particles
+      ctx.setLineDash([3, 4]); ctx.strokeStyle = 'rgba(236,234,229,.25)'; ctx.beginPath(); ctx.moveTo(vx - 14, base - capH); ctx.lineTo(vx + vw + 14, base - capH); ctx.stroke(); ctx.setLineDash([]);
       const cur = calcVault(s.realizedVol);
-      const L0: [number,number] = [lpx + nw, ny + nh * 0.3], L1: [number,number] = [vx, top + preH * 0.5];
-      const P0: [number,number] = [vx, base - capH * 0.35], P1: [number,number] = [lpx + nw, ny + nh * 0.75];
-      const U0: [number,number] = [uwx, ny + nh * 0.3], U1: [number,number] = [vx + vw, base - capH * 0.65];
-      const R0: [number,number] = [vx + vw, base - capH * 0.3], R1: [number,number] = [uwx, ny + nh * 0.75];
-      const spawn = (a: [number,number], b: [number,number], c: string, rate: number) => {
+      const L0: [number, number] = [lpx + nw, ny + nh * 0.3], L1: [number, number] = [vx, top + preH * 0.5];
+      const P0: [number, number] = [vx, base - capH * 0.35], P1: [number, number] = [lpx + nw, ny + nh * 0.75];
+      const U0: [number, number] = [uwx, ny + nh * 0.3], U1: [number, number] = [vx + vw, base - capH * 0.65];
+      const R0: [number, number] = [vx + vw, base - capH * 0.3], R1: [number, number] = [uwx, ny + nh * 0.75];
+      const spawn = (a: [number, number], b: [number, number], c: string, rate: number) => {
         if (Math.random() < rate && s.particles.length < 260)
           s.particles.push({ a, b, c, t: 0, s: 0.006 + Math.random() * 0.005, o: Math.random() * Math.PI * 2 });
       };
@@ -369,9 +335,7 @@ export default function LandingPage() {
       const el = cCapRef.current; if (!el) return;
       const { w, h, dpr } = cvSize(el);
       const ctx = el.getContext('2d')!;
-      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-
-      // simulate capacity events
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
       s.capNextEvent--;
       if (s.capNextEvent <= 0) {
         if (s.capLevel > 0) {
@@ -383,18 +347,14 @@ export default function LandingPage() {
         }
         s.capNextEvent = 130 + Math.floor(Math.random() * 100);
       }
-      // slow refill
       s.capLevel = Math.min(1000, s.capLevel + 0.35);
       s.capHistory.push(s.capLevel);
       if (s.capHistory.length > 120) s.capHistory.shift();
       if (s.capFlash > 0) s.capFlash--;
-
       const CAP_MAX = 1000;
       const L = 44, R = 10, Tp = 12, B = 20;
       const X = (i: number) => L + (w - L - R) * i / (s.capHistory.length - 1);
       const Y = (v: number) => Tp + (h - Tp - B) * (1 - v / CAP_MAX);
-
-      // grid
       ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
       [0, 500, 1000].forEach(v => {
         ctx.strokeStyle = 'rgba(236,234,229,.07)'; ctx.lineWidth = 1;
@@ -404,8 +364,6 @@ export default function LandingPage() {
       });
       ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
       ctx.fillText('capacity', L + (w - L - R) / 2, h - 6);
-
-      // fill area under curve
       const grad = ctx.createLinearGradient(0, Tp, 0, h - B);
       grad.addColorStop(0, 'rgba(224,138,74,.18)');
       grad.addColorStop(1, 'rgba(224,138,74,.02)');
@@ -415,25 +373,19 @@ export default function LandingPage() {
       ctx.lineTo(X(s.capHistory.length - 1), h - B);
       ctx.lineTo(X(0), h - B);
       ctx.closePath(); ctx.fill();
-
-      // capacity line
       ctx.strokeStyle = s.capLevel < 100 ? 'rgba(200,80,70,.9)' : O1;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       s.capHistory.forEach((v, i) => { const x = X(i), y = Y(v); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-
-      // flash event marker at right edge
       if (s.capFlash > 0) {
         const alpha = s.capFlash / 18;
         const xFlash = X(s.capHistory.length - 1);
         ctx.strokeStyle = s.capFlashOk ? `rgba(224,138,74,${alpha})` : `rgba(200,70,60,${alpha})`;
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(xFlash, Tp); ctx.lineTo(xFlash, h - B); ctx.stroke();
-        // dot
         ctx.fillStyle = s.capFlashOk ? `rgba(239,164,105,${alpha})` : `rgba(220,80,70,${alpha})`;
         ctx.beginPath(); ctx.arc(xFlash, Y(s.capLevel), 4, 0, Math.PI * 2); ctx.fill();
-        // label
         ctx.fillStyle = s.capFlashOk ? `rgba(239,164,105,${alpha})` : `rgba(220,80,70,${alpha})`;
         ctx.font = '9px ' + MONO_FONT; ctx.textAlign = 'right';
         ctx.fillText(s.capFlashOk ? 'sold' : 'rejected', w - R - 2, Tp + 10);
@@ -444,9 +396,7 @@ export default function LandingPage() {
       const el = cTwapRef.current; if (!el) return;
       const { w, h, dpr } = cvSize(el);
       const ctx = el.getContext('2d')!;
-      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-
-      // simulate rolling spot price with auto wick
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
       s.twapAutoNext--;
       if (s.twapWickFlash > 0) s.twapWickFlash--;
       if (s.twapAutoNext <= 0) {
@@ -461,20 +411,16 @@ export default function LandingPage() {
       }
       s.twapSpotHist.push(s.twapSpot);
       if (s.twapSpotHist.length > 120) s.twapSpotHist.shift();
-      // TWAP = slow moving average (last 24 samples)
       const win = 24;
       const twapVal = s.twapSpotHist.slice(-win).reduce((a, b) => a + b, 0) / win;
       s.twapSmoothed.push(twapVal);
       if (s.twapSmoothed.length > 120) s.twapSmoothed.shift();
-
       const N2 = s.twapSpotHist.length;
       const allVals = [...s.twapSpotHist, ...s.twapSmoothed];
       const Ya = Math.min(...allVals) - 0.02, Yb = Math.max(...allVals) + 0.02;
       const L = 44, R = 10, Tp = 12, B = 20;
       const X = (i: number) => L + (w - L - R) * i / (N2 - 1);
       const Y = (p: number) => Tp + (h - Tp - B) * (1 - (p - Ya) / (Yb - Ya));
-
-      // grid
       ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
       const mid = (Ya + Yb) / 2;
       [Ya + (Yb - Ya) * 0.1, mid, Yb - (Yb - Ya) * 0.1].forEach(v2 => {
@@ -485,14 +431,10 @@ export default function LandingPage() {
       });
       ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
       ctx.fillText('twap', L + (w - L - R) / 2, h - 6);
-
-      // spot line (dim)
       ctx.strokeStyle = 'rgba(236,234,229,.3)'; ctx.lineWidth = 1;
       ctx.beginPath();
       s.twapSpotHist.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-
-      // TWAP fill area
       const grad = ctx.createLinearGradient(0, Tp, 0, h - B);
       grad.addColorStop(0, 'rgba(224,138,74,.18)');
       grad.addColorStop(1, 'rgba(224,138,74,.02)');
@@ -501,14 +443,10 @@ export default function LandingPage() {
       s.twapSmoothed.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.lineTo(X(N2 - 1), h - B); ctx.lineTo(X(0), h - B);
       ctx.closePath(); ctx.fill();
-
-      // TWAP line (orange)
       ctx.strokeStyle = O1; ctx.lineWidth = 1.5;
       ctx.beginPath();
       s.twapSmoothed.forEach((v2, i) => { const x = X(i), y = Y(v2); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-
-      // wick flash marker
       if (s.twapWickFlash > 0) {
         const alpha = s.twapWickFlash / 30;
         const xFlash = X(N2 - 1);
@@ -527,9 +465,7 @@ export default function LandingPage() {
       const el = cLiaRef.current; if (!el) return;
       const { w, h, dpr } = cvSize(el);
       const ctx = el.getContext('2d')!;
-      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
-
-      // auto-animate: net P&L oscillates, floor stays fixed
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
       s.liaAutoT += 0.005;
       const autoVol = 20 + 80 * (0.5 + 0.5 * Math.sin(s.liaAutoT));
       const autoExit = 3.5 + 3 * Math.sin(s.liaAutoT * 0.55);
@@ -537,7 +473,6 @@ export default function LandingPage() {
       const netNow = cur.pay * clamp(autoExit, 0, 7) / 7 - VP;
       s.liaNetHist.push(netNow);
       if (s.liaNetHist.length > 120) s.liaNetHist.shift();
-
       const FLOOR = -VP;
       const N2 = s.liaNetHist.length;
       const maxNet = Math.max(...s.liaNetHist, 50);
@@ -545,8 +480,6 @@ export default function LandingPage() {
       const Ya = FLOOR - (maxNet - FLOOR) * 0.18, Yb = maxNet + (maxNet - FLOOR) * 0.1;
       const X = (i: number) => L + (w - L - R) * i / (N2 - 1);
       const Y = (n: number) => Tp + (h - Tp - B) * (1 - (n - Ya) / (Yb - Ya));
-
-      // grid
       ctx.font = '9px ' + MONO_FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
       [0, Math.round(maxNet * 0.5)].forEach(v2 => {
         ctx.strokeStyle = 'rgba(236,234,229,.07)'; ctx.lineWidth = 1;
@@ -555,15 +488,11 @@ export default function LandingPage() {
       });
       ctx.fillStyle = 'rgba(236,234,229,.25)'; ctx.textAlign = 'center';
       ctx.fillText('net p&l', L + (w - L - R) / 2, h - 6);
-
-      // floor line (orange dashed)
       ctx.strokeStyle = O1; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
       ctx.beginPath(); ctx.moveTo(L, Y(FLOOR)); ctx.lineTo(w - R, Y(FLOOR)); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(224,138,74,.7)'; ctx.textAlign = 'left'; ctx.font = '9px ' + MONO_FONT;
       ctx.fillText('floor −' + VP, L + 5, Y(FLOOR) - 7);
-
-      // fill area between net line and floor
       const grad = ctx.createLinearGradient(0, Tp, 0, Y(FLOOR));
       grad.addColorStop(0, 'rgba(224,138,74,.15)');
       grad.addColorStop(1, 'rgba(224,138,74,.03)');
@@ -572,14 +501,10 @@ export default function LandingPage() {
       s.liaNetHist.forEach((v2, i) => { const x = X(i), y = Y(Math.max(v2, FLOOR)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.lineTo(X(N2 - 1), Y(FLOOR)); ctx.lineTo(X(0), Y(FLOOR));
       ctx.closePath(); ctx.fill();
-
-      // net P&L line
       ctx.strokeStyle = 'rgba(236,234,229,.5)'; ctx.lineWidth = 1.5;
       ctx.beginPath();
       s.liaNetHist.forEach((v2, i) => { const x = X(i), y = Y(Math.max(v2, FLOOR)); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
-
-      // dot at current value
       ctx.fillStyle = O2;
       ctx.beginPath(); ctx.arc(X(N2 - 1), Y(Math.max(netNow, FLOOR)), 3.5, 0, Math.PI * 2); ctx.fill();
     }
@@ -599,17 +524,14 @@ export default function LandingPage() {
       s.dispPay.t = cur.pay; s.dispLp.t = cur.lp; s.dispUw.t = cur.uw;
     }
     updateVaultReadout();
-    update3dReadout();
 
     function frame(ts: number) {
       const dt = Math.min(0.033, (ts - last) / 1000 || 0.016); last = ts;
-      // auto-play comparison
       if (s.autoPlay) {
         const k = (ts - s.autoT0) / 7500;
         if (k >= 1) { s.autoPlay = false; s.pathT = 1; }
         else s.pathT = k * k * (3 - 2 * k);
       }
-      // spring readouts for vault
       s.dispPay.step(dt); s.dispLp.step(dt); s.dispUw.step(dt);
       draw3d(ts);
       drawComparison();
@@ -621,7 +543,7 @@ export default function LandingPage() {
     }
     rafId = requestAnimationFrame(frame);
 
-    // ── 3D canvas drag ────────────────────────────────────────────────────────
+    // 3D canvas drag
     const el3d = c3dRef.current;
     if (el3d) {
       const onDown = (e: PointerEvent) => { s.drag3d = true; s.drag3dLx = e.clientX; s.drag3dLy = e.clientY; el3d.setPointerCapture(e.pointerId); };
@@ -639,7 +561,7 @@ export default function LandingPage() {
       el3d.addEventListener('pointercancel', onUp);
     }
 
-    // ── comparison chart drag ─────────────────────────────────────────────────
+    // comparison chart scrub
     const setPathT = (v: number) => { s.autoPlay = false; s.pathT = clamp(v, 0, 1); };
     [[chCalmRef], [chWhipRef]].forEach(([ref]) => {
       const el = ref.current; if (!el) return;
@@ -648,305 +570,68 @@ export default function LandingPage() {
       el.addEventListener('pointerdown', (e) => mv(e as PointerEvent));
     });
 
-    // auto-play comparison when visible
+    // auto-play comparison on scroll into view
     const compObs = new IntersectionObserver((es) => {
       if (es[0].isIntersecting) { s.autoPlay = true; s.autoT0 = performance.now(); s.pathT = 0; compObs.disconnect(); }
     }, { threshold: 0.35 });
     if (chWhipRef.current) compObs.observe(chWhipRef.current);
 
-    // cleanup
     return () => {
       cancelAnimationFrame(rafId);
       compObs.disconnect();
     };
   }, []);
 
-  // ── event handlers (stable, access st.current) ────────────────────────────
-  const onPriceMoveChange = (v: number) => {
-    st.current.priceMove = v;
-    const u = v / 100, r2 = Math.exp(lerp(-LNR, LNR, u));
-    const il = ILf(r2), k = st.current.rangeTightness / 10, ilk = Math.min(1, k * il);
-    setIl3d(prev => ({ ...prev, move: (r2 >= 1 ? '+' : '−') + (Math.abs(r2 - 1) * 100).toFixed(0) + '%', il: (il * 100).toFixed(2) + '%', ilk: (ilk * 100).toFixed(1) + '%' }));
-  };
-  const onRangeTightnessChange = (v: number) => {
-    st.current.rangeTightness = v;
-    const k = v / 10, u = st.current.priceMove / 100, r2 = Math.exp(lerp(-LNR, LNR, u));
-    const il = ILf(r2), ilk = Math.min(1, k * il);
-    setIl3d(prev => ({ ...prev, k: k.toFixed(1) + '×', ilk: (ilk * 100).toFixed(1) + '%' }));
-  };
+  // event handlers
   const onVolChange = (v: number) => {
     st.current.realizedVol = v / 100;
     const cur = calcVault(v / 100), be = Math.sqrt(VK * VK + VP / VN);
     st.current.dispPay.t = cur.pay; st.current.dispLp.t = cur.lp; st.current.dispUw.t = cur.uw;
     setVault({ vol: v.toFixed(1) + '%', pay: fmt(cur.pay), lp: sgn(cur.lp), uw: sgn(cur.uw), note: cur.pay >= VC ? 'Payout hit the cap.' : `Breakeven: ${(be * 100).toFixed(1)}% realized vol.` });
   };
-  const onScrub = (v: number) => { const s = st.current; s.autoPlay = false; s.pathT = v / 1000; if (scrubThumb.current) scrubThumb.current.style.left = `calc(${(v / 1000) * 100}% - 5px)`; };
-  const onBuyCover = () => {
-    const s = st.current;
-    if (s.vaultSold + s.coverSize > 1000) {
-      setRefuseA({ left: fmt(1000 - s.vaultSold) + ' capacity left', msg: `Not sold. Asked ${fmt(s.coverSize)}, only ${fmt(1000 - s.vaultSold)} backed.`, bad: true });
-    } else {
-      s.vaultSold += s.coverSize;
-      setRefuseA({ left: fmt(1000 - s.vaultSold) + ' capacity left', msg: `Sold. Payout capped at ${fmt(s.coverSize)} — capital already in vault.`, bad: false });
-    }
+  const onScrub = (v: number) => {
+    const s = st.current; s.autoPlay = false; s.pathT = v / 1000;
+    if (scrubThumb.current) scrubThumb.current.style.left = `calc(${(v / 1000) * 100}% - 5px)`;
   };
-  const onResetVault = () => { st.current.vaultSold = 0; setRefuseA({ left: '1,000 capacity left', msg: 'Vault reset.', bad: false }); };
-  const onFireWick = () => {
-    const s = st.current;
-    if (s.wickIdx < 0) {
-      s.wickIdx = Math.floor(BN * (0.25 + Math.random() * 0.5));
-      s.twap = buildTwapData(s.wickIdx);
-      setRefuseB({ spot: s.twap.spotVol, twap: s.twap.twapVol, btnLabel: 'Clear the wick' });
-    } else {
-      s.wickIdx = -1; s.twap = buildTwapData(-1);
-      setRefuseB({ spot: s.twap.spotVol, twap: s.twap.twapVol, btnLabel: 'Fire a flash-loan wick' });
-    }
-  };
-  const onLiaVol = (v: number) => { st.current.liaVol = v; setLiaReadout(r => ({ ...r, vol: v })); };
-  const onLiaExit = (v: number) => { st.current.liaExit = v; setLiaReadout(r => ({ ...r, exit: v })); };
 
   return (
     <div className="flex flex-col flex-1 text-foreground overflow-x-hidden">
-      {/* grain texture overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[90] opacity-[0.055] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")` }} />
+      <div
+        className="fixed inset-0 pointer-events-none z-[90] opacity-[0.055] mix-blend-overlay"
+        style={{ backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")` }}
+      />
       <SmoothScroll />
       <Header variant="landing" />
 
-      {/* ── HERO ── */}
-      <section className="relative min-h-[calc(100svh-72px)] flex flex-col justify-center py-[18px] lg:py-[20px]">
-        {/* ambient glow */}
-        <div className="absolute top-[15%] left-[8%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(224,138,74,0.08) 0%, transparent 70%)' }} />
+      <HeroSection c3dRef={c3dRef as React.RefObject<HTMLCanvasElement>} />
 
-        <div className="relative px-[16px] sm:px-[24px] lg:px-[28px] py-[28px] lg:py-[32px] w-full max-w-[1600px] mx-auto bg-[#121212]">
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,0.52fr)_minmax(0,1.48fr)] gap-[26px] lg:gap-[32px] items-stretch min-h-[clamp(600px,calc(100svh-112px),820px)]">
-            {/* copy */}
-            <div className="flex flex-col justify-between pt-[8px] pb-0 lg:pt-[20px] lg:pb-0">
-              <div className="flex flex-1 items-center">
-                <div className="w-full max-w-[430px]">
-              <h1 className="font-display text-[clamp(2rem,3.2vw,3.8rem)] leading-[0.98] font-normal tracking-[-0.015em]">
-                Cover priced<br />
-                by how{" "}
-                <em className="text-accent not-italic" style={{ animation: 'wildPulse 3s ease-in-out infinite' }}>wildly</em>
-                <br />
-                price moves.
-              </h1>
-              <p className="text-foreground-muted text-[clamp(0.95rem,1.1vw,1.05rem)] mt-[40px] mb-0 max-w-[24em] leading-[1.7]">
-                Variance, not direction. Settlement reads realized variance directly from the pool's TWAP oracle.
-              </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-[10px] p-0 m-0 mt-[30px]">
-                <Button href="/protect" className="!rounded-none">Protect a position</Button>
-                <Button variant="ghost" href="/underwrite" className="!rounded-none">Underwrite</Button>
-              </div>
-            </div>
+      <ComparisonSection
+        chCalmRef={chCalmRef as React.RefObject<HTMLCanvasElement>}
+        chWhipRef={chWhipRef as React.RefObject<HTMLCanvasElement>}
+        calmBarFill={calmBarFill as React.RefObject<HTMLDivElement>}
+        calmBarText={calmBarText as React.RefObject<HTMLSpanElement>}
+        whipBarFill={whipBarFill as React.RefObject<HTMLDivElement>}
+        whipBarText={whipBarText as React.RefObject<HTMLSpanElement>}
+        scrubThumb={scrubThumb as React.RefObject<HTMLDivElement>}
+        cmpTOut={cmpTOut as React.RefObject<HTMLOutputElement>}
+        calmRv={calmPath.rv}
+        whipRv={whipPath.rv}
+        onScrub={onScrub}
+      />
 
-            {/* 3D IL surface panel */}
-            <div className="bg-[#101010] relative overflow-hidden min-h-[520px] lg:min-h-0 flex flex-col">
-              <canvas ref={c3dRef} className="block w-full flex-1 min-h-0 cursor-grab active:cursor-grabbing" aria-label="3D impermanent loss surface" />
-            </div>
-          </div>
+      <VaultSection
+        cvaultRef={cvaultRef as React.RefObject<HTMLCanvasElement>}
+        vault={vault}
+        onVolChange={onVolChange}
+      />
 
-        </div>
-      </section>
+      <RefuseSection
+        cCapRef={cCapRef as React.RefObject<HTMLCanvasElement>}
+        cTwapRef={cTwapRef as React.RefObject<HTMLCanvasElement>}
+        cLiaRef={cLiaRef as React.RefObject<HTMLCanvasElement>}
+      />
 
-      {/* ── 01 COMPARISON ── */}
-      <section className="border-t border-border py-[clamp(80px,12vw,160px)] bg-[#f0ece3]">
-        <div className="px-[24px] lg:px-[40px] w-full max-w-[1600px] mx-auto">
-          <div className="mb-[56px]">
-            <h2 className="font-display text-[clamp(2.6rem,5vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.04em] text-[#1a1814]">
-              Same path.<br />Different risk.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr] gap-[1px] bg-transparent">
-            {/* calm */}
-            <div className="bg-white min-h-[620px] p-[28px] lg:p-[36px]">
-              <div className="flex justify-between items-start gap-[12px] mb-[24px]">
-                <div>
-                  <div className="font-display text-[clamp(2rem,2.8vw,2.8rem)] font-normal tracking-[-0.03em] text-[#1a1814]">Calm drift</div>
-                </div>
-                <div className="border border-[#ddd8d0] px-[10px] py-[6px] font-mono text-[11px] whitespace-nowrap text-[#9c9690] bg-[#f5f0e8] shrink-0">
-                  realized {(calmPath.rv * 100).toFixed(1)}% vol
-                </div>
-              </div>
-              <canvas ref={chCalmRef} className="block w-full h-[400px] cursor-crosshair" />
-              <div className="mt-[20px] flex items-center gap-[14px]">
-                <span className="font-mono text-[10px] text-[#9c9690] shrink-0">variance accrued</span>
-                <div className="flex-1 h-[3px] bg-[#c8c3bb] overflow-hidden">
-                  <div ref={calmBarFill} className="h-full bg-[#6b6560]" />
-                </div>
-                <span ref={calmBarText} className="font-mono text-[11px] text-[#1a1814] shrink-0">0.0000</span>
-              </div>
-              <p className="mt-[20px] text-[13px] text-[#6b6560] leading-[1.6]">Little variance accumulated. Little impermanent loss. No payout owed — and the premium reflected that up front.</p>
-            </div>
-
-            {/* whipsaw */}
-            <div className="bg-white min-h-[620px] p-[28px] lg:p-[36px]">
-              <div className="flex justify-between items-start gap-[12px] mb-[24px]">
-                <div>
-                 <div className="font-display text-[clamp(2rem,2.8vw,2.8rem)] font-normal tracking-[-0.03em] text-[#c97d3e]">Whipsaw</div>
-                </div>
-                <div className="border border-[#c97d3e]/30 px-[10px] py-[6px] font-mono text-[11px] whitespace-nowrap text-[#c97d3e] bg-[#c97d3e]/[0.06] shrink-0">
-                  realized {(whipPath.rv * 100).toFixed(1)}% vol
-                </div>
-              </div>
-              <canvas ref={chWhipRef} className="block w-full h-[400px] cursor-crosshair" />
-              <div className="mt-[20px] flex items-center gap-[14px]">
-                <span className="font-mono text-[10px] text-[#9c9690] shrink-0">variance accrued</span>
-                <div className="flex-1 h-[3px] bg-[#c8c3bb] overflow-hidden">
-                  <div ref={whipBarFill} className="h-full bg-[#c97d3e]" />
-                </div>
-                <span ref={whipBarText} className="font-mono text-[11px] text-[#c97d3e] shrink-0">0.0000</span>
-              </div>
-              <p className="mt-[20px] text-[13px] text-[#6b6560] leading-[1.6]">Every swing is rebalanced against you. Variance is what drained the position, so variance is what the contract pays on.</p>
-            </div>
-          </div>
-
-          {/* scrubber bar */}
-          <div className="flex items-center gap-[16px] mt-[1px] px-[20px] py-[14px]">
-            <div
-              className="flex-1 relative h-[20px] flex items-center cursor-pointer"
-              onPointerDown={e => {
-                const r = e.currentTarget.getBoundingClientRect();
-                const v = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * 1000);
-                onScrub(v);
-                const move = (ev: PointerEvent) => { const v2 = Math.round(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * 1000); onScrub(v2); };
-                const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-                window.addEventListener('pointermove', move);
-                window.addEventListener('pointerup', up);
-              }}
-            >
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#a09890]" />
-              <div
-                ref={scrubThumb}
-                className="absolute top-1/2 -translate-y-1/2 w-[10px] h-[10px] rotate-45 bg-[#c97d3e]"
-                style={{ left: 'calc(0% - 5px)' }}
-              />
-            </div>
-            <output ref={cmpTOut} className="shrink-0 font-mono text-[10px] text-[#9c9690] min-w-[7em] text-right">day 0.0 / 7</output>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 02 VAULT ── */}
-      <section className="py-[clamp(80px,12vw,160px)] bg-[#101010]">
-        <div className="px-[24px] lg:px-[48px] w-full">
-          <div className="mb-[56px]">
-            <h2 className="font-display text-[clamp(2.6rem,5vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.04em]">
-              Variance decides<br />what comes out.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] bg-border gap-[1px]">
-            <canvas ref={cvaultRef} className="block w-full h-[500px] bg-[#101010]" aria-label="Vault flow simulation" />
-            <div className="bg-[#101010] p-[28px] flex flex-col gap-[20px]">
-              <div>
-                <div className="font-mono text-[9px] tracking-[0.14em] text-foreground-muted mb-[8px]">REALIZED VOL THIS CYCLE</div>
-                <div className="font-display text-[4rem] font-normal leading-[1] tracking-[-0.04em] text-accent">{vault.vol}</div>
-              </div>
-              <input type="range" min={5} max={120} step={0.1} defaultValue={63.7} onChange={e => onVolChange(+e.target.value)} className="w-full cursor-pointer" />
-              <div className="flex flex-col gap-0 border-t border-border pt-[16px]">
-                {([['Payout to LP', vault.pay, false], ['LP net', vault.lp, true], ['Underwriter net', vault.uw, true]] as [string, string, boolean][]).map(([k, v, signed]) => (
-                  <div key={k} className="flex justify-between items-center py-[11px] border-b border-border">
-                    <span className="text-[13px] text-foreground-muted">{k}</span>
-                    <strong className={`font-mono text-[13px] tabular-nums ${signed && v.startsWith('+') ? 'text-accent' : ''}`}>{v}</strong>
-                  </div>
-                ))}
-              </div>
-              <p className="font-mono text-[10px] text-foreground-muted leading-[1.6] mt-auto">{vault.note}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 03 REFUSE ── */}
-      <section className="border-t border-on-accent/20 py-[clamp(80px,12vw,160px)] bg-accent">
-        <div className="px-[24px] lg:px-[48px] w-full">
-          <div className="mb-[56px]">
-            <h2 className="font-display text-[clamp(2.6rem,5vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.04em] text-on-accent">
-              What we refuse to do.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px] bg-on-accent/15">
-            {/* no 1 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
-              <canvas ref={cCapRef} className="block w-full flex-1 mb-[28px]" />
-              <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
-                If capacity isn't there,<br />the cover isn't sold.
-              </h3>
-            </div>
-
-            {/* no 2 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
-              <canvas ref={cTwapRef} className="block w-full flex-1 mb-[28px] bg-[#121212]" />
-              <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
-                A flash-loan wick can't<br />manufacture variance.
-              </h3>
-            </div>
-
-            {/* no 3 */}
-            <div className="bg-[#121212] p-[36px] flex flex-col min-h-[380px]">
-              <canvas ref={cLiaRef} className="block w-full flex-1 mb-[28px]" />
-              <h3 className="font-display text-[clamp(1.6rem,2.1vw,2.3rem)] font-normal leading-[1.05] tracking-[-0.03em]">
-                The premium is your<br />maximum loss. Always.
-              </h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FOOTER (existing) ── */}
-      <footer className="mt-auto border-t border-border">
-        <div className="w-full max-w-[1440px] mx-auto px-[24px] lg:px-[48px]">
-          <div className="py-[40px] flex flex-col md:flex-row md:justify-between gap-[32px]">
-            <div className="flex flex-col gap-[10px] max-w-[320px]">
-              <div className="flex items-center gap-[8px]">
-                <Image src="/images/logo.png" alt="" width={22} height={22} />
-                <span className="font-display text-[22px] text-foreground">{brandCopy.name}</span>
-              </div>
-              <span className="font-mono text-[11px] tracking-[0.1em] text-foreground-muted">IMPERMANENT LOSS COVER · UNISWAP V3</span>
-            </div>
-            <nav className="flex flex-wrap gap-x-[32px] gap-y-[10px] text-[14px]">
-              {primaryNavLinks.map((link) => (
-                <Link key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground transition-colors">
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div className="border-t border-border py-[20px] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[8px] sm:gap-[16px]">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-[4px] sm:gap-[16px]">
-              <span className="font-mono text-[12px] text-foreground-muted">© {new Date().getFullYear()} Aruna</span>
-              <span className="font-mono text-[12px] text-foreground-muted">Cover is capped by vault capacity. Read the settlement method before buying.</span>
-            </div>
-            <div className="flex gap-[16px]">
-              <Link href="/proof" target="_blank" rel="noopener noreferrer" className="text-[13px] text-foreground-muted hover:text-foreground transition-colors">Settlement proof</Link>
-              <Link href="/states" target="_blank" rel="noopener noreferrer" className="text-[13px] text-foreground-muted hover:text-foreground transition-colors">UI states</Link>
-            </div>
-          </div>
-          <div className="@container overflow-hidden pt-[56px]">
-            <GradientWordmark text={brandCopy.name.toUpperCase()} className="font-display [font-size:calc(100cqw/2.328)] leading-[0.74] -mb-[0.16em] -ml-[0.0613em]" />
-          </div>
-        </div>
-      </footer>
-
-      <style>{`
-        @keyframes wildPulse {
-          0%, 100% { color: #e08a4a; }
-          50% { color: #efa469; transform: translateY(-2px); }
-        }
-        @keyframes badgePulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.35; transform: scale(0.7); }
-        }
-        input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-runnable-track { height: 1px; background: currentColor; opacity: 0.3; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; margin-top: -6px; background: #e08a4a; border: 0; transform: rotate(45deg); }
-        input[type=range]::-moz-range-track { height: 1px; background: currentColor; opacity: 0.3; }
-        input[type=range]::-moz-range-thumb { width: 11px; height: 11px; background: #e08a4a; border: 0; border-radius: 0; transform: rotate(45deg); }
-      `}</style>
+      <LandingFooter />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { formatSampleTime, formatUsdc } from "@/lib/format";
 import { arunaAddresses } from "@/lib/contracts/addresses";
 import { USDC_DECIMALS, formatDuration } from "@/lib/contracts/units";
 import { formatUnits } from "viem";
+import { AppFooter } from "@/components/aruna/AppFooter";
 import { useVaults } from "@/hooks/useVaults";
 import { useProof } from "@/hooks/useProof";
 import type { TableColumn } from "@/types/aruna";
@@ -57,9 +58,6 @@ export default function ProofPage() {
           <p className="text-[15px] text-foreground-secondary pt-[8px] max-w-[760px]">{proofCopy.subtitle}</p>
         </div>
         <div className="flex gap-[10px]">
-          <button type="button" className="h-[44px] px-[16px] rounded-control border border-border text-foreground text-[13px] transition-all duration-300">
-            {proofCopy.downloadCsvCta}
-          </button>
           <a
             href={`https://sepolia.arbiscan.io/address/${proof?.accumulator ?? arunaAddresses.varianceAccumulator}`}
             target="_blank"
@@ -155,7 +153,7 @@ export default function ProofPage() {
           </div>
 
           {proof && rows.length > 0 ? (
-            <div className="bg-surface-row rounded-control p-[20px] mt-[20px]">
+            <div className="bg-pitch p-[20px] mt-[20px]">
               <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
                 {proofCopy.derivationLabel}
               </div>
@@ -218,6 +216,7 @@ export default function ProofPage() {
           </Card>
         </div>
       </div>
+      <AppFooter />
     </div>
   );
 }

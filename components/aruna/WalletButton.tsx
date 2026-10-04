@@ -11,10 +11,10 @@ import { shortenAddress } from "@/lib/format";
 import { toast } from "@/lib/toast";
 
 const chipClasses =
-  "inline-flex items-center justify-center h-[36px] px-[12px] rounded-control text-[13px] transition-all duration-300";
+  "inline-flex items-center justify-center h-[36px] px-[12px] rounded-none text-[13px] transition-all duration-300";
 
 const menuItemClasses =
-  "flex items-center w-full h-[36px] px-[12px] rounded-control text-[13px] text-left text-foreground-secondary hover:bg-surface-row hover:text-foreground transition-all duration-300";
+  "flex items-center w-full h-[36px] px-[12px] text-[13px] text-left text-foreground-secondary hover:bg-surface-row hover:text-foreground transition-all duration-300";
 
 // The wallet control in the app header: a Connect button, or the connected
 // address with a small menu (copy, explorer, disconnect).
@@ -97,7 +97,7 @@ export function WalletButton() {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-[44px] z-50 w-[200px] rounded-card border border-border bg-surface-raised p-[6px] shadow-[0_12px_32px_rgba(0,0,0,0.45)]"
+          className="absolute right-0 top-[44px] z-50 w-[200px] bg-pitch-raised p-[6px] shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
         >
           <button type="button" role="menuitem" onClick={copyAddress} className={menuItemClasses}>
             {walletCopy.copyAddress}
