@@ -16,7 +16,7 @@ import { useCohortDetail, type CohortDetailPolicy } from "@/hooks/useCohortDetai
 import { useProof } from "@/hooks/useProof";
 import { useWallet } from "@/hooks/useWallet";
 import { useWalletModal } from "@/hooks/useWalletModal";
-import { USDC_DECIMALS, daysElapsedSince, formatDuration, secondsUntil, volPercentToVarianceWad } from "@/lib/contracts/units";
+import { USDC_DECIMALS, formatDuration, secondsUntil, volPercentToVarianceWad } from "@/lib/contracts/units";
 import { previewPayout, strikeAccumulated } from "@/lib/contracts/variance";
 import type { BarHistoryBar } from "@/types/aruna";
 
@@ -87,8 +87,8 @@ export function DashboardClient({ vaultId }: { vaultId: string }) {
   }
 
   const poolLabel = `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`;
-  const day = daysElapsedSince(cohort.startsAt) + 1;
-  const totalDays = Math.max(1, Math.round(vault.tenorSeconds / 86_400));
+  const elapsedLabel = formatDuration(vault.tenorSeconds - secondsUntil(cohort.endsAt));
+  const tenorLabel = formatDuration(vault.tenorSeconds);
   const timeLeft = formatDuration(secondsUntil(cohort.endsAt));
   const shareFraction = position.sharePercent / 100;
 
@@ -184,7 +184,7 @@ export function DashboardClient({ vaultId }: { vaultId: string }) {
         <div>
           <h1 className="font-display text-[30px] lg:text-[34px] font-normal">{uwDashboardCopy.heading(poolLabel)}</h1>
           <div className="font-mono text-[13px] text-foreground-muted pt-[8px]">
-            {uwDashboardCopy.meta(activeCohortId, day, totalDays, Math.round(position.sharePercent * 100) / 100, formatUsdc(usdc(cohort.totalCapitalRaw)))}
+            {uwDashboardCopy.meta(activeCohortId, elapsedLabel, tenorLabel, Math.round(position.sharePercent * 100) / 100, formatUsdc(usdc(cohort.totalCapitalRaw)))}
           </div>
         </div>
         <div className="text-left md:text-right">

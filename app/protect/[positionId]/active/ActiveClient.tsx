@@ -113,7 +113,7 @@ export function ActiveClient({ positionId }: { positionId: string }) {
   const currentAnnualizedVolPercent =
     Math.round(varianceWadToVolPercent(realizedVarianceAnnualized(currentSumSqCovered, BigInt(elapsedSinceBought))) * 10) / 10;
   const aboveStrikeByPts = Math.round((currentAnnualizedVolPercent - cover.strikePercent) * 10) / 10;
-  const dayElapsed = Math.floor((nowMs - boughtAtMs) / 86_400_000) + 1;
+  const elapsedLabel = formatDuration((nowMs - boughtAtMs) / 1000);
 
   const samplesTakenForPolicy = relevantSamples.length;
   const samplesTotalForPolicy = proof?.sampleIntervalSeconds
@@ -246,7 +246,7 @@ export function ActiveClient({ positionId }: { positionId: string }) {
               )}
               <line x1={CHART_RIGHT} y1="20" x2={CHART_RIGHT} y2="272" stroke="var(--chart-grid)" strokeWidth={1} />
               <text x={CHART_RIGHT - 40} y="288" fill="var(--color-foreground-muted)" fontSize={11} fontFamily="IBM Plex Mono">
-                {lpActiveCopy.axisNowLabel(dayElapsed)}
+                {lpActiveCopy.axisNowLabel(elapsedLabel)}
               </text>
               <text x="52" y="288" fill="var(--color-foreground-muted)" fontSize={11} fontFamily="IBM Plex Mono">
                 {lpActiveCopy.axisStartLabel}

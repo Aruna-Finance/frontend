@@ -172,7 +172,7 @@ export const lpSelectPositionCopy = {
   },
   sidebar: {
     label: "BEFORE YOU CONTINUE",
-    p1: "Cover does not move, lock or wrap your position. Your NFT stays in your wallet and your trading fees stay entirely yours.",
+    p1: "While covered, your position NFT is held by the vault and returns to you at settlement. Your trading fees stay yours - collect them any time from the cover page.",
     p2: "A position that sits out of range earns no fees but still carries variance risk, so it can still be covered.",
     p3: (timeLeft: string) =>
       `Cover runs to the end of the current cohort - ${timeLeft} from now - not for a fixed seven days from purchase.`,
@@ -309,7 +309,7 @@ export const lpActiveCopy = {
   legendRealized: "- realized",
   legendStrike: (strikePercent: number) => `-- strike ${strikePercent}%`,
   legendBreakeven: (breakevenPercent: number) => `-- breakeven ${breakevenPercent}%`,
-  axisNowLabel: (dayNumber: number) => `now · day ${dayNumber}`,
+  axisNowLabel: (elapsed: string) => `now · ${elapsed} in`,
   axisStartLabel: "cover start",
   payoutCapLabel: "payout cap",
   scenarioLabel: "WHAT SETTLEMENT PAYS AT DIFFERENT FINISHES",
@@ -427,7 +427,7 @@ export const uwVaultsCopy = {
     },
     {
       title: "It is locked for the cycle",
-      body: "Policies were sold against it, so it cannot leave before settlement. Deposit only what you can leave for seven days.",
+      body: "Policies were sold against it, so it cannot leave before settlement. Deposit only what you can leave until the cycle settles.",
     },
     {
       title: "Losses are real",
@@ -493,8 +493,8 @@ export const uwDepositCopy = {
 
 export const uwDashboardCopy = {
   heading: (pool: string) => `My underwriting · ${pool}`,
-  meta: (cohortId: number, day: number, totalDays: number, sharePercent: number, totalCapital: string) =>
-    `Cohort ${cohortId} · day ${day} of ${totalDays} · ${sharePercent}% of a ${totalCapital} USDC vault`,
+  meta: (cohortId: number, elapsed: string, tenor: string, sharePercent: number, totalCapital: string) =>
+    `Cohort ${cohortId} · ${elapsed} of ${tenor} · ${sharePercent}% of a ${totalCapital} USDC vault`,
   settlesInLabel: "SETTLES IN",
   statLabels: {
     capitalCommitted: "CAPITAL COMMITTED",
