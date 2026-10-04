@@ -162,7 +162,7 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
           ) : (
             <Card className="flex-grow">
               <StatCard
-                label={marketsCopy.tableHeaders[2]}
+                label={marketsCopy.fieldLabels.realizedVol}
                 value={cohort?.realizedVolPercent !== null && cohort?.realizedVolPercent !== undefined ? `${cohort.realizedVolPercent}%` : "-"}
                 size="lg"
                 valueTone="accent"

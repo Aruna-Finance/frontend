@@ -97,20 +97,48 @@ export const landingCopy = {
 
 export const marketsCopy = {
   heading: "Markets",
-  subtitle: "One vault per pool. One cohort at a time. Cover is only sellable while free capacity remains.",
-  chainFilter: { arbitrumOne: "Arbitrum One", allChains: "All chains" },
-  tableHeaders: ["POOL", "COHORT", "REALIZED VOL", "VAULT CAPITAL", "FREE CAPACITY", "POLICIES", ""],
-  openCta: "Open",
-  seedCta: "Seed it",
-  noVaultYetLabel: "No vault yet",
-  howCohortWorks: {
-    label: "HOW A COHORT WORKS",
-    body: "Every vault runs fixed 7-day cycles. Underwriters commit capital for the whole cycle; LPs can join any day and are priced for the time that remains. Everything settles at once at the end.",
+  subtitle: "Protect a position from volatility, or underwrite the capital that pays for it. One vault per pool.",
+  noVaultLabel: "No vault deployed yet",
+  underwriteToLaunchCta: "Underwrite to launch",
+  protectCta: "Protect",
+  underwriteCta: "Underwrite",
+  fieldLabels: {
+    status: "STATUS",
+    pricingVol: "PRICING VOL",
+    realizedVol: "REALIZED VOL",
+    capacity: "FREE CAPACITY",
+    lastCycle: "LAST CYCLE",
   },
-  nextCohortOpens: {
-    label: "NEXT COHORT OPENS",
-    note: (cohortId: number) => `Underwriter deposits for cohort ${cohortId} are already open.`,
+  hints: {
+    pricingVol:
+      "The volatility the premium pricer charges against. A cohort's premium uses the snapshot taken when it started, so this can move ahead of what you would pay.",
+    realizedVol:
+      "Annualized volatility measured from the pool's own TWAP over the samples this vault has recorded.",
+    capacity:
+      "Capital that can still back new cover. Reserved capacity is already committed to live policies.",
+    lastCycle:
+      "Premiums collected minus claims paid in the latest completed cohort, as a share of that cohort's capital.",
   },
+  noCompletedCycle: "No completed cycle yet",
+  capacityOf: (total: string) => `of ${total}`,
+  howItWorks: {
+    heading: "How a market works",
+    steps: [
+      {
+        title: "Underwriters fund a cohort",
+        body: "Capital is committed for the whole cohort before it opens, and it backs every policy sold against it.",
+      },
+      {
+        title: "LPs buy cover while it is open",
+        body: "Cover is priced for the time left in the cohort and stops selling shortly before it ends.",
+      },
+      {
+        title: "Everything settles at once",
+        body: "When the cohort ends, realized variance decides payouts. Underwriters get back capital and premiums, minus claims.",
+      },
+    ],
+  },
+  howItWorksStorageKey: "aruna.markets.howItWorks.seen",
 } as const;
 
 export const marketDetailCopy = {

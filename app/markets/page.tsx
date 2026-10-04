@@ -1,186 +1,166 @@
-﻿"use client";
+"use client";
 
+import Link from "next/link";
 import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
+import { Badge } from "@/components/aruna/Badge";
 import { Card } from "@/components/aruna/Card";
 import { PairIcon } from "@/components/aruna/PairIcon";
 import { ProgressBar } from "@/components/aruna/ProgressBar";
-import { Table, TableRow } from "@/components/aruna/Table";
+import { Tooltip } from "@/components/aruna/Tooltip";
+import { HowItWorks } from "@/components/aruna/HowItWorks";
 import { AppFooter } from "@/components/aruna/AppFooter";
-import { marketsCopy, sharedNavCopy } from "@/lib/content/copy";
+import { marketsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
-import { formatCohortDate, formatUsdc } from "@/lib/format";
-import { daysElapsedSince, formatDuration, secondsUntil } from "@/lib/contracts/units";
-import { useVaults, useVaultRealizedVol } from "@/hooks/useVaults";
-import { useCohort, useCohorts } from "@/hooks/useCohort";
-import type { TableColumn } from "@/types/aruna";
+import { formatCompact, formatPercent } from "@/lib/format";
+import { useVaults } from "@/hooks/useVaults";
+import { useMarketStatus } from "@/hooks/useMarketStatus";
+import { usePricingVol } from "@/hooks/usePricingVol";
+import { useProof } from "@/hooks/useProof";
+import { useVaultYield } from "@/hooks/useVaultYield";
 import type { Vault } from "@/types/domain";
 
-const tableColumns: TableColumn[] = [
-  { key: "pool", header: marketsCopy.tableHeaders[0], width: "minmax(220px, 1fr)" },
-  { key: "cohort", header: marketsCopy.tableHeaders[1], width: "120px" },
-  { key: "vol", header: marketsCopy.tableHeaders[2], width: "130px" },
-  { key: "capital", header: marketsCopy.tableHeaders[3], width: "150px" },
-  { key: "capacity", header: marketsCopy.tableHeaders[4], width: "190px" },
-  { key: "policies", header: marketsCopy.tableHeaders[5], width: "110px" },
-  { key: "action", header: marketsCopy.tableHeaders[6], width: "120px" },
-];
+function FieldLabel({ label, hint }: { label: string; hint?: string }) {
+  const text = <span className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{label}</span>;
+  return hint ? <Tooltip content={hint}>{text}</Tooltip> : text;
+}
 
-// Whether this row gets the primary (vs. ghost) action button. There's only
-// ever one vault worth highlighting today, so "the first one returned" is a
-// fine stand-in for a real "featured vault" concept until there are several.
-function VaultRow({ vault, isPrimary }: { vault: Vault; isPrimary: boolean }) {
-  const realizedVol = useVaultRealizedVol(vault.id).data;
-  const cohort = useCohort(vault.id).data;
-  const dimmed = !vault.hasVault;
-  const utilization = vault.hasVault && vault.totalCapitalUsdc > 0 ? vault.freeCapacityUsdc / vault.totalCapitalUsdc : 0;
+// One market, one card on every width. Desktop lays the name, four facts and the
+// two actions in a row; mobile stacks them, with the facts in a two-column grid.
+function MarketRow({ vault }: { vault: Vault }) {
+  const { headline } = useMarketStatus(vault.id);
+  const pricingVol = usePricingVol(vault.id);
+  const realized = useProof(vault.id).data?.annualizedVolPercent;
+  const cycle = useVaultYield(vault.id).data?.last ?? null;
 
-  const poolCell = (
-    <div className="flex items-center gap-[12px]">
-      {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
-      <div>
-        <div className="text-[15px] font-semibold">{vault.poolLabel}</div>
-        <div className="text-[12px] text-foreground-muted pt-[3px]">
-          {vault.poolFeeTier} · {vault.chainLabel}
+  if (!vault.hasVault) {
+    return (
+      <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-[16px] opacity-70">
+        <div className="flex items-center gap-[12px]">
+          {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
+          <div>
+            <div className="text-[15px] font-semibold">{vault.poolLabel}</div>
+            <div className="text-[12px] text-foreground-muted pt-[3px]">{marketsCopy.noVaultLabel}</div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
+        <Button href="/underwrite" variant="ghost" size="sm">
+          {marketsCopy.underwriteToLaunchCta}
+        </Button>
+      </Card>
+    );
+  }
 
-  const cohortCell = vault.currentCohortId ? (
-    <span className="font-mono text-[14px]">
-      #{vault.currentCohortId} · day {cohort ? daysElapsedSince(cohort.startsAt) : "-"}
-    </span>
-  ) : (
-    <span className="font-mono text-[14px] text-foreground-muted">-</span>
-  );
-
-  const volCell = (
-    <span
-      className={`font-mono text-[14px] ${
-        dimmed ? "text-foreground-muted" : realizedVol !== undefined && realizedVol >= 30 ? "text-accent" : "text-positive"
-      }`}
-    >
-      {realizedVol !== undefined ? `${realizedVol}%` : "-"}
-    </span>
-  );
-
-  const capitalCell = (
-    <span className={`font-mono text-[14px] ${dimmed ? "text-foreground-muted" : ""}`}>
-      {formatUsdc(vault.totalCapitalUsdc)}
-    </span>
-  );
-
-  const capacityCell = vault.hasVault ? (
-    <div>
-      <div className="font-mono text-[14px]">{formatUsdc(vault.freeCapacityUsdc)}</div>
-      <div className="pt-[6px] w-[140px]">
-        <ProgressBar value={utilization} thickness="thin" tone={utilization < 0.1 ? "accent" : "positive"} />
-      </div>
-    </div>
-  ) : (
-    <span className="text-[13px] text-foreground-muted">{marketsCopy.noVaultYetLabel}</span>
-  );
-
-  const policiesCell = (
-    <span className={`font-mono text-[14px] ${dimmed ? "text-foreground-muted" : ""}`}>{vault.policyCount}</span>
-  );
-
-  const actionCell = vault.hasVault ? (
-    <Button href={`/markets/${vault.id}`} variant={isPrimary ? "primary" : "ghost"} size="sm">
-      {marketsCopy.openCta}
-    </Button>
-  ) : (
-    <Button href="/underwrite" variant="ghost" size="sm">
-      {marketsCopy.seedCta}
-    </Button>
-  );
+  const utilization = vault.totalCapitalUsdc > 0 ? vault.reservedCapacityUsdc / vault.totalCapitalUsdc : 0;
 
   return (
-    <div className={dimmed ? "opacity-55" : undefined}>
-      <TableRow
-        columns={tableColumns}
-        cells={[poolCell, cohortCell, volCell, capitalCell, capacityCell, policiesCell, actionCell]}
-      />
-    </div>
+    <Card className="flex flex-col lg:flex-row lg:items-center gap-[20px] lg:gap-[28px]">
+      <div className="flex items-center gap-[12px] lg:w-[240px] lg:shrink-0">
+        {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
+        <div className="min-w-0">
+          <Link href={`/markets/${vault.id}`} className="text-[16px] font-semibold text-foreground hover:text-accent transition-colors duration-200">
+            {vault.poolLabel}
+          </Link>
+          <div className="text-[12px] text-foreground-muted pt-[3px]">
+            {vault.poolFeeTier} · {vault.chainLabel}
+          </div>
+        </div>
+      </div>
+
+      <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-[24px] gap-y-[18px] flex-grow min-w-0">
+        <div className="min-w-0">
+          <dt>
+            <FieldLabel label={marketsCopy.fieldLabels.status} />
+          </dt>
+          <dd className="pt-[6px] flex flex-col items-start gap-[6px]">
+            {headline ? <Badge label={headline.tag} tone={headline.tone} /> : <span className="text-[13px] text-foreground-muted">–</span>}
+            {headline ? <span className="text-[13px] text-foreground-secondary">{headline.text}</span> : null}
+          </dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt>
+            <FieldLabel label={marketsCopy.fieldLabels.pricingVol} hint={marketsCopy.hints.pricingVol} />
+          </dt>
+          <dd className="font-mono text-[16px] pt-[6px]">{formatPercent(pricingVol.volPercent)}</dd>
+          <dt className="pt-[10px]">
+            <FieldLabel label={marketsCopy.fieldLabels.realizedVol} hint={marketsCopy.hints.realizedVol} />
+          </dt>
+          <dd className="font-mono text-[16px] pt-[4px] text-foreground-secondary">{formatPercent(realized)}</dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt>
+            <FieldLabel label={marketsCopy.fieldLabels.capacity} hint={marketsCopy.hints.capacity} />
+          </dt>
+          <dd className="font-mono text-[16px] pt-[6px] truncate">
+            {formatCompact(vault.freeCapacityUsdc, "USDC")}
+          </dd>
+          <dd className="text-[12px] text-foreground-muted pt-[2px]">
+            {marketsCopy.capacityOf(formatCompact(vault.totalCapitalUsdc, "USDC"))}
+          </dd>
+          <dd className="pt-[8px] max-w-[160px]">
+            <ProgressBar value={utilization} thickness="thin" />
+          </dd>
+        </div>
+
+        <div className="min-w-0">
+          <dt>
+            <FieldLabel label={marketsCopy.fieldLabels.lastCycle} hint={marketsCopy.hints.lastCycle} />
+          </dt>
+          {cycle && cycle.percent !== null ? (
+            <>
+              <dd className={["font-mono text-[16px] pt-[6px]", cycle.percent >= 0 ? "text-positive" : "text-negative"].join(" ")}>
+                {formatPercent(cycle.percent, { signed: true })}
+              </dd>
+              <dd className="text-[12px] text-foreground-muted pt-[2px]">Cohort {cycle.cohortId}</dd>
+            </>
+          ) : (
+            <dd className="text-[13px] text-foreground-muted pt-[6px]">{marketsCopy.noCompletedCycle}</dd>
+          )}
+        </div>
+      </dl>
+
+      <div className="flex gap-[10px] lg:shrink-0 lg:flex-col">
+        <Button href="/protect" variant="primary" size="sm" className="flex-1 lg:flex-none lg:w-[180px]">
+          {marketsCopy.protectCta}
+        </Button>
+        <Button href={`/underwrite/${vault.id}/deposit`} variant="ghost" size="sm" className="flex-1 lg:flex-none lg:w-[180px]">
+          {marketsCopy.underwriteCta}
+        </Button>
+      </div>
+    </Card>
   );
 }
 
 export default function MarketsPage() {
   const { data: vaults, isLoading, isError } = useVaults();
-  const featuredVaultId = vaults?.[0]?.id;
-  const featuredCohort = useCohort(featuredVaultId ?? "").data;
-  const nextCohort = useCohorts(featuredVaultId ?? "").data?.find((cohort) => cohort.status === "FUNDING");
 
   return (
     <div className="flex flex-col flex-1 bg-canvas text-foreground">
-      <Header
-        variant="app"
-        navLinks={withActiveNavLink("/markets")}
-        extra={
-          featuredCohort ? (
-            <span className="inline-flex items-center h-[36px] px-[12px] border border-border font-mono text-[12px] text-foreground-secondary">
-              {sharedNavCopy.cohortChip(featuredCohort.id, formatDuration(secondsUntil(featuredCohort.endsAt)))}
-            </span>
-          ) : null
-        }
-      />
+      <Header variant="app" navLinks={withActiveNavLink("/markets")} />
 
-      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[32px] flex flex-col md:flex-row justify-between md:items-end gap-[16px]">
-        <div>
-          <h1 className="font-display text-[36px] font-normal">{marketsCopy.heading}</h1>
-          <p className="text-[15px] text-foreground-secondary pt-[8px]">{marketsCopy.subtitle}</p>
-        </div>
-        <div className="flex gap-[8px]">
-          <button
-            type="button"
-            className="h-[40px] px-[16px] rounded-button border border-accent bg-accent-soft text-foreground text-[13px] transition-all duration-300"
-          >
-            {marketsCopy.chainFilter.arbitrumOne}
-          </button>
-          <button
-            type="button"
-            className="h-[40px] px-[16px] rounded-button border border-border text-foreground-muted text-[13px] transition-all duration-300"
-          >
-            {marketsCopy.chainFilter.allChains}
-          </button>
-        </div>
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto pt-[32px]">
+        <h1 className="font-display text-[36px] font-normal">{marketsCopy.heading}</h1>
+        <p className="text-[15px] text-foreground-secondary pt-[8px] max-w-[700px]">{marketsCopy.subtitle}</p>
       </div>
 
-      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px] flex-grow">
-        {isError ? (
-          <p className="text-[14px] text-negative pb-[16px]">Could not load markets from the indexer.</p>
+      <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[28px] flex flex-col gap-[16px] flex-grow">
+        {isError ? <p className="text-[14px] text-negative">Could not load markets from the indexer.</p> : null}
+        {isLoading ? <p className="text-[14px] text-foreground-muted">Loading markets…</p> : null}
+        {!isLoading && !isError && (vaults ?? []).length === 0 ? (
+          <p className="text-[14px] text-foreground-muted">No market is listed yet.</p>
         ) : null}
-        {isLoading ? <p className="text-[14px] text-foreground-muted pb-[16px]">Loading markets…</p> : null}
 
-        <Table columns={tableColumns}>
-          {(vaults ?? []).map((vault) => (
-            <VaultRow key={vault.id} vault={vault} isPrimary={vault.id === featuredVaultId} />
-          ))}
-        </Table>
+        {(vaults ?? []).map((vault) => (
+          <MarketRow key={vault.id} vault={vault} />
+        ))}
 
-        <div className="flex flex-col lg:flex-row gap-[20px] pt-[24px]">
-          <Card className="flex-grow lg:min-w-0">
-            <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-              {marketsCopy.howCohortWorks.label}
-            </div>
-            <div className="text-[14.5px] leading-[1.65] text-foreground-secondary pt-[10px]">
-              {marketsCopy.howCohortWorks.body}
-            </div>
-          </Card>
-          {nextCohort ? (
-            <Card className="w-full lg:w-[380px] lg:shrink-0">
-              <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-                {marketsCopy.nextCohortOpens.label}
-              </div>
-              <div className="font-mono text-[22px] whitespace-nowrap pt-[8px]">
-                {formatCohortDate(nextCohort.startsAt)}
-              </div>
-              <div className="text-[13px] text-foreground-muted pt-[6px]">
-                {marketsCopy.nextCohortOpens.note(nextCohort.id)}
-              </div>
-            </Card>
-          ) : null}
+        <div className="pt-[12px]">
+          <HowItWorks
+            heading={marketsCopy.howItWorks.heading}
+            steps={marketsCopy.howItWorks.steps.map((step) => ({ ...step }))}
+            storageKey={marketsCopy.howItWorksStorageKey}
+          />
         </div>
       </div>
       <AppFooter />
