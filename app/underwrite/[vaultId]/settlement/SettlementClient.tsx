@@ -12,7 +12,8 @@ import { Table, TableRow } from "@/components/aruna/Table";
 import { uwSettlementCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCohortDate, formatSettlementDate, formatUsdc, formatUsdcDecimal, shortenAddress } from "@/lib/format";
-import { useCohortsByAddress, useVaultByAddress } from "@/hooks/useVaults";
+import { useCohortsByAddress, useVaultByAddress, useVaultRawByAddress } from "@/hooks/useVaults";
+import { useWindowRealizedVol } from "@/hooks/useWindowRealizedVol";
 import { useCohort } from "@/hooks/useCohort";
 import { useCohortDetail } from "@/hooks/useCohortDetail";
 import { useUnderwriterPositionsByWallet } from "@/hooks/useUnderwriterPositions";
@@ -21,8 +22,7 @@ import { useRollTo } from "@/hooks/useRollTo";
 import { useWallet } from "@/hooks/useWallet";
 import { useWithdraw } from "@/hooks/useWithdraw";
 import { useWalletModal } from "@/hooks/useWalletModal";
-import { USDC_DECIMALS, varianceWadToVolPercent } from "@/lib/contracts/units";
-import { realizedVarianceAnnualized } from "@/lib/contracts/variance";
+import { USDC_DECIMALS } from "@/lib/contracts/units";
 import type { TableColumn } from "@/types/aruna";
 
 const claimsSplitColumns: TableColumn[] = [
@@ -52,6 +52,8 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
   );
   const lastSettled = settledCohorts.find((item) => myCohortIds.has(item.id)) ?? (address ? undefined : settledCohorts[0]);
   const { data: cohort, isLoading: cohortLoading } = useCohortDetail(vaultId, lastSettled?.id);
+  const accumulator = useVaultRawByAddress(vaultId).data?.accumulator;
+  const windowVolPercent = useWindowRealizedVol(accumulator, cohort?.startIndex, cohort?.endIndex);
   const fundingCohortId = vault?.fundingCohortId ?? (lastSettled?.id ?? 0) + 1;
   const fundingCohort = useCohort(vaultId, fundingCohortId).data;
   const { rollTo, isPending: rolling } = useRollTo();
@@ -104,14 +106,7 @@ export function SettlementClient({ vaultId }: { vaultId: string }) {
   }
 
   const poolLabel = `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}`;
-  const windowSeconds = Math.max(
-    0,
-    Math.floor((new Date(cohort.endsAt).getTime() - new Date(cohort.startsAt).getTime()) / 1000),
-  );
-  const finalRealizedVolPercent =
-    cohort.finalSumSq !== null && windowSeconds > 0
-      ? Math.round(varianceWadToVolPercent(realizedVarianceAnnualized(cohort.finalSumSq, BigInt(windowSeconds))) * 10) / 10
-      : 0;
+  const finalRealizedVolPercent = windowVolPercent ?? 0;
   const settledDate = formatSettlementDate(cohort.finalizedAt ?? cohort.endsAt);
 
   const capitalAtOpenUsdc = usdc(cohort.totalCapitalRaw);

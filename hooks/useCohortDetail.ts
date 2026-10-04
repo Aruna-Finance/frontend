@@ -59,6 +59,9 @@ export interface CohortDetail {
   noPayoutCount: number;
   hitCapCount: number;
   finalized: boolean;
+  // Window bracket (sample indices), locked at finalize.
+  startIndex: number | null;
+  endIndex: number | null;
   finalSumSq: bigint | null;
   finalizedAt: string | null;
   strikeBuckets: CohortDetailStrikeBucket[];
@@ -111,6 +114,8 @@ export function useCohortDetail(vaultId: string, cohortId: number | undefined): 
       noPayoutCount: raw.noPayoutCount,
       hitCapCount: raw.hitCapCount,
       finalized: raw.finalized,
+      startIndex: raw.startIndex,
+      endIndex: raw.endIndex,
       finalSumSq: raw.finalSumSq !== null ? BigInt(raw.finalSumSq) : null,
       finalizedAt: raw.finalizedAt ? new Date(Number(raw.finalizedAt) * 1000).toISOString() : null,
       strikeBuckets: raw.strikeBuckets.items.map((item) => ({

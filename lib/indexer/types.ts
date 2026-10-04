@@ -155,6 +155,8 @@ export interface IndexerCohortDetail {
   noPayoutCount: number;
   hitCapCount: number;
   finalized: boolean;
+  startIndex: number | null;
+  endIndex: number | null;
   finalSumSq: string | null;
   finalizedAt: string | null;
   strikeBuckets: { items: IndexerStrikeBucket[] };

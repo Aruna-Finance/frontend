@@ -248,6 +248,8 @@ export const COHORT_DETAIL_QUERY = /* GraphQL */ `
       noPayoutCount
       hitCapCount
       finalized
+      startIndex
+      endIndex
       finalSumSq
       finalizedAt
       strikeBuckets {
@@ -305,6 +307,23 @@ export const SAMPLES_QUERY = /* GraphQL */ `
         cumulativeSumSq
         increment
       }
+    }
+  }
+`;
+
+// The two samples bracketing a finalized cohort window. cumulativeSumSq is a
+// running total since the accumulator started, so a window's variance is
+// end - start, never the end value alone.
+export const WINDOW_SAMPLES_QUERY = /* GraphQL */ `
+  # Ponder types integer primary keys as Float in singular lookups.
+  query WindowSamples($accumulator: String!, $startIndex: Float!, $endIndex: Float!) {
+    start: sample(accumulator: $accumulator, index: $startIndex) {
+      timestamp
+      cumulativeSumSq
+    }
+    end: sample(accumulator: $accumulator, index: $endIndex) {
+      timestamp
+      cumulativeSumSq
     }
   }
 `;

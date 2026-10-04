@@ -45,17 +45,17 @@ export function mapPolicyToCover(raw: IndexerPolicy): PositionCover {
   const status = coverStatusOf(raw);
   const refundUsdc = raw.status === "Refunded" ? usdc(raw.refund) : null;
 
-  const cohortWindowSeconds =
-    raw.cohortRef && !raw.cohortRef.finalSumSq
-      ? null
-      : raw.cohortRef
-        ? Number(raw.cohortRef.endsAt) - Number(raw.cohortRef.startsAt)
-        : null;
+  // cohort.finalSumSq is the accumulator's running total at the window's end,
+  // not the window's own variance: the policy measured finalSumSq - its own
+  // startSumSq over its coveredSeconds, which is what settlement paid on.
   const finalRealizedVolPercent =
-    raw.status === "Settled" && raw.cohortRef?.finalSumSq && cohortWindowSeconds
+    raw.status === "Settled" && raw.cohortRef?.finalSumSq && raw.startSumSq !== null && raw.coveredSeconds > 0
       ? round1(
           varianceWadToVolPercent(
-            realizedVarianceAnnualized(BigInt(raw.cohortRef.finalSumSq), BigInt(cohortWindowSeconds)),
+            realizedVarianceAnnualized(
+              BigInt(raw.cohortRef.finalSumSq) - BigInt(raw.startSumSq),
+              BigInt(raw.coveredSeconds),
+            ),
           ),
         )
       : null;
