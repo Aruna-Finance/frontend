@@ -62,8 +62,13 @@ export function useContractTx() {
         }
 
         toast.success(labels.confirmed, { id: labels.id, description: labels.confirmedDescription, action });
-        // Balances and allowances just changed; refetch every on-chain read.
-        await queryClient.invalidateQueries({ queryKey: ["readContract"] });
+        // Balances and allowances just changed; refetch every on-chain read,
+        // single (useReadContract) and batched (useReadContracts) alike - the
+        // NFT approval and position reads are batched.
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["readContract"] }),
+          queryClient.invalidateQueries({ queryKey: ["readContracts"] }),
+        ]);
         // The indexer trails the chain by a few seconds: refetch now and again
         // once it has had time to catch up, so pages reflect the write.
         for (const delay of INDEXER_REFETCH_DELAYS_MS) {
