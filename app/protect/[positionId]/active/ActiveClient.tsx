@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveBaseline } from "@/lib/contracts/baseline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatUnits } from "viem";
@@ -20,7 +21,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { useWalletModal } from "@/hooks/useWalletModal";
 import { useCancel } from "@/hooks/useCancel";
 import { useCollectFees } from "@/hooks/useCollectFees";
-import { mapPolicyToCover } from "@/lib/indexer/mapPolicy";
+import { isActivePolicy, mapPolicyToCover } from "@/lib/indexer/mapPolicy";
 import { USDC_DECIMALS, formatDuration, secondsUntil, varianceWadToVolPercent } from "@/lib/contracts/units";
 import { previewPayout, realizedVarianceAnnualized, strikeAccumulated } from "@/lib/contracts/variance";
 import type { Address } from "viem";
@@ -40,7 +41,7 @@ function scenarioTone(netUsdc: number) {
 
 export function ActiveClient({ positionId }: { positionId: string }) {
   const { data: policies, isLoading: policiesLoading } = usePoliciesByPosition(positionId);
-  const raw = policies?.find((item) => !item.settled);
+  const raw = policies?.find(isActivePolicy);
   const vault = useVaultByAddress(raw?.vault ?? "").data;
   const proof = useProof(raw?.vault ?? "").data;
   const { address, isConnected } = useWallet();
@@ -63,13 +64,16 @@ export function ActiveClient({ positionId }: { positionId: string }) {
   const cover = mapPolicyToCover(raw);
   const strikeAnnualized = BigInt(raw.strikeAnnualized);
   const coveredSeconds = BigInt(raw.coveredSeconds);
-  const startSumSq = BigInt(raw.startSumSq);
+  const proofSamples = proof?.rows ?? [];
+  // v2 leaves the baseline null until settle; resolve it from the samples.
+  const baseline = resolveBaseline(proofSamples, raw.purchasedAt);
+  const startSumSq = baseline?.startSumSq ?? 0n;
   const varNotional = BigInt(raw.varNotional);
   const maxPayout = BigInt(raw.maxPayout);
   const premium = BigInt(raw.premium);
   const strikeAcc = strikeAccumulated(strikeAnnualized, coveredSeconds);
 
-  const relevantSamples = (proof?.rows ?? []).filter((row) => row.index >= raw.startIndex);
+  const relevantSamples = baseline ? proofSamples.filter((row) => row.index >= baseline.startIndex) : [];
   const points = relevantSamples.map((row) => ({
     sumSqCovered: row.cumulativeSumSq > startSumSq ? row.cumulativeSumSq - startSumSq : 0n,
     timestamp: row.timestamp,

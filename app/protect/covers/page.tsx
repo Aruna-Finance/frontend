@@ -48,14 +48,22 @@ export default function MyCoversPage() {
           sortedCovers.map((cover) => {
             const position = positions.find((item) => item.tokenId === cover.positionId);
             const poolLabel = vault ? `${vault.poolLabel.replace(" / ", "/")} ${vault.poolFeeTier}` : cover.vaultId;
-            const isSettled = cover.settledAt !== null;
-            const badgeTone = cover.status === "paid_out" ? "positive" : cover.status === "no_payout" ? "neutral" : "accent";
+            // Only an Active policy is a running cover; every other status is over.
+            const isSettled = cover.status !== "active";
+            const badgeTone = cover.status === "paid_out" ? "positive" : cover.status === "active" ? "accent" : "neutral";
             const badgeLabel =
               cover.status === "paid_out"
                 ? lpSettlementCopy.badgePaidOut
                 : cover.status === "no_payout"
                   ? lpSettlementCopy.badgeNoPayout
-                  : lpMyCoversCopy.badgeActive;
+                  : cover.status === "refunded"
+                    ? lpMyCoversCopy.badgeRefunded
+                    : cover.status === "cancelled"
+                      ? lpMyCoversCopy.badgeCancelled
+                      : lpMyCoversCopy.badgeActive;
+            // A cancelled cover has neither an active nor a settlement screen, so it gets no link.
+            const hasLink = cover.status !== "cancelled";
+            const hasResult = cover.netResultUsdc !== null;
             const href = isSettled ? `/protect/${cover.positionId}/settlement` : `/protect/${cover.positionId}/active`;
             const cta = isSettled ? lpMyCoversCopy.viewSettlementCta : lpMyCoversCopy.viewCoverCta;
 
@@ -80,33 +88,37 @@ export default function MyCoversPage() {
                     {lpMyCoversCopy.cardMeta(poolLabel, cover.strikePercent, formatUsdcDecimal(cover.capUsdc))}
                   </div>
                   <div className="font-mono text-[12px] text-foreground-muted">
-                    {isSettled
-                      ? lpMyCoversCopy.settledCaption(formatSettlementDate(cover.settledAt!))
-                      : lpMyCoversCopy.pendingSettlement}
+                    {cover.status === "cancelled"
+                      ? lpMyCoversCopy.cancelledCaption
+                      : isSettled
+                        ? lpMyCoversCopy.settledCaption(cover.settledAt ? formatSettlementDate(cover.settledAt) : "—")
+                        : lpMyCoversCopy.pendingSettlement}
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-[16px] sm:gap-[28px]">
                   <div className="text-right">
                     <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-                      {isSettled ? lpMyCoversCopy.netResultLabel : lpMyCoversCopy.premiumPaidLabel}
+                      {hasResult ? lpMyCoversCopy.netResultLabel : lpMyCoversCopy.premiumPaidLabel}
                     </div>
                     <div
                       className={`font-mono text-[20px] pt-[4px] ${
-                        isSettled
+                        hasResult
                           ? (cover.netResultUsdc ?? 0) >= 0
                             ? "text-positive"
                             : "text-negative"
                           : "text-foreground"
                       }`}
                     >
-                      {isSettled
+                      {hasResult
                         ? `${(cover.netResultUsdc ?? 0) >= 0 ? "+" : "-"}${formatUsdcDecimal(Math.abs(cover.netResultUsdc ?? 0))}`
                         : `-${formatUsdcDecimal(cover.premiumUsdc)}`}
                     </div>
                   </div>
-                  <Button href={href} variant={cover.status === "active" ? "primary" : "ghost"} className="w-full sm:w-auto">
-                    {cta}
-                  </Button>
+                  {hasLink ? (
+                    <Button href={href} variant={cover.status === "active" ? "primary" : "ghost"} className="w-full sm:w-auto">
+                      {cta}
+                    </Button>
+                  ) : null}
                 </div>
               </Card>
             );

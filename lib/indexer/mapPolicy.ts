@@ -12,13 +12,38 @@ function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }
 
+// Indexer v2 mirrors the contract's PolicyStatus. Anything else means the
+// schema moved under us — fail loudly rather than render it as "active".
+export function coverStatusOf(raw: Pick<IndexerPolicy, "status" | "payout">): PositionCover["status"] {
+  switch (raw.status) {
+    case "Active":
+      return "active";
+    case "Cancelled":
+      return "cancelled";
+    case "Refunded":
+      return "refunded";
+    case "Settled":
+      return raw.payout !== null && BigInt(raw.payout) > 0n ? "paid_out" : "no_payout";
+    default:
+      throw new Error(`unknown policy status: ${String(raw.status)}`);
+  }
+}
+
+// Only an Active policy is a running cover; Cancelled/Settled/Refunded are all over.
+export const isActivePolicy = (raw: Pick<IndexerPolicy, "status">) => raw.status === "Active";
+export const isSettledPolicy = (raw: Pick<IndexerPolicy, "status">) => raw.status === "Settled";
+// The settlement screen shows a measured policy or a refunded one.
+export const isFinalPolicy = (raw: Pick<IndexerPolicy, "status">) =>
+  raw.status === "Settled" || raw.status === "Refunded";
+
 // varNotional is "base token units paid per unit of excess variance (WAD)" —
 // the same rate the payout formula (§7.2) multiplies against, which is what
 // this field has always meant here.
 export function mapPolicyToCover(raw: IndexerPolicy): PositionCover {
   const premiumUsdc = usdc(raw.premium);
   const payoutUsdc = raw.payout !== null ? usdc(raw.payout) : null;
-  const status: PositionCover["status"] = !raw.settled ? "active" : (payoutUsdc ?? 0) > 0 ? "paid_out" : "no_payout";
+  const status = coverStatusOf(raw);
+  const refundUsdc = raw.status === "Refunded" ? usdc(raw.refund) : null;
 
   const cohortWindowSeconds =
     raw.cohortRef && !raw.cohortRef.finalSumSq
@@ -27,7 +52,7 @@ export function mapPolicyToCover(raw: IndexerPolicy): PositionCover {
         ? Number(raw.cohortRef.endsAt) - Number(raw.cohortRef.startsAt)
         : null;
   const finalRealizedVolPercent =
-    raw.settled && raw.cohortRef?.finalSumSq && cohortWindowSeconds
+    raw.status === "Settled" && raw.cohortRef?.finalSumSq && cohortWindowSeconds
       ? round1(
           varianceWadToVolPercent(
             realizedVarianceAnnualized(BigInt(raw.cohortRef.finalSumSq), BigInt(cohortWindowSeconds)),
@@ -52,7 +77,13 @@ export function mapPolicyToCover(raw: IndexerPolicy): PositionCover {
     capUsdc: usdc(raw.maxPayout),
     premiumUsdc,
     payoutRateUsdc: usdc(raw.varNotional),
-    netResultUsdc: raw.settled ? (payoutUsdc ?? 0) - premiumUsdc : null,
+    netResultUsdc:
+      raw.status === "Settled"
+        ? (payoutUsdc ?? 0) - premiumUsdc
+        : raw.status === "Refunded"
+          ? (refundUsdc ?? 0) - premiumUsdc
+          : null,
+    refundUsdc,
     finalRealizedVolPercent,
     settledAt: raw.settledAt ? new Date(Number(raw.settledAt) * 1000).toISOString() : null,
   };

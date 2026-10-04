@@ -38,6 +38,8 @@ export interface IndexerVault {
   cohorts: { items: IndexerCohort[] };
 }
 
+export type IndexerPolicyStatus = "Active" | "Cancelled" | "Settled" | "Refunded";
+
 export interface IndexerPolicy {
   vault: string;
   policyId: string;
@@ -49,11 +51,16 @@ export interface IndexerPolicy {
   varNotional: string;
   strikeAnnualized: string;
   coveredSeconds: number;
-  startIndex: number;
-  startSumSq: string;
-  settled: boolean;
+  purchasedAt: number;
+  // Null until the contract measures the policy at settle (Refunded keeps startIndex only).
+  startIndex: number | null;
+  startSumSq: string | null;
+  status: IndexerPolicyStatus;
   payout: string | null;
+  refund: string | null;
   payoutParked: boolean;
+  refundParked: boolean;
+  nftParked: boolean;
   boughtAt: string;
   settledAt: string | null;
   cohortRef: { startsAt: string; endsAt: string; finalized: boolean; finalSumSq: string | null } | null;
@@ -103,10 +110,12 @@ export interface IndexerCohortPolicy {
   varNotional: string;
   strikeAnnualized: string;
   coveredSeconds: number;
-  startIndex: number;
-  startSumSq: string;
-  settled: boolean;
+  purchasedAt: number;
+  startIndex: number | null;
+  startSumSq: string | null;
+  status: IndexerPolicyStatus;
   payout: string | null;
+  refund: string | null;
 }
 
 // One specific cohort's own row plus its sub-relations — the singular

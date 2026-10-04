@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveBaseline } from "@/lib/contracts/baseline";
 import { notFound } from "next/navigation";
 import { formatUnits } from "viem";
 import { Header } from "@/components/aruna/Header";
@@ -100,11 +101,15 @@ export function DashboardClient({ vaultId }: { vaultId: string }) {
 
   const vaultClaimsAtPaceUsdc = hasPolicies
     ? cohort.policies.reduce((sum, policy) => {
-        if (policy.settled) return sum + usdc(policy.payout ?? 0n);
-        const relevant = proofRows.filter((row) => row.index >= policy.startIndex);
-        const latest = relevant.at(-1);
+        if (policy.status === "Settled") return sum + usdc(policy.payout ?? 0n);
+        // Cancelled and Refunded policies no longer owe the vault anything.
+        if (policy.status !== "Active") return sum;
+        const baseline = resolveBaseline(proofRows, policy.purchasedAt);
+        const latest = baseline ? proofRows.filter((row) => row.index >= baseline.startIndex).at(-1) : undefined;
         const sumSqCovered =
-          latest && latest.cumulativeSumSq > policy.startSumSq ? latest.cumulativeSumSq - policy.startSumSq : 0n;
+          baseline && latest && latest.cumulativeSumSq > baseline.startSumSq
+            ? latest.cumulativeSumSq - baseline.startSumSq
+            : 0n;
         const payout = previewPayout({
           varNotional: policy.varNotional,
           maxPayout: policy.maxPayout,

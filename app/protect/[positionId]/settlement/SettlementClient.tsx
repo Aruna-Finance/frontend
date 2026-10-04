@@ -11,14 +11,14 @@ import { withActiveNavLink } from "@/lib/nav";
 import { formatSettlementDate, formatUsdc, formatUsdcDecimal } from "@/lib/format";
 import { USDC_DECIMALS, formatVarianceWad } from "@/lib/contracts/units";
 import { excessVariance, strikeAccumulated } from "@/lib/contracts/variance";
-import { mapPolicyToCover } from "@/lib/indexer/mapPolicy";
+import { isFinalPolicy, mapPolicyToCover } from "@/lib/indexer/mapPolicy";
 import { lpSettlementCopy } from "@/lib/content/copy";
 import { usePoliciesByPosition } from "@/hooks/usePolicyByPosition";
 import { useVaultByAddress } from "@/hooks/useVaults";
 
 export function SettlementClient({ positionId }: { positionId: string }) {
   const { data: policies, isLoading } = usePoliciesByPosition(positionId);
-  const raw = policies?.find((item) => item.settled);
+  const raw = policies?.find(isFinalPolicy);
   const vault = useVaultByAddress(raw?.vault ?? "").data;
 
   if (isLoading) {
@@ -29,16 +29,17 @@ export function SettlementClient({ positionId }: { positionId: string }) {
       </div>
     );
   }
-  if (!raw || !raw.settledAt) {
+  if (!raw) {
     notFound();
   }
 
   const cover = mapPolicyToCover(raw);
   const isPaidOut = cover.status === "paid_out";
-  const settledDate = formatSettlementDate(cover.settledAt!);
+  const isRefunded = cover.status === "refunded";
+  const settledDate = cover.settledAt ? formatSettlementDate(cover.settledAt) : "—";
 
   const strikeAnnualized = BigInt(raw.strikeAnnualized);
-  const startSumSq = BigInt(raw.startSumSq);
+  const startSumSq = raw.startSumSq !== null ? BigInt(raw.startSumSq) : 0n;
   const finalSumSq = raw.cohortRef?.finalSumSq ? BigInt(raw.cohortRef.finalSumSq) : startSumSq;
   const sumSqCovered = finalSumSq > startSumSq ? finalSumSq - startSumSq : 0n;
   const strikeAcc = strikeAccumulated(strikeAnnualized, BigInt(raw.coveredSeconds));
@@ -63,7 +64,39 @@ export function SettlementClient({ positionId }: { positionId: string }) {
 
       <div className="px-[24px] lg:px-[32px] w-full max-w-[1440px] mx-auto py-[24px]">
         <div className="max-w-[680px]">
-          {isPaidOut ? (
+          {isRefunded ? (
+            <Card className="flex flex-col gap-[20px]">
+              <div className="flex justify-between items-center flex-wrap gap-[8px]">
+                <Badge label={lpSettlementCopy.badgeRefunded} tone="neutral" />
+                <span className="font-mono text-[12px] text-foreground-muted">
+                  {lpSettlementCopy.coverSettled(cover.id, settledDate)}
+                </span>
+              </div>
+
+              <div>
+                <div className="text-[13px] text-foreground-muted">{lpSettlementCopy.refundLabel}</div>
+                <div className="flex items-baseline gap-[8px] pt-[4px]">
+                  <span className="font-display text-[52px] lg:text-[56px] font-normal">
+                    {formatUsdcDecimal(cover.refundUsdc ?? 0)}
+                  </span>
+                  <span className="text-[15px] text-foreground-muted">{lpSettlementCopy.unit}</span>
+                </div>
+              </div>
+
+              <div className="bg-canvas rounded-control p-[18px] text-[15px] leading-[1.6]">
+                {lpSettlementCopy.refundedBody}
+              </div>
+
+              <div className="flex gap-[12px] pt-[4px]">
+                <Button variant="ghost" href={`/protect/${positionId}/quote`} className="flex-grow">
+                  {lpSettlementCopy.ctaCoverAgain(nextCohortId)}
+                </Button>
+                <Button variant="ghost" href="/proof">
+                  {lpSettlementCopy.ctaVerify}
+                </Button>
+              </div>
+            </Card>
+          ) : isPaidOut ? (
             <Card variant="success" className="flex flex-col gap-[20px]">
               <div className="flex justify-between items-center flex-wrap gap-[8px]">
                 <Badge label={lpSettlementCopy.badgePaidOut} tone="positive" />

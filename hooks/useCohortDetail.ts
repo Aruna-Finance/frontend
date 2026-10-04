@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { varianceWadToVolPercent } from "@/lib/contracts/units";
 import { indexerRequest } from "@/lib/indexer/client";
 import { COHORT_DETAIL_QUERY } from "@/lib/indexer/queries";
-import type { IndexerCohortDetail } from "@/lib/indexer/types";
+import type { IndexerCohortDetail, IndexerPolicyStatus } from "@/lib/indexer/types";
 
 export interface CohortDetailStrikeBucket {
   strikeAnnualized: bigint;
@@ -35,9 +35,10 @@ export interface CohortDetailPolicy {
   varNotional: bigint;
   strikeAnnualized: bigint;
   coveredSeconds: number;
-  startIndex: number;
-  startSumSq: bigint;
-  settled: boolean;
+  purchasedAt: number;
+  startIndex: number | null;
+  startSumSq: bigint | null;
+  status: IndexerPolicyStatus;
   payout: bigint | null;
 }
 
@@ -140,9 +141,10 @@ export function useCohortDetail(vaultId: string, cohortId: number | undefined): 
         varNotional: BigInt(item.varNotional),
         strikeAnnualized: BigInt(item.strikeAnnualized),
         coveredSeconds: item.coveredSeconds,
+        purchasedAt: item.purchasedAt,
         startIndex: item.startIndex,
-        startSumSq: BigInt(item.startSumSq),
-        settled: item.settled,
+        startSumSq: item.startSumSq !== null ? BigInt(item.startSumSq) : null,
+        status: item.status,
         payout: item.payout !== null ? BigInt(item.payout) : null,
       })),
     };

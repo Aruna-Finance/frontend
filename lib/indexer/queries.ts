@@ -106,11 +106,15 @@ export const POLICIES_BY_OWNER_QUERY = /* GraphQL */ `
         varNotional
         strikeAnnualized
         coveredSeconds
+        purchasedAt
         startIndex
         startSumSq
-        settled
+        status
         payout
+        refund
         payoutParked
+        refundParked
+        nftParked
         boughtAt
         settledAt
         cohortRef {
@@ -142,11 +146,15 @@ export const POLICIES_BY_POSITION_QUERY = /* GraphQL */ `
         varNotional
         strikeAnnualized
         coveredSeconds
+        purchasedAt
         startIndex
         startSumSq
-        settled
+        status
         payout
+        refund
         payoutParked
+        refundParked
+        nftParked
         boughtAt
         settledAt
         cohortRef {
@@ -235,10 +243,12 @@ export const COHORT_DETAIL_QUERY = /* GraphQL */ `
           varNotional
           strikeAnnualized
           coveredSeconds
+          purchasedAt
           startIndex
           startSumSq
-          settled
+          status
           payout
+          refund
         }
       }
     }

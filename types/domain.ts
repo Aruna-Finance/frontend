@@ -90,13 +90,15 @@ export interface PositionCover {
   id: string;
   positionId: string | null;
   vaultId: string;
-  status: "active" | "paid_out" | "no_payout";
+  status: "active" | "cancelled" | "paid_out" | "no_payout" | "refunded";
   strikePercent: number;
   breakevenPercent: number;
   capUsdc: number;
   premiumUsdc: number;
   payoutRateUsdc: number;
   netResultUsdc: number | null;
+  // Premium handed back when the keeper missed the cohort (Refunded); null otherwise.
+  refundUsdc: number | null;
   finalRealizedVolPercent: number | null;
   settledAt: string | null;
 }
