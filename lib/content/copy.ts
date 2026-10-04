@@ -746,5 +746,22 @@ export const demoCopy = {
     recent: "RECENT KEEPER ACTIVITY",
     noEvents: "No keeper activity yet.",
   },
+  faucet: {
+    label: "FAUCET",
+    body: "Mints test mUSDC and mWETH to your wallet and opens a Uniswap position in the market's pool, so you can protect it or underwrite right away.",
+    cta: "Get test tokens and a position",
+    running: "Working…",
+    resume: "Resume",
+    needGas: "Your wallet is low on Arbitrum Sepolia ETH, which pays for gas. Get some from a faucet first:",
+    done: "Done. Your new position is ready.",
+    doneLink: "Open Protect",
+    steps: {
+      mintUsdc: "Mint mUSDC",
+      mintWeth: "Mint mWETH",
+      approveUsdc: "Approve mUSDC for Uniswap",
+      approveWeth: "Approve mWETH for Uniswap",
+      mintPosition: "Create the Uniswap position",
+    },
+  },
   comingSoon: "Coming up next",
 } as const;

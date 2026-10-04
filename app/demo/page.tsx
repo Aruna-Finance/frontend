@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/aruna/Header";
 import { CohortTimeline } from "@/components/aruna/demo/CohortTimeline";
+import { FaucetPanel } from "@/components/aruna/demo/FaucetPanel";
 import { KeeperPanel } from "@/components/aruna/demo/KeeperPanel";
 import { Card } from "@/components/aruna/Card";
 import { demoCopy } from "@/lib/content/copy";
@@ -38,9 +39,10 @@ export default function DemoConsolePage() {
             events={market.events}
             onChanged={() => void market.refetchLastSample()}
           />
-          <Card className="flex flex-col gap-[8px] lg:col-span-2">
+          <FaucetPanel />
+          <Card className="flex flex-col gap-[8px]">
             <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{demoCopy.comingSoon}</div>
-            <p className="text-[14px] text-foreground-secondary">Faucet and Storm / Calm controls.</p>
+            <p className="text-[14px] text-foreground-secondary">Storm / Calm price controls.</p>
           </Card>
         </div>
       </div>

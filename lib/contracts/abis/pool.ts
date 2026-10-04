@@ -40,4 +40,11 @@ export const poolAbi = [
     inputs: [],
     outputs: [{ name: "", type: "uint24" }],
   },
+  {
+    type: "function",
+    name: "tickSpacing",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "int24" }],
+  },
 ] as const;
