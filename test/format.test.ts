@@ -69,7 +69,12 @@ describe("formatPercent", () => {
 
   it("shows <0.01% for a nonzero value too small to display", () => {
     expect(formatPercent(0.0008014629850063927)).toBe("<0.01%");
-    expect(formatPercent(-0.004)).toBe("<0.01%");
+    expect(formatPercent(0.0008014629850063927, { signed: true })).toBe("+<0.01%");
+  });
+
+  it("keeps the minus on a tiny loss so it never reads as a gain", () => {
+    expect(formatPercent(-0.004)).toBe("−<0.01%");
+    expect(formatPercent(-0.000129)).toBe("−<0.01%");
   });
 
   it("adds a plus sign to gains only when asked, and a minus to losses", () => {

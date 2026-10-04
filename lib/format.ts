@@ -129,12 +129,12 @@ export function formatCompact(value: number | null | undefined, unit?: string): 
 // A percentage with a readable precision: one decimal from 1% up (whole numbers
 // lose the ".0"), two below 1%, and "<0.01%" for a nonzero value that would
 // otherwise print as 0.00%. `signed` adds "+" to gains, for results and returns.
+// A loss keeps its minus even when tiny ("−<0.01%"), so it never reads as a gain.
 export function formatPercent(value: number | null | undefined, options: { signed?: boolean } = {}): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return MISSING;
   const abs = Math.abs(value);
   if (abs === 0) return "0%";
-  if (Number(abs.toFixed(2)) === 0) return "<0.01%";
-  const body = trimmed(abs, abs < 1 ? 2 : 1);
   const sign = value < 0 ? "−" : options.signed ? "+" : "";
-  return `${sign}${body}%`;
+  if (Number(abs.toFixed(2)) === 0) return `${sign}<0.01%`;
+  return `${sign}${trimmed(abs, abs < 1 ? 2 : 1)}%`;
 }
