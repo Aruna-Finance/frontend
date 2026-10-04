@@ -478,11 +478,9 @@ export const uwVaultsCopy = {
       lossCount === 1 ? "1 loss" : `${lossCount} losses`
     }`,
   depositCta: "Deposit",
-  depositWindow: {
-    sectionTitle: "Open deposit windows",
-    open: (cohortId: number) => `Cohort ${cohortId} takes deposits`,
-    closesIn: (time: string) => `Closes in ${time}`,
-  },
+  listTitle: "Pools",
+  rowCta: "Deposit",
+  depositWindowLabel: "DEPOSITS",
   stats: {
     lastCycle: "LAST CYCLE",
     capital: "CAPITAL",

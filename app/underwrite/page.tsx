@@ -5,12 +5,9 @@ import { Header } from "@/components/aruna/Header";
 import { Button } from "@/components/aruna/Button";
 import { Card } from "@/components/aruna/Card";
 import { PairIcon } from "@/components/aruna/PairIcon";
-import { ProgressBar } from "@/components/aruna/ProgressBar";
-import { Tooltip } from "@/components/aruna/Tooltip";
 import { SectionHeader } from "@/components/aruna/SectionHeader";
-import { CohortHistory } from "@/components/aruna/CohortHistory";
 import { AppFooter } from "@/components/aruna/AppFooter";
-import { marketDetailCopy, uwVaultsCopy } from "@/lib/content/copy";
+import { uwDepositCopy, uwVaultsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCompact, formatPercent } from "@/lib/format";
 import { formatDuration } from "@/lib/contracts/units";
@@ -22,85 +19,58 @@ import { useWalletModal } from "@/hooks/useWalletModal";
 import { useUnderwriterPositionsByWallet } from "@/hooks/useUnderwriterPositions";
 import type { Vault } from "@/types/domain";
 
-// The deposit window of one vault: which cohort takes deposits, how long it has,
-// how the vault has done recently, and the risks, all next to the button that
-// commits capital. Deposits stay open through the settlement gap (they target n+1).
-function VaultDepositCard({ vault }: { vault: Vault }) {
+// One pool, one row, and the whole row is the link to that pool's deposit page.
+// Four facts decide whether to open it: which cohort takes deposits and for how
+// long, how the last completed cycle went, and how much capital the vault holds.
+// No button or tooltip inside: both are interactive and cannot live inside a link.
+// Deposits stay open through the settlement gap (they target the next cohort).
+function PoolRow({ vault }: { vault: Vault }) {
   const { status, now } = useMarketStatus(vault.id);
-  const yieldSummary = useVaultYield(vault.id).data;
-  const last = yieldSummary?.last ?? null;
-  const closesIn = status && now ? formatDuration(status.deposit.closesAt - now) : "–";
-  const utilization = vault.utilizationPercent !== null ? vault.utilizationPercent / 100 : 0;
+  const last = useVaultYield(vault.id).data?.last ?? null;
+  const closesIn = status ? formatDuration(status.deposit.closesAt - now) : null;
+  const statLabel = "text-[11px] tracking-[0.07em] uppercase text-foreground-muted";
 
   return (
-    <Card className="flex flex-col gap-[24px]">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-[16px]">
-        <div className="min-w-0">
-          <div className="flex items-center gap-[12px]">
-            {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
-            <Link href={`/markets/${vault.id}`} className="text-[18px] font-semibold text-foreground hover:text-accent transition-colors duration-200">
-              {vault.poolLabel} · {vault.poolFeeTier}
-            </Link>
+    <Link
+      href={`/underwrite/${vault.id}/deposit`}
+      className="group block text-foreground bg-pitch-raised border border-transparent hover:border-border transition-colors duration-200 p-[24px]"
+    >
+      <div className="flex flex-col lg:flex-row lg:items-center gap-[20px] lg:gap-[28px]">
+        <div className="flex items-center gap-[12px] lg:w-[290px] lg:shrink-0">
+          {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} /> : null}
+          <span className="text-[17px] font-semibold">
+            {vault.poolLabel} · {vault.poolFeeTier}
+          </span>
+        </div>
+
+        <dl className="grid grid-cols-2 lg:grid-cols-3 gap-x-[24px] gap-y-[18px] flex-grow min-w-0">
+          <div>
+            <dt className={statLabel}>{uwVaultsCopy.depositWindowLabel}</dt>
+            <dd className="font-mono text-[16px] pt-[6px]">{status ? `Cohort ${status.deposit.cohortId}` : "–"}</dd>
+            {closesIn ? <dd className="text-[12px] text-foreground-muted pt-[2px]">{uwDepositCopy.closesIn(closesIn)}</dd> : null}
           </div>
-          <div className="text-[13px] text-foreground-secondary pt-[10px]">
-            {status ? uwVaultsCopy.depositWindow.open(status.deposit.cohortId) : null}
-            {status ? <span className="text-foreground-muted"> · {uwVaultsCopy.depositWindow.closesIn(closesIn)}</span> : null}
+          <div>
+            <dt className={statLabel}>{uwVaultsCopy.stats.lastCycle}</dt>
+            <dd
+              className={[
+                "font-mono text-[16px] pt-[6px]",
+                last && last.percent !== null ? (last.percent >= 0 ? "text-positive" : "text-negative") : "text-foreground-muted",
+              ].join(" ")}
+            >
+              {last && last.percent !== null ? formatPercent(last.percent, { signed: true }) : uwVaultsCopy.stats.noCycleYet}
+            </dd>
           </div>
-        </div>
-        <Button href={`/underwrite/${vault.id}/deposit`} className="md:shrink-0 md:w-[200px]">
-          {uwVaultsCopy.depositCta}
-        </Button>
-      </div>
+          <div>
+            <dt className={statLabel}>{uwVaultsCopy.stats.capital}</dt>
+            <dd className="font-mono text-[16px] pt-[6px]">{formatCompact(vault.totalCapitalUsdc, "USDC")}</dd>
+          </div>
+        </dl>
 
-      <dl className="grid grid-cols-1 sm:grid-cols-3 gap-[20px]">
-        <div>
-          <dt className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">
-            <Tooltip content={marketDetailCopy.underwrite.lastCycleHint}>{uwVaultsCopy.stats.lastCycle}</Tooltip>
-          </dt>
-          <dd
-            className={[
-              "font-mono text-[20px] pt-[6px]",
-              last && last.percent !== null ? (last.percent >= 0 ? "text-positive" : "text-negative") : "text-foreground-muted",
-            ].join(" ")}
-          >
-            {last && last.percent !== null ? formatPercent(last.percent, { signed: true }) : uwVaultsCopy.stats.noCycleYet}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{uwVaultsCopy.stats.capital}</dt>
-          <dd className="font-mono text-[20px] pt-[6px]">{formatCompact(vault.totalCapitalUsdc, "USDC")}</dd>
-        </div>
-        <div>
-          <dt className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{uwVaultsCopy.stats.utilization}</dt>
-          <dd className="font-mono text-[20px] pt-[6px]">{formatPercent(vault.utilizationPercent)}</dd>
-          <dd className="pt-[8px] max-w-[180px]">
-            <ProgressBar value={utilization} thickness="thin" />
-          </dd>
-        </div>
-      </dl>
-
-      <div className="border-t border-border pt-[18px]">
-        <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted">{uwVaultsCopy.risks.label}</div>
-        <ul className="flex flex-col gap-[8px] pt-[10px]">
-          {uwVaultsCopy.risks.items.map((item) => (
-            <li key={item} className="text-[13.5px] leading-[1.6] text-foreground-secondary">
-              {item}
-            </li>
-          ))}
-        </ul>
+        <span className="text-[14px] font-semibold text-accent lg:shrink-0 group-hover:translate-x-[2px] transition-transform duration-200">
+          {uwVaultsCopy.rowCta} →
+        </span>
       </div>
-
-      <div className="border-t border-border pt-[18px]">
-        <div className="text-[11px] tracking-[0.07em] uppercase text-foreground-muted pb-[8px]">
-          {uwVaultsCopy.positions.recentCohorts}
-        </div>
-        <CohortHistory
-          rows={yieldSummary?.recent ?? []}
-          labels={marketDetailCopy.history.columns}
-          emptyText={marketDetailCopy.history.empty}
-        />
-      </div>
-    </Card>
+    </Link>
   );
 }
 
@@ -186,9 +156,9 @@ export default function UnderwritePage() {
 
         {listed.length > 0 ? (
           <section className="flex flex-col gap-[16px]">
-            <SectionHeader title={uwVaultsCopy.depositWindow.sectionTitle} />
+            <SectionHeader title={uwVaultsCopy.listTitle} />
             {listed.map((vault) => (
-              <VaultDepositCard key={vault.id} vault={vault} />
+              <PoolRow key={vault.id} vault={vault} />
             ))}
           </section>
         ) : null}
