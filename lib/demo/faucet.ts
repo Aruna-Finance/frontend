@@ -22,7 +22,36 @@ export const FAUCET = {
   // Below this the wallet cannot pay gas for the faucet itself.
   minGasWei: 200_000_000_000_000n,
   deadlineSeconds: 600,
+  // maxPayout of a positionAmount0/1 position (measured, see above). maxPayout
+  // scales linearly with the amounts for a fixed range, which positionAmounts
+  // uses to size the position for whatever floor the cohort has.
+  refMaxPayout: 4_830_000_000_000n,
+  // Aim this far above the floor, so deposits landing after the faucet (which
+  // raise the floor) do not push the position back under it.
+  floorHeadroomBps: 12_000n,
 } as const;
+
+export interface PositionAmounts {
+  amount0: bigint;
+  amount1: bigint;
+}
+
+// buyCover's floor: capacity / policyCap, where capacity is
+// totalCapital * maxUtilizationBps / 10000 (CoverVault.buyCover, BelowMinPayout).
+export function minPayoutFloor(totalCapital: bigint, maxUtilizationBps: bigint, policyCap: bigint): bigint {
+  if (policyCap === 0n) return 0n;
+  return (totalCapital * maxUtilizationBps) / 10_000n / policyCap;
+}
+
+// Position size whose maxPayout clears `floor` with headroom; never below the
+// calibrated default. Operator capital per cohort is not fixed (a roll can land
+// on top of a deposit), so a fixed faucet size can fall under the floor.
+export function positionAmounts(floor: bigint): PositionAmounts {
+  const target = (floor * FAUCET.floorHeadroomBps) / 10_000n;
+  if (target <= FAUCET.refMaxPayout) return { amount0: FAUCET.positionAmount0, amount1: FAUCET.positionAmount1 };
+  const scale = (amount: bigint) => (amount * target + FAUCET.refMaxPayout - 1n) / FAUCET.refMaxPayout;
+  return { amount0: scale(FAUCET.positionAmount0), amount1: scale(FAUCET.positionAmount1) };
+}
 
 export const ETH_FAUCET_LINKS = [
   { label: "Alchemy Arbitrum Sepolia faucet", href: "https://www.alchemy.com/faucets/arbitrum-sepolia" },
@@ -58,6 +87,8 @@ export interface FaucetState {
   wethAllowance: bigint;
   // Steps already mined in this run, so a retry resumes instead of repeating them.
   done?: ReadonlySet<FaucetStepId>;
+  // Position size; defaults to the calibrated FAUCET amounts.
+  position?: PositionAmounts;
 }
 
 // The transactions still needed, in order. Mints top the wallet up to its
@@ -66,12 +97,16 @@ export interface FaucetState {
 export function faucetPlan(state: FaucetState): FaucetStep[] {
   const done = state.done ?? new Set<FaucetStepId>();
   const steps: FaucetStep[] = [];
+  const { amount0, amount1 } = state.position ?? { amount0: FAUCET.positionAmount0, amount1: FAUCET.positionAmount1 };
+  // Keep the usual wallet balance, plus whatever a larger position needs.
+  const usdcTarget = FAUCET.usdcTarget > amount0 * 2n ? FAUCET.usdcTarget : amount0 * 2n;
+  const wethTarget = FAUCET.wethTarget > amount1 * 2n ? FAUCET.wethTarget : amount1 * 2n;
 
-  if (state.usdcBalance < FAUCET.usdcTarget) steps.push({ id: "mintUsdc", amount: FAUCET.usdcTarget - state.usdcBalance });
-  if (state.wethBalance < FAUCET.wethTarget) steps.push({ id: "mintWeth", amount: FAUCET.wethTarget - state.wethBalance });
+  if (state.usdcBalance < usdcTarget) steps.push({ id: "mintUsdc", amount: usdcTarget - state.usdcBalance });
+  if (state.wethBalance < wethTarget) steps.push({ id: "mintWeth", amount: wethTarget - state.wethBalance });
   // Position creation needs the balances to be there even when no mint is needed.
-  if (state.usdcAllowance < FAUCET.positionAmount0) steps.push({ id: "approveUsdc", amount: FAUCET.positionAmount0 });
-  if (state.wethAllowance < FAUCET.positionAmount1) steps.push({ id: "approveWeth", amount: FAUCET.positionAmount1 });
+  if (state.usdcAllowance < amount0) steps.push({ id: "approveUsdc", amount: amount0 });
+  if (state.wethAllowance < amount1) steps.push({ id: "approveWeth", amount: amount1 });
   steps.push({ id: "mintPosition" });
 
   return steps.filter((step) => !done.has(step.id));

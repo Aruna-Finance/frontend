@@ -8,7 +8,17 @@ import { erc20Abi, mintableErc20Abi } from "@/lib/contracts/abis/erc20";
 import { poolAbi } from "@/lib/contracts/abis/pool";
 import { positionManagerAbi } from "@/lib/contracts/abis/positionManager";
 import { arunaAddresses } from "@/lib/contracts/addresses";
-import { FAUCET, faucetPlan, positionRange, type FaucetStep, type FaucetStepId } from "@/lib/demo/faucet";
+import { coverVaultAbi } from "@/lib/contracts/abis/coverVault";
+import {
+  FAUCET,
+  faucetPlan,
+  minPayoutFloor,
+  positionAmounts,
+  positionRange,
+  type FaucetStep,
+  type FaucetStepId,
+  type PositionAmounts,
+} from "@/lib/demo/faucet";
 import { useAllowance } from "./useAllowance";
 import { useContractTx } from "./useContractTx";
 import { useTokenBalance } from "./useTokenBalance";
@@ -17,6 +27,7 @@ import { useWallet } from "./useWallet";
 const NFPM = arunaAddresses.positionManager;
 const POOL = arunaAddresses.pool;
 const USDC = arunaAddresses.settlementToken;
+const VAULT = arunaAddresses.coverVault;
 
 export type FaucetStatus = "idle" | "running" | "done" | "failed";
 
@@ -48,7 +59,7 @@ export function useFaucet() {
   }, [usdcBalance, wethBalance, usdcAllowance, wethAllowance]);
 
   const runStep = useCallback(
-    async (step: FaucetStep, owner: Address, weth: Address): Promise<boolean> => {
+    async (step: FaucetStep, owner: Address, weth: Address, position: PositionAmounts): Promise<boolean> => {
       const label = (name: string) => ({
         id: `faucet-${step.id}`,
         submitted: `${name} submitted`,
@@ -96,8 +107,8 @@ export function useFaucet() {
                   fee,
                   tickLower,
                   tickUpper,
-                  amount0Desired: FAUCET.positionAmount0,
-                  amount1Desired: FAUCET.positionAmount1,
+                  amount0Desired: position.amount0,
+                  amount1Desired: position.amount1,
                   amount0Min: 0n,
                   amount1Min: 0n,
                   recipient: owner,
@@ -113,6 +124,30 @@ export function useFaucet() {
     [config, send],
   );
 
+  // Size the position for buyCover's floor in the cohort a visitor buys into
+  // now and the next one (whichever floor is higher). Falls back to the default
+  // size if the vault cannot be read.
+  const sizePosition = useCallback(async (): Promise<PositionAmounts> => {
+    try {
+      const [current, util, cap] = await Promise.all([
+        readContract(config, { address: VAULT, abi: coverVaultAbi, functionName: "currentCohortId" }),
+        readContract(config, { address: VAULT, abi: coverVaultAbi, functionName: "maxUtilizationBps" }),
+        readContract(config, { address: VAULT, abi: coverVaultAbi, functionName: "policyCap" }),
+      ]);
+      const cohorts = await Promise.all(
+        [current, current + 1].map((id) =>
+          readContract(config, { address: VAULT, abi: coverVaultAbi, functionName: "cohort", args: [id] }),
+        ),
+      );
+      const floor = cohorts
+        .map((c) => minPayoutFloor(c.totalCapital, BigInt(util), BigInt(cap)))
+        .reduce((a, b) => (a > b ? a : b), 0n);
+      return positionAmounts(floor);
+    } catch {
+      return positionAmounts(0n);
+    }
+  }, [config]);
+
   // Steps run one at a time; a failure stops the run on that step, and pressing
   // the button again resumes from it (steps already mined are remembered).
   const start = useCallback(async () => {
@@ -120,16 +155,18 @@ export function useFaucet() {
     setStatus("running");
     const done = new Set(progress.failedStep ? progress.done : []);
     await refetchAll();
+    const position = await sizePosition();
     const steps = faucetPlan({
       usdcBalance: ((await usdcBalance.refetch()).data ?? 0n) as bigint,
       wethBalance: ((await wethBalance.refetch()).data ?? 0n) as bigint,
       usdcAllowance: ((await usdcAllowance.refetch()).data ?? 0n) as bigint,
       wethAllowance: ((await wethAllowance.refetch()).data ?? 0n) as bigint,
       done,
+      position,
     });
     setProgress({ steps, done, failedStep: null });
     for (const step of steps) {
-      const ok = await runStep(step, address, wethAddress);
+      const ok = await runStep(step, address, wethAddress, position);
       if (!ok) {
         setProgress({ steps, done: new Set(done), failedStep: step.id });
         setStatus("failed");
@@ -141,7 +178,7 @@ export function useFaucet() {
     await refetchAll();
     setProgress({ steps: [], done: new Set(), failedStep: null });
     setStatus("done");
-  }, [address, wethAddress, progress, refetchAll, usdcBalance, wethBalance, usdcAllowance, wethAllowance, runStep]);
+  }, [address, wethAddress, progress, refetchAll, usdcBalance, wethBalance, usdcAllowance, wethAllowance, runStep, sizePosition]);
 
   return {
     status,

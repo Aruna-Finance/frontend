@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FAUCET, faucetPlan, positionRange, type FaucetStepId } from "@/lib/demo/faucet";
+import { FAUCET, faucetPlan, minPayoutFloor, positionAmounts, positionRange, type FaucetStepId } from "@/lib/demo/faucet";
 
 const empty = { usdcBalance: 0n, wethBalance: 0n, usdcAllowance: 0n, wethAllowance: 0n };
 
@@ -58,5 +58,40 @@ describe("positionRange", () => {
   it("floors a positive tick and a negative tick toward negative infinity", () => {
     expect(positionRange(59, 60, 60)).toEqual({ tickLower: -60, tickUpper: 60 });
     expect(positionRange(-1, 60, 60)).toEqual({ tickLower: -120, tickUpper: 0 });
+  });
+});
+
+describe("minPayoutFloor", () => {
+  it("is capacity over the policy cap", () => {
+    // 1e14 capital, 80% utilization, 20 policies: the sandbox's 4e12 floor.
+    expect(minPayoutFloor(100_000_000_000_000n, 8_000n, 20n)).toBe(4_000_000_000_000n);
+    expect(minPayoutFloor(100_000_000_000_000n, 8_000n, 0n)).toBe(0n);
+  });
+});
+
+describe("positionAmounts", () => {
+  it("keeps the calibrated size when it already clears the floor with headroom", () => {
+    expect(positionAmounts(4_000_000_000_000n)).toEqual({
+      amount0: FAUCET.positionAmount0,
+      amount1: FAUCET.positionAmount1,
+    });
+  });
+
+  it("scales the position so its maxPayout clears a higher floor", () => {
+    // A cohort holding 2e14 (a roll on top of a deposit) has an 8e12 floor.
+    const floor = minPayoutFloor(200_439_501_622_875n, 8_000n, 20n);
+    const { amount0, amount1 } = positionAmounts(floor);
+    const maxPayout = (FAUCET.refMaxPayout * amount0) / FAUCET.positionAmount0;
+    expect(maxPayout).toBeGreaterThanOrEqual((floor * 12_000n) / 10_000n);
+    expect(amount1).toBe(amount0);
+  });
+
+  it("mints and approves enough for a scaled position", () => {
+    const position = positionAmounts(10_000_000_000_000n);
+    const plan = faucetPlan({ usdcBalance: 0n, wethBalance: 0n, usdcAllowance: 0n, wethAllowance: 0n, position });
+    const step = (id: string) => plan.find((s) => s.id === id)?.amount ?? 0n;
+    expect(step("mintWeth")).toBeGreaterThanOrEqual(position.amount1);
+    expect(step("approveUsdc")).toBe(position.amount0);
+    expect(step("approveWeth")).toBe(position.amount1);
   });
 });
