@@ -24,8 +24,9 @@ import { usePosition } from "@/hooks/usePosition";
 import { useQuote } from "@/hooks/useQuote";
 import { useWallet } from "@/hooks/useWallet";
 import { useWalletModal } from "@/hooks/useWalletModal";
+import { STRIKE_OPTIONS } from "@/lib/contracts/strikes";
 
-const STRIKE_OPTIONS = [30, 35, 45, 55] as const;
+
 const COHORT_STATUS_NAMES = ["FUNDING", "ACTIVE", "SETTLING", "SETTLED"] as const;
 
 export function QuoteClient({ positionId }: { positionId: string }) {

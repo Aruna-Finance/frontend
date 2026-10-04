@@ -17,6 +17,7 @@ import { useVaults } from "@/hooks/useVaults";
 import { useMarketStatus } from "@/hooks/useMarketStatus";
 import { usePricingVol } from "@/hooks/usePricingVol";
 import { useProof } from "@/hooks/useProof";
+import { latestRealizedVol } from "@/lib/vol-series";
 import { useVaultYield } from "@/hooks/useVaultYield";
 import type { Vault } from "@/types/domain";
 
@@ -28,9 +29,16 @@ function FieldLabel({ label, hint }: { label: string; hint?: string }) {
 // One market, one card on every width. Desktop lays the name, four facts and the
 // two actions in a row; mobile stacks them, with the facts in a two-column grid.
 function MarketRow({ vault }: { vault: Vault }) {
-  const { headline } = useMarketStatus(vault.id);
+  const { headline, now } = useMarketStatus(vault.id);
   const pricingVol = usePricingVol(vault.id);
-  const realized = useProof(vault.id).data?.annualizedVolPercent;
+  const proof = useProof(vault.id).data;
+  const realized = proof
+    ? latestRealizedVol(
+        proof.rows.map((row) => ({ timestamp: row.timestamp, cumulativeSumSq: row.cumulativeSumSq })),
+        now,
+        vault.tenorSeconds,
+      )
+    : null;
   const cycle = useVaultYield(vault.id).data?.last ?? null;
 
   if (!vault.hasVault) {

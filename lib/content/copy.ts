@@ -142,34 +142,67 @@ export const marketsCopy = {
 } as const;
 
 export const marketDetailCopy = {
-  backLink: "← Markets",
-  meta: (poolAddress: string, spot: string) => `Pool ${poolAddress} · spot ${spot} · TWAP window 30 min`,
-  underwriteThisVaultCta: "Underwrite this vault",
-  buyCoverCta: "Buy cover",
-  cohortRangeLabel: (cohortId: number, startLabel: string, endLabel: string) =>
-    `COHORT ${cohortId} · ${startLabel} → ${endLabel}`,
-  timeLeftLabel: (timeLeft: string, taken: number, total: number) =>
-    `${timeLeft} left · ${taken} of ${total} samples taken`,
-  chartTitle: "Realized volatility, cohort to date",
-  chartLegendRealized: (volPercent: number) => `- realized ${volPercent}%`,
-  chartLegendStrikesOnOffer: "-- strikes on offer",
-  axisNowLabel: "now",
-  statLabels: {
-    lastTwapSample: "LAST TWAP SAMPLE",
-    missedSamples: "MISSED SAMPLES",
-    priorCohortsAvg: "PRIOR 6 COHORTS, AVG",
+  backLink: "← All markets",
+  // One sentence: what the cover pays on, and how the cohort and capacity bound it.
+  // Kept within SSOT §7: no full protection, not an IL indemnity, and not continuous.
+  describe: (tenor: string) =>
+    `Cover pays on how much this pool's price moves, not which way it goes. Each cohort runs ${tenor}, and payouts are capped by the vault's capacity.`,
+  statusLabel: "STATUS",
+  protect: {
+    role: "Liquidity provider",
+    title: "Protect your LP position",
+    description:
+      "Pay a premium now and cap what volatility can cost your position. The maximum loss is set when you pay.",
+    pricingVolLabel: "Pricing vol",
+    pricingVolHint: marketsCopy.hints.pricingVol,
+    buyUntilLabel: "Buy cover until",
+    buyUntilClosed: "Closed",
+    freeLabel: "Free capacity",
+    note: "Payouts settle on the pool's TWAP, not the spot price, and can never exceed the cap set when you buy.",
+    cta: "Protect a position",
+    closedNote: (opensIn: string) => `Cover sales are closed for this cohort. The next one opens in ${opensIn}.`,
+    notYetNote: (opensIn: string) => `Cover opens in ${opensIn}, when the next cohort starts.`,
   },
-  vaultCapacity: {
-    label: "VAULT CAPACITY",
-    freeUnit: "USDC free",
-    reservedCaption: (amount: string) => `${amount} reserved`,
-    totalCaption: (amount: string) => `${amount} total`,
+  underwrite: {
+    role: "Underwriter",
+    title: "Earn premiums as underwriter",
+    description:
+      "Deposit capital for a cohort. You keep its premiums minus any claims, and capital that is not used comes back at settlement.",
+    lastCycleLabel: "Last cycle",
+    lastCycleHint: marketsCopy.hints.lastCycle,
+    noCycleYet: "None yet",
+    depositsCloseLabel: "Deposits close",
+    note: "Capital is locked until the cohort settles. In a violent week claims can exceed premiums; the bound is the written capacity, not zero.",
+    cta: "Deposit",
+    closedNote: "Deposits for the next cohort are closed.",
+  },
+  volatility: {
+    title: "Volatility",
+    description: "Pricing vol is what premiums are based on. Realized vol is measured from this pool's TWAP samples over one cohort.",
+    empty: "Realized volatility appears after the first samples of this cohort.",
+    legendRealized: (window: string) => `Realized vol over the last ${window}`,
+    legendStrike: "Dashed lines: strike levels",
+    lastSample: "Last sample",
+    recorded: (count: number) => `${count} samples recorded`,
+    gaps: (count: number) => (count === 1 ? "1 gap in sampling" : `${count} gaps in sampling`),
+  },
+  capacity: {
+    title: "Capacity",
+    description: "Capital the vault can still back with new cover.",
+    freeLabel: "Free",
+    reservedLabel: "Reserved",
+    totalLabel: "Total",
     note: "Reserved means already committed as the capped payout of a live policy. Only free capacity can be sold.",
   },
-  premiumIndication: {
-    label: "PREMIUM INDICATION · PER 10,000 USDC COVERED",
-    strikeRowLabel: (strikePercent: number) => `Strike ${strikePercent}% vol`,
-    note: "Shown for a full 7-day cycle. Joining mid-cycle is charged pro rata for the time left.",
+  history: {
+    title: "Cohort history",
+    description: "The latest completed cohorts. Net is premiums minus claims.",
+    empty: "No cohort has completed yet.",
+    columns: { cohort: "Cohort", capital: "Capital", premiums: "Premiums", claims: "Claims", result: "Result" },
+  },
+  howItWorks: {
+    heading: "How a market works",
+    storageKey: "aruna.markets.howItWorks.seen",
   },
 } as const;
 
