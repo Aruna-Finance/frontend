@@ -18,6 +18,7 @@ import { marketDetailCopy, marketsCopy } from "@/lib/content/copy";
 import { withActiveNavLink } from "@/lib/nav";
 import { formatCompact, formatPercent, formatSampleTime } from "@/lib/format";
 import { formatDuration } from "@/lib/contracts/units";
+import { chainTag } from "@/lib/contracts/pool-label";
 import { STRIKE_OPTIONS } from "@/lib/contracts/strikes";
 import { chartGeometry, latestRealizedVol, realizedVolSeries, recentSamples } from "@/lib/vol-series";
 import { useVault } from "@/hooks/useVaults";
@@ -84,11 +85,11 @@ export function MarketDetailClient({ vaultId }: { vaultId: string }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-[14px]">
           <div className="flex items-center gap-[14px] min-w-0">
             {vault.poolSymbols ? <PairIcon symbol0={vault.poolSymbols[0]} symbol1={vault.poolSymbols[1]} size={32} /> : null}
-            <h1 className="font-display text-[30px] lg:text-[36px] font-normal truncate">
+            <h1 className="font-display text-[26px] sm:text-[30px] lg:text-[36px] leading-[1.15] font-normal">
               {vault.poolLabel} · {vault.poolFeeTier}
             </h1>
           </div>
-          <span className="font-mono text-[12px] text-foreground-muted">{vault.chainLabel} · testnet</span>
+          <span className="font-mono text-[12px] text-foreground-muted">{chainTag}</span>
         </div>
 
         <p className="text-[15px] leading-[1.6] text-foreground-secondary max-w-[760px]">

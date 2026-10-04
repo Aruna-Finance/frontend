@@ -172,7 +172,7 @@ export const marketDetailCopy = {
     lastCycleHint: marketsCopy.hints.lastCycle,
     noCycleYet: "None yet",
     depositsCloseLabel: "Deposits close",
-    note: "Capital is locked until the cohort settles. In a violent week claims can exceed premiums; the bound is the written capacity, not zero.",
+    note: "Capital is locked until the cohort settles. When volatility spikes, claims can exceed premiums; the bound is the written capacity, not zero.",
     cta: "Deposit",
     closedNote: "Deposits for the next cohort are closed.",
   },
@@ -494,7 +494,7 @@ export const uwVaultsCopy = {
     items: [
       "Capital is locked until the cohort settles. It cannot leave early.",
       "Claims come out of your share of the capital, in proportion to it.",
-      "In a volatile week claims can exceed premiums. Your loss is bounded by the capacity written, not by zero.",
+      "When volatility spikes, claims can exceed premiums. Your loss is bounded by the capacity written, not by zero.",
     ],
   },
   positions: {
@@ -526,8 +526,13 @@ export const uwMyPositionsCopy = {
 } as const;
 
 export const uwDepositCopy = {
-  backLink: "← Vaults",
+  backLink: "← All pools",
   heading: (pool: string) => `Deposit into ${pool}`,
+  sections: { risks: "Before you deposit", history: "Recent cohorts", deposit: "Deposit" },
+  windowLabel: "DEPOSIT WINDOW",
+  closesIn: (time: string) => `closes in ${time}`,
+  depositDescription: (cohortId: number, settlesOn: string) =>
+    `Your capital joins cohort ${cohortId} and is locked until it settles on ${settlesOn}. What is left after claims comes back automatically.`,
   cohortRange: (cohortId: number, start: string, end: string) => `Cohort ${cohortId} · ${start} → ${end}`,
   amountLabel: "AMOUNT TO COMMIT FOR THIS CYCLE",
   unit: "USDC",
@@ -538,16 +543,7 @@ export const uwDepositCopy = {
   connectWalletCta: "Connect wallet",
   approveCta: "Approve USDC",
   processingCta: "Processing…",
-  signUpLabel: "WHAT YOU ARE SIGNING UP FOR",
-  signUpSteps: [
-    (date: string) =>
-      `Your capital joins the vault before the cycle opens and is locked until settlement on ${date}. There is no early withdrawal, because policies are sold against it.`,
-    () => "Every premium the vault collects during the cycle is split by share. Every claim it pays is deducted the same way.",
-    () => "At settlement the remainder is returned automatically. You choose then whether to roll into the next cycle.",
-  ],
-  historyLabel: (amount: string) => `HOW THE LAST SIX CYCLES WOULD HAVE TREATED ${amount}`,
-  historyFootnote:
-    "Past cycles say nothing about the next one. A single week above 50% realized vol erases more than these six added.",
+  historyNote: "Past cycles say nothing about the next one. A single volatile cohort can erase several quiet ones.",
   positionCard: {
     label: (cohortId: number) => `YOUR POSITION IN COHORT ${cohortId}`,
     shareLabel: "Share of vault",

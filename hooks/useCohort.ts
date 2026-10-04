@@ -6,6 +6,8 @@ import { deriveCohortId } from "@/lib/contracts/cohort-id";
 import { USDC_DECIMALS } from "@/lib/contracts/units";
 import { findOrSynthesizeCohort, mapCohorts } from "@/lib/indexer/mapVault";
 import { useVaultsQuery } from "@/lib/indexer/useVaultsQuery";
+import type { IndexerVault } from "@/lib/indexer/types";
+import { useVaultRawByAddress } from "./useVaults";
 import type { Cohort } from "@/types/domain";
 
 export interface UseCohortResult {
@@ -69,13 +71,35 @@ export function useCohortFinancials(vaultId: string, cohortId: number): UseCohor
   const query = useVaultsQuery();
   const data = useMemo(() => {
     const raw = query.data?.find((item) => item.address.toLowerCase() === vaultId.toLowerCase());
-    if (!raw) return undefined;
-    const row = raw.cohorts.items.find((item) => item.cohortId === cohortId);
-    return {
-      totalCapitalUsdc: row ? Number(formatUnits(BigInt(row.totalCapital), USDC_DECIMALS)) : 0,
-      policyCount: row?.policyCount ?? 0,
-      premiumsCollectedUsdc: row ? Number(formatUnits(BigInt(row.premiumsCollected), USDC_DECIMALS)) : 0,
-    };
+    return raw ? financialsOf(raw, cohortId) : undefined;
   }, [query.data, vaultId, cohortId]);
   return { data, isLoading: query.isLoading, isError: query.isError };
+}
+
+function financialsOf(raw: IndexerVault, cohortId: number): CohortFinancials {
+  const row = raw.cohorts.items.find((item) => item.cohortId === cohortId);
+  return {
+    totalCapitalUsdc: row ? Number(formatUnits(BigInt(row.totalCapital), USDC_DECIMALS)) : 0,
+    policyCount: row?.policyCount ?? 0,
+    premiumsCollectedUsdc: row ? Number(formatUnits(BigInt(row.premiumsCollected), USDC_DECIMALS)) : 0,
+  };
+}
+
+// The by-address variants below read the vault straight by its address, so they
+// also work for a vault that is not on the official list (isTest). The pages
+// reached from a pool's own link must open for any vault the visitor has the
+// address of; the list-based hooks above only see official vaults.
+export function useCohortByAddress(vaultId: string, cohortId: number): UseCohortResult {
+  const query = useVaultRawByAddress(vaultId);
+  const data = useMemo(
+    () => (query.data ? findOrSynthesizeCohort(query.data, cohortId, new Date()) : undefined),
+    [query.data, cohortId],
+  );
+  return { data, isLoading: query.isPending, isError: query.isError };
+}
+
+export function useCohortFinancialsByAddress(vaultId: string, cohortId: number): UseCohortFinancialsResult {
+  const query = useVaultRawByAddress(vaultId);
+  const data = useMemo(() => (query.data ? financialsOf(query.data, cohortId) : undefined), [query.data, cohortId]);
+  return { data, isLoading: query.isPending, isError: query.isError };
 }

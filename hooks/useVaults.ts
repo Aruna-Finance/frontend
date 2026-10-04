@@ -50,6 +50,9 @@ export function useVaultRawByAddress(vaultId: string) {
       }),
     select: (result) => result.vault,
     enabled: Boolean(vaultId),
+    // Same cadence as the vault list: "last cycle" and capital must move on their
+    // own once a cohort settles, not only after a reload.
+    refetchInterval: 30_000,
   });
 }
 

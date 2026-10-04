@@ -29,3 +29,6 @@ export function derivePoolInfo(poolAddress: string): {
 }
 
 export const chainLabel = supportedChain.name;
+
+// "Arbitrum Sepolia · testnet" on a testnet, plain name on mainnet.
+export const chainTag = supportedChain.testnet ? `${supportedChain.name} · testnet` : supportedChain.name;

@@ -70,6 +70,20 @@ describe("summarizeMarket: deposit side", () => {
     expect(status.deposit).toEqual({ cohortId: 6, closesAt: start(6) });
   });
 
+  // Covers AE4: once n+1 has started, the window moves on to n+2.
+  it("once the next cohort has started, deposits target the one after it", () => {
+    const status = summarizeMarket(calendar, [row(5)], start(6) + 300);
+    expect(status.currentCohortId).toBe(6);
+    expect(status.deposit).toEqual({ cohortId: 7, closesAt: start(7) });
+  });
+
+  it("the deposit window is never already over: closesAt is always ahead of now", () => {
+    for (const offset of [-500, 0, 1, 1800, 3299, 3300, 3599, 3600, 3601, 4199, 4200, 4201]) {
+      const now = start(5) + offset;
+      expect(summarizeMarket(calendar, [], now).deposit.closesAt).toBeGreaterThan(now);
+    }
+  });
+
   it("before the anchor deposits target cohort 0", () => {
     const status = summarizeMarket(calendar, [], Number(calendar.anchor) - 500);
     expect(status.deposit).toEqual({ cohortId: 0, closesAt: start(0) });
